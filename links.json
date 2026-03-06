@@ -1,5 +1,45 @@
 [ 
   {
+    "title": "Seelen UI",
+    "url": "https://seelen.io/",
+    "category": "Windows"
+  },
+  {
+    "title": "Pinokio",
+    "url": "https://pinokio.co/",
+    "category": "AI"
+  },
+  {
+    "title": "Windhawk",
+    "url": "https://windhawk.net/",
+    "category": "Windows"
+  },
+  {
+    "title": "ChatGPT Free",
+    "url": "https://chatgptfree.ai/",
+    "category": "AI"
+  },
+  {
+    "title": "Myal",
+    "url": "https://myal.vercel.app/",
+    "category": "Android"
+  },
+  {
+    "title": "Hicine",
+    "url": "https://hicine.app/",
+    "category": "Streaming"
+  },
+  {
+    "title": "Wotaku Wiki",
+    "url": "https://wotaku.wiki/",
+    "category": "Anime"
+  },
+  {
+    "title": "FreeCut",
+    "url": "https://freecut-sandy.vercel.app/",
+    "category": "Media"
+  },
+  {
     "title": "Aadhaar (UIDAI)",
     "url": "https://myaadhaar.uidai.gov.in/",
     "category": "Government Services"
