@@ -1,5 +1,39 @@
 [ 
   {
+    "title": "1TamilMV",
+    "url": "https://www.1tamilmv.lc",
+    "urls": [
+      "https://www.1tamilmv.lc",
+      "https://www.1tamilmv.app/",
+      "https://1tamilmv.beauty/",
+      "https://1tamilmv.farm/",
+      "https://1tamilmv.best/",
+      "https://1tamilmv.dog/",
+      "https://1tamilmv.vc/",
+      "https://1tamilmv.se/",
+      "https://1tamilmv.onl/",
+      "https://1tamilmv.pet/",
+      "https://1tamilmv.boo/",
+      "https://1tamilmv.kim/",
+      "https://1tamilmv.love/",
+      "https://1tamilmv.legal/"
+    ],
+    "category": "Media"
+  },
+  {
+    "title": "5MovieRulz",
+    "urls": [
+      "https://www.5movierulz.claims/",
+      "https://5movierulz.skin/",
+      "https://www.watchmovierulz.men/",
+      "https://movierulz.vpn/",
+      "https://5movierulz.ht/",
+      "https://5movierulz.is/"
+    ],
+    "url": "https://www.5movierulz.claims/",
+    "category": "Media"
+  },
+  {
     "title": "Seelen UI",
     "url": "https://seelen.io/",
     "category": "Windows"
