@@ -23,7 +23,8 @@ const CAT_ICONS = {
 
   "Media": "🎥",
   "Streaming": "📺",
-  "Anime": "🍥",
+  "Manga / Anime": "🍥",
+  "Music": "🎵",
   "Games": "🎮",
 
   "Shopping": "🛒",
@@ -759,6 +760,7 @@ const PageTools = {
 
 // Initial Start
 Core.init();
+
 
 
 
