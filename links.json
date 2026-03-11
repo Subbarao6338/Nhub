@@ -1,5 +1,21 @@
 [
   {
+    "title": "NoteGPT",
+    "url": "https://notegpt.io",
+    "urls": [
+      "https://notegpt.io"
+    ],
+    "category": "Tools"
+  },
+  {
+    "title": "Smallpdf",
+    "url": "https://smallpdf.com",
+    "urls": [
+      "https://smallpdf.com"
+    ],
+    "category": "Tools"
+  },
+  {
     "title": "1TamilMV",
     "url": "https://www.1tamilmv.lc",
     "urls": [
@@ -2111,4 +2127,5 @@
     "category": "Jobs"
   }
 ]
+
 
