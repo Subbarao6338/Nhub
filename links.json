@@ -1,5 +1,35 @@
 [
   {
+    "title": "Defuddle",
+    "url": "https://defuddle.md/",
+    "urls": ["https://defuddle.md/"],
+    "category": "Tools"
+  },
+  {
+    "title": "VibeShare",
+    "url": "https://www.vibeshare.tech/",
+    "urls": ["https://www.vibeshare.tech/"],
+    "category": "Hosting"
+  },
+  {
+    "title": "Cloudflare Pages",
+    "url": "https://pages.cloudflare.com/",
+    "urls": ["https://pages.cloudflare.com/"],
+    "category": "Hosting"
+  },
+  {
+    "title": "Arena AI",
+    "url": "https://arena.ai/",
+    "urls": ["https://arena.ai/"],
+    "category": "AI"
+  },
+  {
+    "title": "Yupp AI",
+    "url": "https://yupp.ai/",
+    "urls": ["https://yupp.ai/"],
+    "category": "AI"
+  },
+  {
     "title": "NoteGPT",
     "url": "https://notegpt.io",
     "urls": [
