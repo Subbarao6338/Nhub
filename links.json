@@ -1,8 +1,25 @@
 [
   {
+    "title": "AnimeSalt",
+    "url": "https://animesalt.ac",
+    "urls": [""https://animesalt.ac"],
+    "category": "Manga / Anime"
+  },
+  {
     "title": "Movies and TV shows",
     "url": "",
-    "urls": [],
+    "urls": ["https://web.stremio.com/#/",
+      "https://stremio-addons.net/",
+      "https://hicine.app/",
+      "https://ww1.01fmovies.com/index.html",
+      "https://v0-nullflix.vercel.app/",
+      "https://m.netflixmirror.com/home",
+      "https://net22.cc/home",
+      "https://ww25.soap2day.day/soap2day-r26n8/",
+     "https://cinehd.cc/home",
+    "https://mapple.tv",
+    "https://mappl.tv",
+    "https://mapple.cc"],
     "category": "Streaming" 
   },
   {
@@ -143,14 +160,6 @@
     "category": "Android",
     "urls": [
       "https://myal.vercel.app/"
-    ]
-  },
-  {
-    "title": "Hicine",
-    "url": "https://hicine.app/",
-    "category": "Streaming",
-    "urls": [
-      "https://hicine.app/"
     ]
   },
   {
@@ -623,7 +632,8 @@
     "urls": [
       "https://www.upihelp.npci.org.in"
     ]
-  },
+  },
+
   {
     "title": "Andi Search",
     "url": "https://andisearch.com",
@@ -899,15 +909,6 @@
     ]
   },
   {
-    "title": "Stremio Web",
-    "url": "https://web.stremio.com/#/",
-    "category": "Streaming",
-    "urls": [
-      "https://web.stremio.com/#/",
-      "https://stremio-addons.net/"
-    ]
-  },
-  {
     "title": "Anime-Planet",
     "url": "https://www.anime-planet.com/",
     "category": "Manga / Anime",
@@ -949,22 +950,6 @@
     ]
   },
   {
-    "title": "01fmovies",
-    "url": "https://ww1.01fmovies.com/index.html",
-    "category": "Streaming",
-    "urls": [
-      "https://ww1.01fmovies.com/index.html"
-    ]
-  },
-  {
-    "title": "NullFlix",
-    "url": "https://v0-nullflix.vercel.app/",
-    "category": "Streaming",
-    "urls": [
-      "https://v0-nullflix.vercel.app/"
-    ]
-  },
-  {
     "title": "MX Player",
     "url": "https://www.mxplayer.in/",
     "category": "Streaming",
@@ -987,23 +972,6 @@
     "urls": [
       "https://www.zee5.com/"
     ]
-  },
-  {
-    "title": "Soap2Day",
-    "url": "https://ww25.soap2day.day/soap2day-r26n8/",
-    "category": "Streaming",
-    "urls": [
-      "https://ww25.soap2day.day/soap2day-r26n8/"
-    ]
-  },
-  {
-    "title": "Netflix Mirror",
-    "url": "https://m.netflixmirror.com/home",
-    "urls": [
-      "https://m.netflixmirror.com/home",
-      "https://net22.cc/home"
-    ],
-    "category": "Streaming"
   },
   {
     "title": "Store.app",
@@ -1061,14 +1029,6 @@
     "category": "Streaming",
     "urls": [
       "https://globetv.app/"
-    ]
-  },
-  {
-    "title": "CineHD",
-    "url": "https://cinehd.cc/home",
-    "category": "Streaming",
-    "urls": [
-      "https://cinehd.cc/home"
     ]
   },
   {
