@@ -357,7 +357,8 @@ const UI = {
       // Header
       const header = document.createElement('div');
       header.className = 'category-header';
-      header.innerHTML = `<div class="category-title">${cat} <span style="font-size:0.8em;opacity:0.5;font-weight:400;margin-left:8px">${grouped[cat].length}</span></div>`;
+      const catIcon = CAT_ICONS[cat] || '📦';
+      header.innerHTML = `<div class="category-title">${catIcon} ${cat} <span style="font-size:0.8em;opacity:0.5;font-weight:400;margin-left:8px">${grouped[cat].length}</span></div>`;
       header.onclick = () => section.classList.toggle('collapsed');
 
       // Grid
