@@ -1,5 +1,13 @@
 [
   {
+    "title": "AdGuard DNS",
+    "url": "https://adguard-dns.io/en/dashboard/",
+    "urls": [
+      "adguard-dns.io/en/dashboard/"
+    ],
+    "category": "Privacy & Security 🔐"
+  },
+  {
     "title": "Tango",
     "url": "https://app.tangoapp.dev",
     "urls": ["https://app.tangoapp.dev"],
