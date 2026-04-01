@@ -5,7 +5,39 @@
     "urls": [
       "adguard-dns.io/en/dashboard/"
     ],
-    "category": "Privacy & Security 🔐"
+    "category": "Privacy & Security"
+  },
+  {
+    "title": "Distro Finder",
+    "url": "https://distro-finder.com/",
+    "urls": [
+      "distro-finder.com"
+    ],
+    "category": "Linux"
+  },
+  {
+    "title": "Claude AI",
+    "url": "https://claude.ai/",
+    "urls": [
+      "claude.ai"
+    ],
+    "category": "AI"
+  },
+  {
+    "title": "OpenClaw",
+    "url": "https://openclaw.ai/",
+    "urls": [
+      "openclaw.ai"
+    ],
+    "category": "AI"
+  },
+  {
+    "title": "Folio Playground",
+    "url": "https://folio-playground.pages.dev/",
+    "urls": [
+      "folio-playground.pages.dev"
+    ],
+    "category": "Tools"
   },
   {
     "title": "Tango",
