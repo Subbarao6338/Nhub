@@ -26,8 +26,8 @@
   },
   {
     "title": "AdGuard DNS",
-    "url": "https://adguard-dns.io/en/dashboard/statistics/query",
-    "urls": ["https://adguard-dns.io/en/dashboard/"],
+    "url": "https://adguard-dns.io/en/welcome.html",
+    "urls": ["https://adguard-dns.io/en/welcome.html"],
     "category": "Privacy & Security"
   },
   {
