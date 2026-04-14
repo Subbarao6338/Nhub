@@ -10,10 +10,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="URL Hub">
-  <link rel="apple-touch-icon" href="urlhub.png">
-  <link rel="icon" href="urlhub.png">
+  <link rel="apple-touch-icon" href="assets/favicon.svg">
+  <link rel="icon" href="assets/favicon.svg">
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 
@@ -97,6 +97,14 @@
           <span class="material-icons">blur_off</span>
           <span>Solid Mode</span>
         </button>
+        <button class="pill" onclick="PageTools.toggleShowStats()" id="settings-stats-btn">
+          <span class="material-icons">analytics</span>
+          <span>Show Counts</span>
+        </button>
+        <button class="pill" onclick="PageTools.toggleAurora()" id="settings-aurora-btn">
+          <span class="material-icons">auto_awesome</span>
+          <span>Aurora BG</span>
+        </button>
       </div>
       <div class="pill-group" id="color-palette" style="margin-top: 15px;">
         <button class="color-pill" style="background: #6366f1;" data-color="indigo" onclick="PageTools.setColor('indigo')" title="Indigo"></button>
@@ -109,6 +117,10 @@
         <button class="color-pill" style="background: #ec4899;" data-color="pink" onclick="PageTools.setColor('pink')" title="Pink"></button>
         <button class="color-pill" style="background: #8b5cf6;" data-color="purple" onclick="PageTools.setColor('purple')" title="Purple"></button>
         <button class="color-pill" style="background: #7c3aed;" data-color="violet" onclick="PageTools.setColor('violet')" title="Violet"></button>
+        <button class="color-pill" style="background: #84cc16;" data-color="lime" onclick="PageTools.setColor('lime')" title="Lime"></button>
+        <button class="color-pill" style="background: #0ea5e9;" data-color="sky" onclick="PageTools.setColor('sky')" title="Sky"></button>
+        <button class="color-pill" style="background: #f43f5e;" data-color="rose" onclick="PageTools.setColor('rose')" title="Rose"></button>
+        <button class="color-pill" style="background: #475569;" data-color="slate" onclick="PageTools.setColor('slate')" title="Slate"></button>
         <button class="color-pill" style="background: #000000;" data-color="black" onclick="PageTools.setColor('black')" title="Black"></button>
       </div>
     </div>
@@ -223,8 +235,8 @@
   </div>
 
   <!-- Inline JSON data (Fallback) -->
-  <script src="links.json" type="application/json" id="data"></script>
-  <script src="hub.js"></script>
+  <script src="data/links.json" type="application/json" id="data"></script>
+  <script src="js/hub.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
