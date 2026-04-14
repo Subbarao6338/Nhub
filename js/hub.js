@@ -9,54 +9,15 @@ const STATE = {
   isCompact: localStorage.getItem('hub_compact') === 'true',
   hideUrls: localStorage.getItem('hub_hide_urls') === 'true',
   disableGlass: localStorage.getItem('hub_disable_glass') === 'true',
+  showStats: localStorage.getItem('hub_show_stats') !== 'false',
+  enableAurora: localStorage.getItem('hub_enable_aurora') !== 'false',
   accentColor: localStorage.getItem('hub_accent_color') || 'indigo',
   isDropdownOpen: false,
   isModalOpen: false,
   currentLink: null
 };
 
-const CAT_ICONS = {
-  "All": "home",
-  "Pinned": "push_pin",
-  "Govt.": "account_balance",
-  "Privacy & Security": "security",
-  "Network": "lan",
-
-  "AI": "psychology",
-  "Tools": "construction",
-  "Utilities": "settings",
-
-  "Productivity": "rocket_launch",
-  "Personal": "person",
-
-  "Media": "movie",
-  "Streaming": "live_tv",
-  "Manga / Anime": "auto_awesome",
-  "Music": "music_note",
-  "Games": "sports_esports",
-
-  "Shopping": "shopping_cart",
-  "Banking / Finance": "payments",
-
-  "Email": "email",
-  "Storage": "cloud",
-  "Hosting": "dns",
-
-  "Google": "language",
-  "Search": "search",
-
-  "Social": "forum",
-  "News": "newspaper",
-  "Jobs": "work",
-
-  "Android": "android",
-  "Linux": "terminal",
-  "Windows": "window",
-  "Coding": "code",
-
-  "Travel": "flight",
-  "Web apps": "language"
-};
+let CAT_ICONS = {};
 
 const Utils = {
   getHostname(urlStr) {
@@ -141,11 +102,24 @@ const Utils = {
 
 // ============= CORE LOGIC =============
 const Core = {
-  init() {
-    this.loadData().then(() => {
-      UI.init();
-      PageTools.init();
-    });
+  async init() {
+    await this.loadCategories();
+    await this.loadData();
+    UI.init();
+    PageTools.init();
+  },
+
+  async loadCategories() {
+    try {
+      const res = await fetch('data/categories.json');
+      if (res.ok) {
+        CAT_ICONS = await res.json();
+      }
+    } catch (e) {
+      console.error("Failed to load categories", e);
+      // Fallback or empty object
+      CAT_ICONS = { "All": "home", "Pinned": "push_pin" };
+    }
   },
 
   async loadData() {
@@ -187,11 +161,11 @@ const Core = {
       // Try fetching the external file first
       let raw = [];
       try {
-        const res = await fetch(`links.json?t=${new Date().getTime()}`);
+        const res = await fetch(`data/links.json?t=${new Date().getTime()}`);
         if (res.ok) raw = await res.json();
       } catch (fetchErr) {
-        console.warn("Could not fetch links.json", fetchErr);
-        // alert("Failed to fetch links.json: " + fetchErr.message);
+        console.warn("Could not fetch data/links.json", fetchErr);
+        // alert("Failed to fetch data/links.json: " + fetchErr.message);
       }
 
       try {
@@ -315,9 +289,12 @@ const UI = {
 
     document.getElementById('search-clear').addEventListener('click', () => {
       const searchInput = document.getElementById('search');
+      const searchContainer = document.getElementById('search-container');
       searchInput.value = '';
       STATE.searchQuery = '';
-      searchInput.focus();
+      searchContainer.classList.remove('active');
+      document.body.classList.remove('search-active');
+      searchInput.blur();
       this.render();
     });
 
@@ -454,12 +431,12 @@ const UI = {
              <div class="pill ${STATE.activeCategory === 'All' ? 'active' : ''}" onclick="UI.setCategory('All')">
                 <span class="material-icons">home</span>
                 <span>All Tools</span>
-                <span class="count">${STATE.links.length}</span>
+                ${STATE.showStats ? `<span class="count">${STATE.links.length}</span>` : ''}
              </div>
              <div class="pill ${STATE.activeCategory === 'Pinned' ? 'active' : ''}" onclick="UI.setCategory('Pinned')">
                 <span class="material-icons">push_pin</span>
                 <span>Pinned</span>
-                <span class="count">${STATE.pinnedIds.length}</span>
+                ${STATE.showStats ? `<span class="count">${STATE.pinnedIds.length}</span>` : ''}
              </div>
              ${allCats.map(cat => {
       const count = stats[cat] || 0;
@@ -468,7 +445,7 @@ const UI = {
                  <div class="pill ${STATE.activeCategory === cat ? 'active' : ''}" onclick="UI.setCategory('${cat}')">
                     <span class="material-icons">${icon}</span>
                     <span>${cat}</span>
-                    <span class="count">${count}</span>
+                    ${STATE.showStats ? `<span class="count">${count}</span>` : ''}
                  </div>`;
     }).join('')}
          </div>
@@ -566,7 +543,7 @@ const UI = {
         <div class="category-title">
           <span class="material-icons">${catIcon}</span>
           ${cat}
-          <span class="count">${grouped[cat].length}</span>
+          ${STATE.showStats ? `<span class="count">${grouped[cat].length}</span>` : ''}
         </div>
         <span class="material-icons expand-icon">expand_more</span>
       `;
@@ -989,6 +966,7 @@ const PageTools = {
     this.applyColor();
     this.applyCompact();
     this.applyGlass();
+    this.applyAurora();
   },
 
   toggleDarkMode() {
@@ -1053,6 +1031,26 @@ const PageTools = {
     else document.body.classList.remove('no-glass');
   },
 
+  toggleShowStats() {
+    STATE.showStats = !STATE.showStats;
+    localStorage.setItem('hub_show_stats', STATE.showStats);
+    this.updateSettingsUI();
+    UI.renderBreadcrumb();
+    UI.render();
+  },
+
+  toggleAurora() {
+    STATE.enableAurora = !STATE.enableAurora;
+    localStorage.setItem('hub_enable_aurora', STATE.enableAurora);
+    this.applyAurora();
+    this.updateSettingsUI();
+  },
+
+  applyAurora() {
+    if (STATE.enableAurora) document.body.classList.remove('no-aurora');
+    else document.body.classList.add('no-aurora');
+  },
+
   updateSettingsUI() {
     const themeBtn = document.getElementById('settings-theme-btn');
     const themeIcon = document.getElementById('settings-theme-icon');
@@ -1088,6 +1086,18 @@ const PageTools = {
       // Toggle button text/state shows if glass is DISABLED
       if (STATE.disableGlass) glassBtn.classList.add('active');
       else glassBtn.classList.remove('active');
+    }
+
+    const statsBtn = document.getElementById('settings-stats-btn');
+    if (statsBtn) {
+      if (STATE.showStats) statsBtn.classList.add('active');
+      else statsBtn.classList.remove('active');
+    }
+
+    const auroraBtn = document.getElementById('settings-aurora-btn');
+    if (auroraBtn) {
+      if (STATE.enableAurora) auroraBtn.classList.add('active');
+      else auroraBtn.classList.remove('active');
     }
 
     // Update color pills
