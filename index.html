@@ -36,23 +36,11 @@
             <button id="search-clear" class="search-clear-btn" title="Clear Search">✕</button>
           </div>
           <!-- Page Tools merged here -->
-          <div class="fab-container" id="fab-container">
-            <div class="fab-menu">
-              <button class="fab-item" data-label="Add Tool" onclick="UI.openModal('modal-add')">+</button>
-              <button class="fab-item" data-label="Export Data" onclick="Tools.exportData()">↓</button>
-              <label class="fab-item" data-label="Import Data">
-                ↑
-                <input type="file" accept="application/json" onchange="Tools.importData(this)" />
-              </label>
-              <button class="fab-item" data-label="Reset Dashboard" onclick="Tools.resetData()">↺</button>
-              <button id="theme-toggle" onclick="PageTools.toggleDarkMode()" title="Toggle Dark Mode">🌙</button>
-              <button id="about-toggle" onclick="UI.openAboutModal()" title="About">
-            <span class="material-icons">info</span>
+          <!-- Settings Toggle -->
+          <button id="settings-toggle" class="icon-btn" onclick="UI.openModal('modal-settings')" title="Settings">
+            <span class="material-icons">settings</span>
           </button>
-            </div>
-            <button class="fab" onclick="UI.toggleFab()" title="Menu">☰</button>
-          </div>
-          
+
         </div>
       </header>
 
@@ -65,6 +53,71 @@
 
   <!-- Modals -->
   <div id="modal-overlay" class="modal-overlay" style="display:none;"></div>
+
+  <!-- Settings Modal -->
+  <div id="modal-settings" class="modal" style="display:none;">
+    <h2>Settings</h2>
+
+    <div class="settings-section">
+      <h3>Appearance</h3>
+      <div class="pill-group">
+        <button class="pill" onclick="PageTools.toggleDarkMode()" id="settings-theme-btn">
+          <span class="material-icons" id="settings-theme-icon">dark_mode</span>
+          <span id="settings-theme-text">Dark Mode</span>
+        </button>
+      </div>
+      <div class="pill-group" id="color-palette" style="margin-top: 15px;">
+        <button class="color-pill" style="background: #6366f1;" data-color="indigo" onclick="PageTools.setColor('indigo')" title="Indigo"></button>
+        <button class="color-pill" style="background: #3b82f6;" data-color="blue" onclick="PageTools.setColor('blue')" title="Blue"></button>
+        <button class="color-pill" style="background: #06b6d4;" data-color="cyan" onclick="PageTools.setColor('cyan')" title="Cyan"></button>
+        <button class="color-pill" style="background: #10b981;" data-color="green" onclick="PageTools.setColor('green')" title="Green"></button>
+        <button class="color-pill" style="background: #eab308;" data-color="yellow" onclick="PageTools.setColor('yellow')" title="Yellow"></button>
+        <button class="color-pill" style="background: #f59e0b;" data-color="orange" onclick="PageTools.setColor('orange')" title="Orange"></button>
+        <button class="color-pill" style="background: #ef4444;" data-color="red" onclick="PageTools.setColor('red')" title="Red"></button>
+        <button class="color-pill" style="background: #ec4899;" data-color="pink" onclick="PageTools.setColor('pink')" title="Pink"></button>
+        <button class="color-pill" style="background: #8b5cf6;" data-color="purple" onclick="PageTools.setColor('purple')" title="Purple"></button>
+        <button class="color-pill" style="background: #7c3aed;" data-color="violet" onclick="PageTools.setColor('violet')" title="Violet"></button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Management</h3>
+      <div class="pill-group">
+        <button class="pill" onclick="UI.openModal('modal-add')">
+          <span class="material-icons">add</span> Add Tool
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Data</h3>
+      <div class="pill-group">
+        <button class="pill" onclick="Tools.exportData()">
+          <span class="material-icons">download</span> Export
+        </button>
+        <label class="pill" style="cursor: pointer;">
+          <span class="material-icons">upload</span> Import
+          <input type="file" accept="application/json" onchange="Tools.importData(this)" style="display:none;">
+        </label>
+        <button class="pill" style="color: #ef4444;" onclick="Tools.resetData()">
+          <span class="material-icons">refresh</span> Reset
+        </button>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h3>Information</h3>
+      <div class="pill-group">
+        <button class="pill" onclick="UI.openAboutModal()">
+          <span class="material-icons">info</span> About URL Hub
+        </button>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" onclick="UI.closeModal()">Close</button>
+    </div>
+  </div>
 
   <!-- URL Selection Modal -->
   <div id="modal-url-selection" class="modal" style="display:none;">
@@ -150,4 +203,3 @@
 
 
 </html>
-

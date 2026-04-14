@@ -5,6 +5,7 @@ const STATE = {
   activeCategory: 'All', // 'All' or specific category name
   searchQuery: '',
   isDarkMode: localStorage.getItem('hub_theme') === 'dark',
+  accentColor: localStorage.getItem('hub_accent_color') || 'indigo',
   isDropdownOpen: false,
   isModalOpen: false,
   currentLink: null
@@ -276,6 +277,12 @@ const UI = {
           document.body.classList.remove('search-active');
         }
       }
+
+      // Close dropdown if clicking outside
+      if (!e.target.closest('.breadcrumb-nav')) {
+        STATE.isDropdownOpen = false;
+        this.renderBreadcrumb();
+      }
     });
 
     document.getElementById('search').addEventListener('input', (e) => {
@@ -291,33 +298,16 @@ const UI = {
       this.render();
     });
 
-    // Close Dropdown on outside click
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.breadcrumb-nav')) {
-        STATE.isDropdownOpen = false;
-        this.renderBreadcrumb();
-      }
-    });
 
-    // Close modal or FAB on outside click
+    // Close modal on outside click
     document.getElementById('modal-overlay').addEventListener('click', () => {
       this.closeModal();
-      this.closeFab();
-    });
-
-    // Close FAB on body click (if not clicking FAB)
-    document.addEventListener('click', (e) => {
-      const fabContainer = document.getElementById('fab-container');
-      if (fabContainer && !fabContainer.contains(e.target)) {
-        this.closeFab();
-      }
     });
 
     // Global Keyboard Listeners
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         this.closeModal();
-        this.closeFab();
         this.closeAboutModal();
 
         // Close search if active and empty
@@ -628,13 +618,19 @@ const UI = {
 
   // Modal Handling
   openModal(id) {
-    this.closeFab();
     document.getElementById(id).style.display = 'block';
     document.getElementById('modal-overlay').style.display = 'block';
     STATE.isModalOpen = true;
+
+    if (id === 'modal-settings') {
+      PageTools.updateSettingsUI();
+    }
+
     // Populate Datalist for categories
     const dl = document.getElementById('category-list');
-    dl.innerHTML = Object.keys(Core.getStats()).map(c => `<option value="${c}">`).join('');
+    if (dl) {
+      dl.innerHTML = Object.keys(Core.getStats()).map(c => `<option value="${c}">`).join('');
+    }
   },
 
   openUrlSelectionModal(link) {
@@ -729,20 +725,6 @@ const UI = {
     this.renderBreadcrumb(); // Update counts
   },
 
-  // FAB Speed Dial
-  toggleFab() {
-    const container = document.getElementById('fab-container');
-    const fab = container.querySelector('.fab');
-    container.classList.toggle('active');
-    fab.classList.toggle('active');
-  },
-
-  closeFab() {
-    const container = document.getElementById('fab-container');
-    const fab = container.querySelector('.fab');
-    container.classList.remove('active');
-    fab.classList.remove('active');
-  },
 
   // Add URL field for alternative URLs
   addUrlField(value = '') {
@@ -880,21 +862,56 @@ const Tools = {
 const PageTools = {
   init() {
     this.applyTheme();
+    this.applyColor();
   },
 
   toggleDarkMode() {
     STATE.isDarkMode = !STATE.isDarkMode;
     localStorage.setItem('hub_theme', STATE.isDarkMode ? 'dark' : 'light');
     this.applyTheme();
+    this.updateSettingsUI();
+  },
+
+  setColor(color) {
+    STATE.accentColor = color;
+    localStorage.setItem('hub_accent_color', color);
+    this.applyColor();
+    this.updateSettingsUI();
   },
 
   applyTheme() {
     document.documentElement.setAttribute('data-theme', STATE.isDarkMode ? 'dark' : 'light');
-    const themeBtn = document.getElementById('theme-toggle');
+  },
+
+  applyColor() {
+    document.documentElement.setAttribute('data-color', STATE.accentColor);
+  },
+
+  updateSettingsUI() {
+    const themeBtn = document.getElementById('settings-theme-btn');
+    const themeIcon = document.getElementById('settings-theme-icon');
+    const themeText = document.getElementById('settings-theme-text');
+
     if (themeBtn) {
-      themeBtn.innerHTML = STATE.isDarkMode ? '☀️' : '🌙';
-      themeBtn.title = STATE.isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+      if (STATE.isDarkMode) {
+        themeBtn.classList.add('active');
+        themeIcon.textContent = 'light_mode';
+        themeText.textContent = 'Light Mode';
+      } else {
+        themeBtn.classList.remove('active');
+        themeIcon.textContent = 'dark_mode';
+        themeText.textContent = 'Dark Mode';
+      }
     }
+
+    // Update color pills
+    document.querySelectorAll('.color-pill').forEach(pill => {
+      if (pill.getAttribute('data-color') === STATE.accentColor) {
+        pill.classList.add('active');
+      } else {
+        pill.classList.remove('active');
+      }
+    });
   },
 
   cleanPage() {
