@@ -6,6 +6,9 @@ const STATE = {
   activeCategory: 'All', // 'All' or specific category name
   searchQuery: '',
   isDarkMode: localStorage.getItem('hub_theme') === 'dark' || (localStorage.getItem('hub_theme') === null && window.matchMedia('(prefers-color-scheme: dark)').matches),
+  isCompact: localStorage.getItem('hub_compact') === 'true',
+  hideUrls: localStorage.getItem('hub_hide_urls') === 'true',
+  disableGlass: localStorage.getItem('hub_disable_glass') === 'true',
   accentColor: localStorage.getItem('hub_accent_color') || 'indigo',
   isDropdownOpen: false,
   isModalOpen: false,
@@ -282,13 +285,9 @@ const UI = {
     document.getElementById('search-toggle').addEventListener('click', (e) => {
       e.stopPropagation();
       const isActive = searchContainer.classList.toggle('active');
-      const toggleBtn = document.getElementById('search-toggle');
       document.body.classList.toggle('search-active', isActive);
       if (isActive) {
         searchInput.focus();
-        toggleBtn.innerHTML = '<span class="material-icons">close</span>';
-      } else {
-        toggleBtn.innerHTML = '<span class="material-icons">search</span>';
       }
     });
 
@@ -355,11 +354,9 @@ const UI = {
         e.preventDefault();
         const searchContainer = document.getElementById('search-container');
         const searchInput = document.getElementById('search');
-        const toggleBtn = document.getElementById('search-toggle');
         searchContainer.classList.add('active');
         document.body.classList.add('search-active');
         searchInput.focus();
-        toggleBtn.innerHTML = '<span class="material-icons">close</span>';
       }
     });
 
@@ -670,12 +667,14 @@ const UI = {
         const fallbackBadge = hasMultipleUrls ? `<span class="fallback-badge" title="${urls.length} URLs available: ${urls.join(', ')}">${urls.length} URLs</span>` : '';
 
         const isPinned = STATE.pinnedIds.includes(link.id);
+        const urlHtml = STATE.hideUrls ? '' : `<div class="card-url">${Utils.getHostname(link.url)}${fallbackBadge}</div>`;
+
         card.innerHTML = `
           <div class="card-header">
             ${imgHtml}
             <div class="card-title">${this.highlightText(link.title, STATE.searchQuery)}</div>
           </div>
-          <div class="card-url">${Utils.getHostname(link.url)}${fallbackBadge}</div>
+          ${urlHtml}
 
           <div class="card-actions" onclick="event.stopPropagation()">
              <button class="pin-btn ${isPinned ? 'active' : ''}" onclick="UI.togglePin('${link.id}', event)" title="${isPinned ? 'Unpin' : 'Pin to Top'}">
@@ -988,6 +987,8 @@ const PageTools = {
   init() {
     this.applyTheme();
     this.applyColor();
+    this.applyCompact();
+    this.applyGlass();
   },
 
   toggleDarkMode() {
@@ -1017,6 +1018,41 @@ const PageTools = {
     }
   },
 
+  toggleCompact() {
+    STATE.isCompact = !STATE.isCompact;
+    localStorage.setItem('hub_compact', STATE.isCompact);
+    this.applyCompact();
+    this.updateSettingsUI();
+    UI.render();
+  },
+
+  applyCompact() {
+    const container = document.getElementById('content');
+    if (container) {
+      if (STATE.isCompact) container.classList.add('compact');
+      else container.classList.remove('compact');
+    }
+  },
+
+  toggleHideUrls() {
+    STATE.hideUrls = !STATE.hideUrls;
+    localStorage.setItem('hub_hide_urls', STATE.hideUrls);
+    this.updateSettingsUI();
+    UI.render();
+  },
+
+  toggleGlass() {
+    STATE.disableGlass = !STATE.disableGlass;
+    localStorage.setItem('hub_disable_glass', STATE.disableGlass);
+    this.applyGlass();
+    this.updateSettingsUI();
+  },
+
+  applyGlass() {
+    if (STATE.disableGlass) document.body.classList.add('no-glass');
+    else document.body.classList.remove('no-glass');
+  },
+
   updateSettingsUI() {
     const themeBtn = document.getElementById('settings-theme-btn');
     const themeIcon = document.getElementById('settings-theme-icon');
@@ -1032,6 +1068,26 @@ const PageTools = {
         themeIcon.textContent = 'dark_mode';
         themeText.textContent = 'Dark Mode';
       }
+    }
+
+    // Update other toggles
+    const compactBtn = document.getElementById('settings-compact-btn');
+    if (compactBtn) {
+      if (STATE.isCompact) compactBtn.classList.add('active');
+      else compactBtn.classList.remove('active');
+    }
+
+    const hideUrlsBtn = document.getElementById('settings-hide-urls-btn');
+    if (hideUrlsBtn) {
+      if (STATE.hideUrls) hideUrlsBtn.classList.add('active');
+      else hideUrlsBtn.classList.remove('active');
+    }
+
+    const glassBtn = document.getElementById('settings-glass-btn');
+    if (glassBtn) {
+      // Toggle button text/state shows if glass is DISABLED
+      if (STATE.disableGlass) glassBtn.classList.add('active');
+      else glassBtn.classList.remove('active');
     }
 
     // Update color pills

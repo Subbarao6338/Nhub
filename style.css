@@ -372,6 +372,16 @@ body::after {
   display: none;
 }
 
+.desktop-only {
+  display: flex;
+}
+
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none;
+  }
+}
+
 .top-bar {
   height: 72px;
   padding: 0 2rem;
@@ -400,8 +410,8 @@ body::after {
 .app-logo {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
-  object-fit: cover;
+  color: var(--primary);
+  filter: drop-shadow(0 0 8px var(--primary-glow));
 }
 
 .page-title {
@@ -688,7 +698,7 @@ body::after {
   background: var(--surface);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--border);
+  border: 1px solid rgba(var(--primary-rgb), 0.2);
   border-radius: var(--radius-xl);
   /* Material Expressive */
   padding: 1.5rem;
@@ -1722,4 +1732,71 @@ body::after {
   .tools-container {
     padding: 1.5rem;
   }
+}
+/* Compact View Styles */
+.tools-container.compact {
+  padding: 1.5rem;
+}
+
+.tools-container.compact .category-grid {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.tools-container.compact .card {
+  padding: 1rem;
+  border-radius: var(--radius-lg);
+}
+
+.tools-container.compact .card-icon {
+  width: 36px;
+  height: 36px;
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.tools-container.compact .card-title {
+  font-size: 1rem;
+}
+
+.tools-container.compact .category-section {
+  margin-bottom: 2rem;
+}
+
+.tools-container.compact .category-header {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1.25rem;
+}
+
+/* Solid Mode (No Glass) */
+body.no-glass,
+body.no-glass::before,
+body.no-glass::after {
+  animation: none !important;
+}
+
+body.no-glass .top-bar,
+body.no-glass .tools-container,
+body.no-glass .card,
+body.no-glass .modal,
+body.no-glass .pill,
+body.no-glass .icon-btn,
+body.no-glass .search-container,
+body.no-glass .category-dropdown {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.no-glass[data-theme="light"] {
+  --surface: #ffffff;
+  --surface-hover: #f8fafc;
+  --surface-solid: #ffffff;
+  --sidebar-bg: #f1f5f9;
+}
+
+body.no-glass[data-theme="dark"] {
+  --surface: #1e293b;
+  --surface-hover: #334155;
+  --surface-solid: #0f172a;
+  --sidebar-bg: #0f172a;
 }
