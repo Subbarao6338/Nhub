@@ -15,7 +15,9 @@ const STATE = {
   accentColor: localStorage.getItem('hub_accent_color') || 'indigo',
   isDropdownOpen: false,
   isModalOpen: false,
-  currentLink: null
+  currentLink: null,
+  primaryColor: '',
+  encodedColor: ''
 };
 
 let CAT_ICONS = {};
@@ -429,12 +431,12 @@ const UI = {
          </span>
 
          <div class="category-dropdown ${STATE.isDropdownOpen ? 'active' : ''}">
-             <div class="pill ${STATE.activeCategory === 'All' ? 'active' : ''}" onclick="UI.setCategory('All')">
+             <div class="pill ${STATE.activeCategory === 'All' ? 'active' : ''}" onclick="UI.setCategory('All')" aria-label="Show All Tools">
                 <span class="material-icons">home</span>
                 <span>All Tools</span>
                 ${STATE.showStats ? `<span class="count">${STATE.links.length}</span>` : ''}
              </div>
-             <div class="pill ${STATE.activeCategory === 'Pinned' ? 'active' : ''}" onclick="UI.setCategory('Pinned')">
+             <div class="pill ${STATE.activeCategory === 'Pinned' ? 'active' : ''}" onclick="UI.setCategory('Pinned')" aria-label="Show Pinned Tools">
                 <span class="material-icons">push_pin</span>
                 <span>Pinned</span>
                 ${STATE.showStats ? `<span class="count">${STATE.pinnedIds.length}</span>` : ''}
@@ -443,7 +445,7 @@ const UI = {
       const count = stats[cat] || 0;
       const icon = CAT_ICONS[cat] || 'folder';
       return `
-                 <div class="pill ${STATE.activeCategory === cat ? 'active' : ''}" onclick="UI.setCategory('${cat}')">
+                 <div class="pill ${STATE.activeCategory === cat ? 'active' : ''}" onclick="UI.setCategory('${cat}')" aria-label="Category: ${cat}">
                     <span class="material-icons">${icon}</span>
                     <span>${cat}</span>
                     ${STATE.showStats ? `<span class="count">${count}</span>` : ''}
@@ -456,16 +458,16 @@ const UI = {
 
     if (mainNav) {
       let mainHtml = `
-        <div class="pill ${STATE.activeCategory === 'All' ? 'active' : ''}" onclick="UI.setCategory('All')">
+        <div class="pill ${STATE.activeCategory === 'All' ? 'active' : ''}" onclick="UI.setCategory('All')" aria-label="Show All Tools">
           <span class="material-icons">home</span> <span>All</span>
         </div>
-        <div class="pill ${STATE.activeCategory === 'Pinned' ? 'active' : ''}" onclick="UI.setCategory('Pinned')">
+        <div class="pill ${STATE.activeCategory === 'Pinned' ? 'active' : ''}" onclick="UI.setCategory('Pinned')" aria-label="Show Pinned Tools">
           <span class="material-icons">push_pin</span> <span>Pinned</span>
         </div>
         ${allCats.map(cat => {
         const icon = CAT_ICONS[cat] || 'folder';
         return `
-            <div class="pill ${STATE.activeCategory === cat ? 'active' : ''}" onclick="UI.setCategory('${cat}')">
+            <div class="pill ${STATE.activeCategory === cat ? 'active' : ''}" onclick="UI.setCategory('${cat}')" aria-label="Category: ${cat}">
               <span class="material-icons">${icon}</span> <span>${cat}</span>
             </div>
           `;
@@ -486,6 +488,10 @@ const UI = {
     STATE.isDropdownOpen = false;
     this.renderBreadcrumb();
     this.render();
+
+    // Scroll to top of content container
+    const container = document.getElementById('content');
+    if (container) container.scrollTop = 0;
   },
 
   highlightText(text, query) {
@@ -496,20 +502,35 @@ const UI = {
 
   render() {
     const container = document.getElementById('content');
-    container.innerHTML = '';
+    if (!container) return;
+
+    // Ensure we have primary colors cached
+    if (!STATE.primaryColor) {
+      STATE.primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+      STATE.encodedColor = encodeURIComponent(STATE.primaryColor);
+    }
 
     // Filter Logic
     let filtered = STATE.links.filter(l => {
-      const matchesSearch = !STATE.searchQuery ||
-        l.title.toLowerCase().includes(STATE.searchQuery) ||
-        l.category.toLowerCase().includes(STATE.searchQuery) ||
-        (l.urls || [l.url]).some(u => u.toLowerCase().includes(STATE.searchQuery));
-
+      let matchesSearch = !STATE.searchQuery;
       let matchesCat = false;
-      if (STATE.searchQuery) matchesCat = true; // Global search
-      else if (STATE.activeCategory === 'All') matchesCat = true;
-      else if (STATE.activeCategory === 'Pinned') matchesCat = STATE.pinnedIds.includes(l.id);
-      else matchesCat = l.category === STATE.activeCategory;
+
+      if (STATE.searchQuery) {
+        if (STATE.searchQuery.startsWith('cat:')) {
+          const targetCat = STATE.searchQuery.replace('cat:', '').trim().toLowerCase();
+          matchesSearch = l.category.toLowerCase() === targetCat;
+          matchesCat = true; // category match is implied by the search prefix
+        } else {
+          matchesSearch = l.title.toLowerCase().includes(STATE.searchQuery) ||
+            l.category.toLowerCase().includes(STATE.searchQuery) ||
+            (l.urls || [l.url]).some(u => u.toLowerCase().includes(STATE.searchQuery));
+          matchesCat = true; // Global search overrides active category
+        }
+      } else {
+        if (STATE.activeCategory === 'All') matchesCat = true;
+        else if (STATE.activeCategory === 'Pinned') matchesCat = STATE.pinnedIds.includes(l.id);
+        else matchesCat = l.category === STATE.activeCategory;
+      }
 
       return matchesSearch && matchesCat;
     });
@@ -527,10 +548,7 @@ const UI = {
       return;
     }
 
-    // Category Emoji Map for Fallback
-    // Used global CAT_ICONS instead
-    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-    const encodedColor = encodeURIComponent(primaryColor);
+    const fragment = document.createDocumentFragment();
 
     cats.forEach(cat => {
       const section = document.createElement('div');
@@ -625,7 +643,7 @@ const UI = {
             const hostname = Utils.getHostname(link.url);
             const src = userIcon || `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
             const fallback = CAT_ICONS[cat] || "link";
-            const fallbackSvg = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='${encodedColor}'><text y='.9em' font-size='80' font-family='Material Icons'>${fallback}</text></svg>`;
+            const fallbackSvg = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='${STATE.encodedColor}'><text y='.9em' font-size='80' font-family='Material Icons'>${fallback}</text></svg>`;
 
             // Optional Icon Logic
             const optionalIcon = link.optional_icon ? `'${link.optional_icon}'` : 'null';
@@ -683,8 +701,11 @@ const UI = {
 
       section.appendChild(header);
       section.appendChild(grid);
-      container.appendChild(section);
+      fragment.appendChild(section);
     });
+
+    container.innerHTML = '';
+    container.appendChild(fragment);
   },
 
   // Modal Handling
@@ -1036,9 +1057,11 @@ const PageTools = {
   applyColor() {
     document.documentElement.setAttribute('data-color', STATE.accentColor);
     // Update theme-color meta tag
-    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
-    if (primaryColor) {
-      document.querySelector('meta[name="theme-color"]').setAttribute('content', primaryColor);
+    STATE.primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+    STATE.encodedColor = encodeURIComponent(STATE.primaryColor);
+    if (STATE.primaryColor) {
+      const metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) metaTheme.setAttribute('content', STATE.primaryColor);
     }
   },
 
@@ -1167,37 +1190,6 @@ const PageTools = {
         pill.classList.remove('active');
       }
     });
-  },
-
-  cleanPage() {
-    // "Zap Ads" logic from original tools
-    const selectors = ['iframe', '[class*="ad"]', '[id*="ad"]', '[class*="popup"]', '[class*="overlay"]'];
-    let count = 0;
-    const protectedIds = ['site-viewer', 'modal-overlay'];
-    selectors.forEach(sel => {
-      document.querySelectorAll(sel).forEach(el => {
-        if (!protectedIds.includes(el.id)) { el.remove(); count++; }
-      });
-    });
-    alert(`Cleaned ${count} elements.`);
-  },
-
-  openSite(url) {
-    const viewer = document.getElementById('site-viewer');
-    const frame = document.getElementById('content-frame');
-    if (viewer && frame) {
-      frame.src = url;
-      viewer.style.display = 'block';
-    }
-  },
-
-  closeSite() {
-    const viewer = document.getElementById('site-viewer');
-    const frame = document.getElementById('content-frame');
-    if (viewer && frame) {
-      viewer.style.display = 'none';
-      frame.src = '';
-    }
   }
 };
 

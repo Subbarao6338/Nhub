@@ -38,20 +38,20 @@
         </div>
         <div class="top-actions">
           <div class="search-container" id="search-container">
-            <button id="search-toggle" class="icon-btn" title="Search">
+            <button id="search-toggle" class="icon-btn" title="Search" aria-label="Toggle Search">
               <span class="material-icons">search</span>
             </button>
-            <input type="search" id="search" placeholder="Search tools..." />
-            <button id="search-clear" class="search-clear-btn" title="Clear Search">
+            <input type="search" id="search" placeholder="Search tools... [/]" aria-label="Search tools" />
+            <button id="search-clear" class="search-clear-btn" title="Clear Search" aria-label="Clear Search">
               <span class="material-icons">close</span>
             </button>
           </div>
           <!-- Page Tools merged here -->
-          <button id="desktop-add-tool" class="icon-btn desktop-only" onclick="UI.openModal('modal-settings', 'add')" title="Add Tool">
+          <button id="desktop-add-tool" class="icon-btn desktop-only" onclick="UI.openModal('modal-settings', 'add')" title="Add Tool" aria-label="Add Tool">
             <span class="material-icons">add</span>
           </button>
           <!-- Settings Toggle -->
-          <button id="settings-toggle" class="icon-btn" onclick="UI.openModal('modal-settings')" title="Settings">
+          <button id="settings-toggle" class="icon-btn" onclick="UI.openModal('modal-settings')" title="Settings" aria-label="Open Settings">
             <span class="material-icons">settings</span>
           </button>
 
@@ -93,31 +93,31 @@
       <div class="settings-section">
         <h3>Appearance</h3>
         <div class="pill-group">
-          <button class="pill" onclick="PageTools.toggleDarkMode()" id="settings-theme-btn">
+          <button class="pill" onclick="PageTools.toggleDarkMode()" id="settings-theme-btn" aria-label="Toggle Dark Mode">
             <span class="material-icons" id="settings-theme-icon">dark_mode</span>
             <span id="settings-theme-text">Dark Mode</span>
           </button>
-          <button class="pill" onclick="PageTools.toggleCompact()" id="settings-compact-btn">
+          <button class="pill" onclick="PageTools.toggleCompact()" id="settings-compact-btn" aria-label="Toggle Compact View">
             <span class="material-icons">view_module</span>
             <span>Compact View</span>
           </button>
-          <button class="pill" onclick="PageTools.toggleHideUrls()" id="settings-hide-urls-btn">
+          <button class="pill" onclick="PageTools.toggleHideUrls()" id="settings-hide-urls-btn" aria-label="Toggle Hide URLs">
             <span class="material-icons">link_off</span>
             <span>Hide URLs</span>
           </button>
-          <button class="pill" onclick="PageTools.toggleHideIcons()" id="settings-hide-icons-btn">
+          <button class="pill" onclick="PageTools.toggleHideIcons()" id="settings-hide-icons-btn" aria-label="Toggle Hide Icons">
             <span class="material-icons">hide_image</span>
             <span>Hide Icons</span>
           </button>
-          <button class="pill" onclick="PageTools.toggleGlass()" id="settings-glass-btn">
+          <button class="pill" onclick="PageTools.toggleGlass()" id="settings-glass-btn" aria-label="Toggle Solid Mode">
             <span class="material-icons">blur_off</span>
             <span>Solid Mode</span>
           </button>
-          <button class="pill" onclick="PageTools.toggleShowStats()" id="settings-stats-btn">
+          <button class="pill" onclick="PageTools.toggleShowStats()" id="settings-stats-btn" aria-label="Toggle Show Counts">
             <span class="material-icons">analytics</span>
             <span>Show Counts</span>
           </button>
-          <button class="pill" onclick="PageTools.toggleAurora()" id="settings-aurora-btn">
+          <button class="pill" onclick="PageTools.toggleAurora()" id="settings-aurora-btn" aria-label="Toggle Aurora Background">
             <span class="material-icons">auto_awesome</span>
             <span>Aurora BG</span>
           </button>
@@ -144,14 +144,14 @@
       <div class="settings-section">
         <h3>Data Management</h3>
         <div class="pill-group">
-          <button class="pill" onclick="Tools.exportData()">
+          <button class="pill" onclick="Tools.exportData()" aria-label="Export Data Backup">
             <span class="material-icons">download</span> Export Backup
           </button>
-          <label class="pill" style="cursor: pointer;">
+          <label class="pill" style="cursor: pointer;" aria-label="Import Data Backup">
             <span class="material-icons">upload</span> Import Backup
             <input type="file" accept="application/json" onchange="Tools.importData(this)" style="display:none;">
           </label>
-          <button class="pill" style="color: #ef4444;" onclick="Tools.resetData()">
+          <button class="pill" style="color: #ef4444;" onclick="Tools.resetData()" aria-label="Reset Dashboard to Default">
             <span class="material-icons">refresh</span> Reset Dashboard
           </button>
         </div>
@@ -220,12 +220,6 @@
     </div>
   </div>
 
-
-  <!-- Iframe viewer -->
-  <div id="site-viewer" style="display:none;">
-    <button id="close-site" onclick="PageTools.closeSite()">Close</button>
-    <iframe id="content-frame"></iframe>
-  </div>
 
   <!-- Inline JSON data (Fallback) -->
   <script src="data/links.json" type="application/json" id="data"></script>
