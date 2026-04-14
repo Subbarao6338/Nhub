@@ -1,6 +1,6 @@
 # URL Hub
 
-![URL Hub Screenshot](./urlhub.png)
+![URL Hub Screenshot](assets/urlhub.png)
 
 A personal dashboard to organize and access your favorite websites.
 
