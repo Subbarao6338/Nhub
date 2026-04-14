@@ -55,7 +55,26 @@ self.addEventListener('fetch', (event) => {
                           url.origin.includes('fonts.googleapis.com') ||
                           url.origin.includes('fonts.gstatic.com');
 
-  if (!isCachableOrigin) return;
+  if (!isCachableOrigin) {
+    // For external images (favicons), try to serve from cache if network fails
+    if (event.request.destination === 'image') {
+      event.respondWith(
+        caches.match(event.request).then((cachedResponse) => {
+          return cachedResponse || fetch(event.request).then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              const cacheCopy = networkResponse.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
+            }
+            return networkResponse;
+          }).catch(() => {
+            // If both fail, return the fallback favicon
+            return caches.match('./assets/favicon.svg');
+          });
+        })
+      );
+    }
+    return;
+  }
 
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) => {
@@ -68,8 +87,10 @@ self.addEventListener('fetch', (event) => {
           return networkResponse;
         }).catch((err) => {
           console.warn('Service Worker: Network fetch failed for', event.request.url, err);
-          // If network fails and there's no cached version, we could return a fallback here
-          // but for now we just return the undefined cachedResponse which leads to normal browser fail
+          // For images, if network fails and no cache, try fallback
+          if (event.request.destination === 'image') {
+            return cachedResponse || caches.match('./assets/favicon.svg');
+          }
           return cachedResponse;
         });
 
