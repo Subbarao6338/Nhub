@@ -3,67 +3,136 @@
  * Includes Telugu Panchangam, Password Generator, Unit Converter, etc.
  */
 
+const TOOLS = [
+    { id: 'panchangam', title: 'Telugu Panchangam', icon: 'auto_awesome', category: 'Astrology' },
+    { id: 'password-gen', title: 'Password Generator', icon: 'lock', category: 'Utilities' },
+    { id: 'unit-converter', title: 'Unit Converter', icon: 'straighten', category: 'Converters' },
+    { id: 'json-formatter', title: 'JSON Formatter', icon: 'code', category: 'Developer Tools' },
+    { id: 'base64-converter', title: 'Base64 Converter', icon: 'transform', category: 'Converters' },
+    { id: 'text-utils', title: 'Text Utilities', icon: 'font_download', category: 'Utilities' },
+    { id: 'age-calculator', title: 'Age Calculator', icon: 'cake', category: 'Utilities' },
+    { id: 'bmi-calculator', title: 'BMI Calculator', icon: 'monitor_weight', category: 'Utilities' }
+];
+
 const Toolbox = {
     // --- UI Logic ---
     open(toolId) {
-        const modal = document.getElementById('modal-toolbox');
-        const container = document.getElementById('toolbox-content');
-        if (!modal || !container) return;
-
-        STATE.isModalOpen = true;
-        modal.style.display = 'block';
-        document.getElementById('modal-overlay').style.display = 'block';
-
-        this.renderTool(toolId);
+        UI.setView('tool', toolId);
     },
 
     close() {
-        const modal = document.getElementById('modal-toolbox');
-        if (modal) modal.style.display = 'none';
-        document.getElementById('modal-overlay').style.display = 'none';
-        STATE.isModalOpen = false;
-        document.getElementById('toolbox-content').innerHTML = '';
+        UI.setView('hub');
     },
 
-    renderTool(toolId) {
-        const container = document.getElementById('toolbox-content');
+    renderHome(container) {
+        container.innerHTML = '';
+        const grouped = {};
+        TOOLS.forEach(t => {
+            (grouped[t.category] ||= []).push(t);
+        });
+
+        const fragment = document.createDocumentFragment();
+
+        // Header for Toolbox Page
+        const toolboxHeader = document.createElement('div');
+        toolboxHeader.className = 'toolbox-page-header';
+        toolboxHeader.innerHTML = `
+            <h2>Toolbox</h2>
+            <p>Collection of useful offline utilities.</p>
+        `;
+        fragment.appendChild(toolboxHeader);
+
+        Object.keys(grouped).sort().forEach(cat => {
+            const section = document.createElement('div');
+            section.className = 'category-section';
+
+            const catIcon = this.getCategoryIcon(cat);
+
+            section.innerHTML = `
+                <div class="category-header">
+                    <div class="category-title">
+                        <span class="material-icons">${catIcon}</span>
+                        ${cat}
+                    </div>
+                </div>
+                <div class="category-grid">
+                    ${grouped[cat].map(tool => `
+                        <div class="card" onclick="UI.setView('tool', '${tool.id}')">
+                            <div class="card-header">
+                                <div class="card-icon" style="display:grid;place-items:center;background:var(--bg)">
+                                    <span class="material-icons">${tool.icon}</span>
+                                </div>
+                                <div class="card-title">${tool.title}</div>
+                            </div>
+                            <div class="card-url" style="color: var(--primary); font-weight: 500;">Internal Tool</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            fragment.appendChild(section);
+        });
+        container.appendChild(fragment);
+    },
+
+    getCategoryIcon(cat) {
+        const icons = {
+            'Astrology': 'nightlight_round',
+            'Utilities': 'construction',
+            'Converters': 'sync_alt',
+            'Developer Tools': 'terminal'
+        };
+        return icons[cat] || 'folder';
+    },
+
+    renderTool(container, toolId) {
+        container.innerHTML = `
+            <div class="tool-view-header">
+                <button class="pill" onclick="UI.setView('toolbox')" style="padding: 8px 16px;">
+                    <span class="material-icons">arrow_back</span> Back to Toolbox
+                </button>
+                <h2 id="toolbox-title" style="margin: 0;">Tool</h2>
+            </div>
+            <div id="toolbox-content-inner" class="tool-container-inner"></div>
+        `;
+
+        const innerContainer = document.getElementById('toolbox-content-inner');
         const titleEl = document.getElementById('toolbox-title');
 
         switch (toolId) {
             case 'panchangam':
                 titleEl.textContent = 'Telugu Panchangam (Birth Details)';
-                this.renderPanchangam(container);
+                this.renderPanchangam(innerContainer);
                 break;
             case 'password-gen':
                 titleEl.textContent = 'Password Generator';
-                this.renderPasswordGen(container);
+                this.renderPasswordGen(innerContainer);
                 break;
             case 'unit-converter':
                 titleEl.textContent = 'Unit Converter';
-                this.renderUnitConverter(container);
+                this.renderUnitConverter(innerContainer);
                 break;
             case 'json-formatter':
                 titleEl.textContent = 'JSON Formatter';
-                this.renderJsonFormatter(container);
+                this.renderJsonFormatter(innerContainer);
                 break;
             case 'base64-converter':
                 titleEl.textContent = 'Base64 Converter';
-                this.renderBase64Converter(container);
+                this.renderBase64Converter(innerContainer);
                 break;
             case 'text-utils':
                 titleEl.textContent = 'Text Utilities';
-                this.renderTextUtils(container);
+                this.renderTextUtils(innerContainer);
                 break;
             case 'age-calculator':
                 titleEl.textContent = 'Age Calculator';
-                this.renderAgeCalculator(container);
+                this.renderAgeCalculator(innerContainer);
                 break;
             case 'bmi-calculator':
                 titleEl.textContent = 'BMI Calculator';
-                this.renderBmiCalculator(container);
+                this.renderBmiCalculator(innerContainer);
                 break;
             default:
-                container.innerHTML = '<p>Tool not found.</p>';
+                innerContainer.innerHTML = '<p>Tool not found.</p>';
         }
     },
 
