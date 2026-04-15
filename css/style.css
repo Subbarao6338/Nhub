@@ -249,6 +249,7 @@ body.no-aurora::after {
 
 .tab-item .material-icons {
   font-size: 20px;
+  line-height: 1;
 }
 
 .tab-item:hover {
@@ -547,6 +548,11 @@ body.no-aurora::after {
   padding: 6px 10px;
   border-radius: 10px;
   white-space: nowrap;
+}
+
+.breadcrumb-item .material-icons,
+.breadcrumb-active .material-icons {
+  line-height: 1;
 }
 
 .breadcrumb-item:hover {
@@ -1299,6 +1305,7 @@ body.no-aurora::after {
 
 .pill .material-icons {
   font-size: 20px;
+  line-height: 1;
 }
 
 .pill:hover {

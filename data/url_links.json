@@ -2299,5 +2299,61 @@
     "toolId": "bmi-calculator",
     "category": "Toolbox",
     "icon": "monitor_weight"
+  },
+  {
+    "title": "Hammer",
+    "url": "internal://hammer",
+    "isInternal": true,
+    "toolId": "hammer",
+    "category": "Toolbox",
+    "icon": "construction"
+  },
+  {
+    "title": "Pliers",
+    "url": "internal://pliers",
+    "isInternal": true,
+    "toolId": "pliers",
+    "category": "Toolbox",
+    "icon": "construction"
+  },
+  {
+    "title": "Utility Knife",
+    "url": "internal://utility-knife",
+    "isInternal": true,
+    "toolId": "utility-knife",
+    "category": "Toolbox",
+    "icon": "construction"
+  },
+  {
+    "title": "Wrench",
+    "url": "internal://wrench",
+    "isInternal": true,
+    "toolId": "wrench",
+    "category": "Toolbox",
+    "icon": "build"
+  },
+  {
+    "title": "Screwdrivers",
+    "url": "internal://screwdrivers",
+    "isInternal": true,
+    "toolId": "screwdrivers",
+    "category": "Toolbox",
+    "icon": "build"
+  },
+  {
+    "title": "Tape Measure",
+    "url": "internal://tape-measure",
+    "isInternal": true,
+    "toolId": "tape-measure",
+    "category": "Toolbox",
+    "icon": "straighten"
+  },
+  {
+    "title": "Level",
+    "url": "internal://level",
+    "isInternal": true,
+    "toolId": "level",
+    "category": "Toolbox",
+    "icon": "square_foot"
   }
 ]

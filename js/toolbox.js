@@ -11,7 +11,14 @@ const TOOLS = [
     { id: 'base64-converter', title: 'Base64 Converter', icon: 'transform', category: 'Converters' },
     { id: 'text-utils', title: 'Text Utilities', icon: 'font_download', category: 'Utilities' },
     { id: 'age-calculator', title: 'Age Calculator', icon: 'cake', category: 'Utilities' },
-    { id: 'bmi-calculator', title: 'BMI Calculator', icon: 'monitor_weight', category: 'Utilities' }
+    { id: 'bmi-calculator', title: 'BMI Calculator', icon: 'monitor_weight', category: 'Utilities' },
+    { id: 'hammer', title: 'Hammer', icon: 'construction', category: 'Hand Tools' },
+    { id: 'pliers', title: 'Pliers', icon: 'construction', category: 'Hand Tools' },
+    { id: 'utility-knife', title: 'Utility Knife', icon: 'construction', category: 'Hand Tools' },
+    { id: 'wrench', title: 'Wrench', icon: 'build', category: 'Hand Tools' },
+    { id: 'screwdrivers', title: 'Screwdrivers', icon: 'build', category: 'Hand Tools' },
+    { id: 'tape-measure', title: 'Tape Measure', icon: 'straighten', category: 'Measurement' },
+    { id: 'level', title: 'Level', icon: 'square_foot', category: 'Measurement' }
 ];
 
 const Toolbox = {
@@ -110,7 +117,9 @@ const Toolbox = {
             'Astrology': 'nightlight_round',
             'Utilities': 'construction',
             'Converters': 'sync_alt',
-            'Developer Tools': 'terminal'
+            'Developer Tools': 'terminal',
+            'Hand Tools': 'construction',
+            'Measurement': 'straighten'
         };
         return icons[cat] || 'folder';
     },
@@ -146,6 +155,15 @@ const Toolbox = {
                 break;
             case 'bmi-calculator':
                 this.renderBmiCalculator(innerContainer);
+                break;
+            case 'hammer':
+            case 'pliers':
+            case 'utility-knife':
+            case 'wrench':
+            case 'screwdrivers':
+            case 'tape-measure':
+            case 'level':
+                innerContainer.innerHTML = `<h3>${toolId.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}</h3><p>This tool is coming soon!</p>`;
                 break;
             default:
                 innerContainer.innerHTML = '<p>Tool not found.</p>';
