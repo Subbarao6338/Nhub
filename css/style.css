@@ -413,6 +413,9 @@ body.no-aurora::after {
   align-items: center;
   gap: 12px;
   margin-right: auto;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .app-logo {
@@ -420,6 +423,7 @@ body.no-aurora::after {
   height: 40px;
   color: var(--primary);
   filter: drop-shadow(0 0 8px var(--primary-glow));
+  pointer-events: auto;
 }
 
 .page-title {
@@ -428,6 +432,7 @@ body.no-aurora::after {
   letter-spacing: -0.03em;
   color: var(--on-surface);
   margin-right: 1rem;
+  pointer-events: auto;
 }
 
 /* Breadcrumb Styles */
