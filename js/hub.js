@@ -366,6 +366,39 @@ const UI = {
   _tooltipInitialized: false,
   _eventsInitialized: false,
 
+  setView(view, toolId = null) {
+    STATE.currentView = view;
+    STATE.activeToolId = toolId;
+    this.render();
+    this.renderBreadcrumb();
+
+    // Close dropdowns and search on view change
+    STATE.isDropdownOpen = false;
+    const searchContainer = document.getElementById('search-container');
+    const searchInput = document.getElementById('search');
+    if (searchContainer && searchInput) {
+      searchContainer.classList.remove('active');
+      document.body.classList.remove('search-active');
+      searchInput.value = '';
+      STATE.searchQuery = '';
+    }
+
+    // Hide/Show main nav based on view
+    const mainNav = document.getElementById('main-category-nav');
+    if (mainNav) {
+      mainNav.style.display = view === 'hub' ? 'flex' : 'none';
+    }
+
+    // Update search visibility
+    const topActions = document.querySelector('.top-actions');
+    if (topActions) {
+       const searchBox = document.getElementById('search-container');
+       if (searchBox) {
+         searchBox.style.display = view === 'hub' ? 'flex' : 'none';
+       }
+    }
+  },
+
   init() {
     this.renderBreadcrumb();
     this.render();
@@ -373,6 +406,25 @@ const UI = {
 
     if (this._eventsInitialized) return;
     this._eventsInitialized = true;
+
+    // Logo click listener (Back to Hub)
+    const logoContainer = document.querySelector('.logo-container');
+    if (logoContainer) {
+      logoContainer.addEventListener('click', (e) => {
+        // Prevent triggering during long press
+        if (e.detail === 1) {
+           this.setView('hub');
+        }
+      });
+    }
+
+    // Toolbox Toggle
+    const toolboxBtn = document.getElementById('toolbox-toggle');
+    if (toolboxBtn) {
+      toolboxBtn.addEventListener('click', () => {
+        this.setView('toolbox');
+      });
+    }
 
     // Event Listeners
     // Search Toggle
@@ -673,6 +725,9 @@ const UI = {
 
   renderBreadcrumb() {
     const nav = document.getElementById('breadcrumb-nav');
+    if (nav) {
+      nav.style.display = STATE.currentView === 'hub' ? 'flex' : 'none';
+    }
     const mainNav = document.getElementById('main-category-nav');
     const stats = Core.getStats();
 
@@ -761,6 +816,19 @@ const UI = {
     const container = document.getElementById('content');
     if (!container) return;
 
+    // Dispatch based on view
+    if (STATE.currentView === 'toolbox') {
+      if (typeof Toolbox !== 'undefined') Toolbox.renderHome(container);
+      return;
+    } else if (STATE.currentView === 'tool' && STATE.activeToolId) {
+      if (typeof Toolbox !== 'undefined') Toolbox.renderTool(container, STATE.activeToolId);
+      return;
+    }
+
+    this.renderHub(container);
+  },
+
+  renderHub(container) {
     // Ensure we have primary colors cached
     if (!STATE.primaryColor) {
       STATE.primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
