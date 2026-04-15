@@ -211,15 +211,16 @@ body.no-aurora::after {
 /* Tab Bar Styles */
 .tab-bar {
   display: flex;
-  gap: 1.5rem;
-  padding: 0 1rem;
+  gap: 1rem;
+  padding: 0 1.5rem;
   z-index: 1500;
   overflow: visible;
+  align-items: stretch;
 }
 
 .tab-group {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 0.75rem;
   background: var(--sidebar-bg);
   backdrop-filter: blur(var(--glass-blur));
@@ -236,13 +237,14 @@ body.no-aurora::after {
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  padding: 8px 16px;
-  border-radius: 12px;
+  padding: 10px 18px;
+  border-radius: 16px;
   transition: all 0.2s;
   color: var(--text-muted);
   font-weight: 600;
   user-select: none;
   position: relative;
+  line-height: 1;
 }
 
 .tab-item .material-icons {
@@ -521,8 +523,8 @@ body.no-aurora::after {
 .breadcrumb-nav {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 1.1rem;
+  gap: 4px;
+  font-size: 1rem;
   font-weight: 500;
   color: var(--text-muted);
   position: relative;
@@ -530,17 +532,21 @@ body.no-aurora::after {
 }
 
 .breadcrumb-separator {
-  color: var(--border);
+  color: inherit;
+  font-size: 1.2rem !important;
+  opacity: 0.5;
+  user-select: none;
 }
 
 .breadcrumb-item {
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
 }
 
 .breadcrumb-item:hover {
@@ -1251,6 +1257,12 @@ body.no-aurora::after {
 .btn-primary {
   background: var(--primary);
   color: white;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
   box-shadow: 0 4px 12px var(--primary-glow);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1258,6 +1270,7 @@ body.no-aurora::after {
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px var(--primary-glow);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Pill Styles for Settings */

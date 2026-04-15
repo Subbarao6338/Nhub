@@ -786,14 +786,19 @@ const UI = {
 
   renderToolboxBreadcrumb() {
     const nav = document.getElementById('toolbox-breadcrumb');
-    if (!nav || typeof Toolbox === 'undefined') return;
+    if (!nav || typeof Toolbox === 'undefined' || typeof TOOLS === 'undefined') return;
 
     const toolboxCats = [...new Set(TOOLS.map(t => t.category))].sort();
     const activeIcon = Toolbox.getCategoryIcon(STATE.activeToolboxCategory);
 
+    let activeTool = null;
+    if (STATE.activeToolId) {
+      activeTool = TOOLS.find(t => t.id === STATE.activeToolId);
+    }
+
     nav.innerHTML = `
-      <div style="position:relative">
-         <span class="breadcrumb-active breadcrumb-item" onclick="UI.toggleDropdown(event, 'toolbox')">
+      <div style="position:relative; display: flex; align-items: center;">
+         <span class="breadcrumb-item ${!activeTool ? 'breadcrumb-active' : ''}" onclick="UI.toggleDropdown(event, 'toolbox')">
             ${Utils.renderIcon(activeIcon)} ${STATE.activeToolboxCategory} <span class="material-icons" style="font-size:1.2rem;opacity:0.6">expand_more</span>
          </span>
          <div class="category-dropdown ${STATE.isDropdownOpen === 'toolbox' ? 'active' : ''}">
@@ -810,6 +815,12 @@ const UI = {
                  </div>`;
              }).join('')}
          </div>
+         ${activeTool ? `
+           <span class="material-icons breadcrumb-separator">chevron_right</span>
+           <span class="breadcrumb-active breadcrumb-item">
+             ${Utils.renderIcon(activeTool.icon)} ${activeTool.title}
+           </span>
+         ` : ''}
       </div>
     `;
   },
@@ -825,6 +836,7 @@ const UI = {
       STATE.activeCategory = cat;
     } else {
       STATE.activeToolboxCategory = cat;
+      STATE.activeToolId = null; // Clear active tool when changing category
     }
     STATE.isDropdownOpen = false;
     this.renderBreadcrumb();
