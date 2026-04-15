@@ -117,49 +117,34 @@ const Toolbox = {
 
     renderTool(container, toolId) {
         container.innerHTML = `
-            <div class="tool-view-header">
-                <button class="pill" onclick="UI.setView('toolbox')" style="padding: 8px 16px;">
-                    <span class="material-icons">arrow_back</span> Back to Toolbox
-                </button>
-                <h2 id="toolbox-title" style="margin: 0;">Tool</h2>
-            </div>
             <div id="toolbox-content-inner" class="tool-container-inner"></div>
         `;
 
         const innerContainer = document.getElementById('toolbox-content-inner');
-        const titleEl = document.getElementById('toolbox-title');
 
         switch (toolId) {
             case 'panchangam':
-                titleEl.textContent = 'Telugu Panchangam (Birth Details)';
                 this.renderPanchangam(innerContainer);
                 break;
             case 'password-gen':
-                titleEl.textContent = 'Password Generator';
                 this.renderPasswordGen(innerContainer);
                 break;
             case 'unit-converter':
-                titleEl.textContent = 'Unit Converter';
                 this.renderUnitConverter(innerContainer);
                 break;
             case 'json-formatter':
-                titleEl.textContent = 'JSON Formatter';
                 this.renderJsonFormatter(innerContainer);
                 break;
             case 'base64-converter':
-                titleEl.textContent = 'Base64 Converter';
                 this.renderBase64Converter(innerContainer);
                 break;
             case 'text-utils':
-                titleEl.textContent = 'Text Utilities';
                 this.renderTextUtils(innerContainer);
                 break;
             case 'age-calculator':
-                titleEl.textContent = 'Age Calculator';
                 this.renderAgeCalculator(innerContainer);
                 break;
             case 'bmi-calculator':
-                titleEl.textContent = 'BMI Calculator';
                 this.renderBmiCalculator(innerContainer);
                 break;
             default:
