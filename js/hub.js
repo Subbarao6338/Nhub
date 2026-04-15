@@ -131,6 +131,27 @@ const Utils = {
       // Give a small delay before trying fallback
       setTimeout(tryNext, 300);
     }
+  },
+
+  // Robust Icon Renderer for both Material Icons and Emojis
+  renderIcon(icon, className = '') {
+    if (!icon) return '';
+
+    // If it starts with http, /, or looks like a data URL, it's an image
+    if (icon.startsWith('http') || icon.startsWith('/') || icon.startsWith('data:')) {
+      return `<img src="${icon}" class="${className}" loading="lazy" onerror="this.src='assets/favicon.svg'">`;
+    }
+
+    // Material icons are alphanumeric with underscores (e.g., 'home', '3d_rotation')
+    // and do not contain periods (which URLs/files would have)
+    const isMaterialIcon = /^[a-z0-9_]+$/.test(icon);
+    if (isMaterialIcon) {
+      return `<span class="material-icons ${className}">${icon}</span>`;
+    }
+
+    // Fallback: treat as emoji or plain text
+    // Wrap it in a span with system font to prevent Material Icons from trying to render it as a ligature
+    return `<span class="${className}" style="font-family: system-ui, -apple-system, sans-serif; font-style: normal;">${icon}</span>`;
   }
 };
 
@@ -209,42 +230,30 @@ const Core = {
 
       if (STATE.currentProfile === 'Personal') {
         const [data1, data2] = await Promise.all([
-          fetch(`data/${PROFILES['Default'].links}?t=${new Date().getTime()}`).then(r => r.ok ? r.json() : []).catch(() => []),
-          fetch(`data/${PROFILES['Private'].links}?t=${new Date().getTime()}`).then(r => r.ok ? r.json() : []).catch(() => [])
+          fetch(`data/${PROFILES['Default'].links}`).then(r => r.ok ? r.json() : []).catch(() => []),
+          fetch(`data/${PROFILES['Private'].links}`).then(r => r.ok ? r.json() : []).catch(() => [])
         ]);
         raw = [...data1, ...data2];
         // Deduplicate by URL
         const seen = new Set();
         raw = raw.filter(item => {
-          const val = item.url;
-          if (seen.has(val)) return false;
+          const val = item.url || (item.urls && item.urls[0]);
+          if (!val || seen.has(val)) return false;
           seen.add(val);
           return true;
         });
       } else {
         try {
-          const res = await fetch(`data/${profileCfg.links}?t=${new Date().getTime()}`);
+          const res = await fetch(`data/${profileCfg.links}`);
           if (res.ok) raw = await res.json();
         } catch (fetchErr) {
           console.warn(`Could not fetch data/${profileCfg.links}`, fetchErr);
         }
       }
 
-      try {
-        if ((!raw || raw.length === 0) && STATE.currentProfile === 'Default') {
-          // Fallback to embedded (only for default)
-          const dataEl = document.getElementById("data");
-          if (dataEl && dataEl.textContent.trim()) {
-            raw = JSON.parse(dataEl.textContent);
-          }
-        }
-      } catch (e) {
-        alert("Error parsing fallback data: " + e.message);
-      }
-
       if (!Array.isArray(raw) || raw.length === 0) {
         if (STATE.currentProfile !== 'Private') {
-          alert(`No links found for ${STATE.currentProfile} profile.`);
+          console.warn(`No links found for ${STATE.currentProfile} profile.`);
         }
         STATE.links = [];
         this.saveData();
@@ -255,10 +264,11 @@ const Core = {
         let category = item.category === "Government Services" ? "Govt." : (item.category || "Others");
         // Support both single url and multiple urls
         let urls = item.urls || [item.url];
+        let primaryUrl = item.url || urls[0];
         return {
           id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2, 9),
           title: item.title,
-          url: item.url, // Keep primary URL for backward compatibility
+          url: primaryUrl, // Keep primary URL for backward compatibility
           urls: urls, // Store all URLs for fallback
           icon: item.icon || "",
           optional_icon: item.optional_icon || "",
@@ -489,7 +499,7 @@ const UI = {
     // Replace SVG with Material Icon for Private/Personal or update Default
     if (STATE.currentProfile === 'Default') {
       // Keep original SVG but ensure it's visible
-      if (logoEl.tagName === 'SPAN') {
+      if (logoEl && logoEl.tagName === 'SPAN') {
         logoContainer.innerHTML = `
           <svg class="app-logo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
             <circle cx="12" cy="12" r="10"></circle>
@@ -507,10 +517,17 @@ const UI = {
       }
     } else {
       logoContainer.innerHTML = `
-        <span class="material-icons app-logo" style="font-size: 40px; color: var(--primary); filter: drop-shadow(0 0 8px var(--primary-glow));">${icon}</span>
+        ${Utils.renderIcon(icon, 'app-logo')}
         <h1 class="page-title">URL Hub</h1>
         <nav id="breadcrumb-nav" class="breadcrumb-nav"></nav>
       `;
+      // Apply style to the span logo
+      const newLogo = logoContainer.querySelector('.app-logo');
+      if (newLogo && newLogo.tagName === 'SPAN') {
+        newLogo.style.fontSize = '40px';
+        newLogo.style.color = 'var(--primary)';
+        newLogo.style.filter = 'drop-shadow(0 0 8px var(--primary-glow))';
+      }
       this.renderBreadcrumb();
     }
   },
@@ -603,17 +620,17 @@ const UI = {
     let html = `
       <div style="position:relative">
          <span class="breadcrumb-active breadcrumb-item" onclick="UI.toggleDropdown(event)">
-            <span class="material-icons">${activeIcon}</span> ${STATE.activeCategory} <span class="material-icons" style="font-size:1.2rem;opacity:0.6">expand_more</span>
+            ${Utils.renderIcon(activeIcon)} ${STATE.activeCategory} <span class="material-icons" style="font-size:1.2rem;opacity:0.6">expand_more</span>
          </span>
 
          <div class="category-dropdown ${STATE.isDropdownOpen ? 'active' : ''}">
              <div class="pill ${STATE.activeCategory === 'All' ? 'active' : ''}" onclick="UI.setCategory('All')" aria-label="Show All Tools">
-                <span class="material-icons">home</span>
+                ${Utils.renderIcon('home')}
                 <span>All Tools</span>
                 ${STATE.showStats ? `<span class="count">${STATE.links.length}</span>` : ''}
              </div>
              <div class="pill ${STATE.activeCategory === 'Pinned' ? 'active' : ''}" onclick="UI.setCategory('Pinned')" aria-label="Show Pinned Tools">
-                <span class="material-icons">push_pin</span>
+                ${Utils.renderIcon('push_pin')}
                 <span>Pinned</span>
                 ${STATE.showStats ? `<span class="count">${STATE.pinnedIds.length}</span>` : ''}
              </div>
@@ -622,7 +639,7 @@ const UI = {
       const icon = CAT_ICONS[cat] || 'folder';
       return `
                  <div class="pill ${STATE.activeCategory === cat ? 'active' : ''}" onclick="UI.setCategory('${cat}')" aria-label="Category: ${cat}">
-                    <span class="material-icons">${icon}</span>
+                    ${Utils.renderIcon(icon)}
                     <span>${cat}</span>
                     ${STATE.showStats ? `<span class="count">${count}</span>` : ''}
                  </div>`;
@@ -635,16 +652,16 @@ const UI = {
     if (mainNav) {
       let mainHtml = `
         <div class="pill ${STATE.activeCategory === 'All' ? 'active' : ''}" onclick="UI.setCategory('All')" aria-label="Show All Tools">
-          <span class="material-icons">home</span> <span>All</span>
+          ${Utils.renderIcon('home')} <span>All</span>
         </div>
         <div class="pill ${STATE.activeCategory === 'Pinned' ? 'active' : ''}" onclick="UI.setCategory('Pinned')" aria-label="Show Pinned Tools">
-          <span class="material-icons">push_pin</span> <span>Pinned</span>
+          ${Utils.renderIcon('push_pin')} <span>Pinned</span>
         </div>
         ${allCats.map(cat => {
         const icon = CAT_ICONS[cat] || 'folder';
         return `
             <div class="pill ${STATE.activeCategory === cat ? 'active' : ''}" onclick="UI.setCategory('${cat}')" aria-label="Category: ${cat}">
-              <span class="material-icons">${icon}</span> <span>${cat}</span>
+              ${Utils.renderIcon(icon)} <span>${cat}</span>
             </div>
           `;
       }).join('')}
@@ -736,7 +753,7 @@ const UI = {
       const catIcon = CAT_ICONS[cat] || 'folder';
       header.innerHTML = `
         <div class="category-title">
-          <span class="material-icons">${catIcon}</span>
+          ${Utils.renderIcon(catIcon)}
           ${cat}
           ${STATE.showStats ? `<span class="count">${grouped[cat].length}</span>` : ''}
         </div>
