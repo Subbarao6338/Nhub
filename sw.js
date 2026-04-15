@@ -1,11 +1,11 @@
-const CACHE_NAME = 'url-hub-v5';
+const CACHE_NAME = 'url-hub-v6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './css/style.css',
   './js/hub.js',
-  './data/links.json',
-  './data/categories.json',
+  './data/url_links.json',
+  './data/url_cat.json',
   './assets/favicon.svg',
   './assets/urlhub.png',
   'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap',

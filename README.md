@@ -19,7 +19,7 @@ A personal dashboard to organize and access your favorite websites.
 ## Getting Started
 
 1. **Open the Dashboard**: Simply open `index.html` in your web browser.
-2. **Initial Data**: The app loads initial data from `links.json`.
+2. **Initial Data**: The app loads initial data from `data/url_links.json`.
 3. **Customize**: 
    - Click the **Add Link** button (if available in UI) or use the edit/delete buttons on cards to manage your tools.
    - Toggle the theme using the settings/theme button.
@@ -28,16 +28,17 @@ A personal dashboard to organize and access your favorite websites.
 ## File Structure
 
 - `index.html`: The main entry point for the application.
-- `hub.js`: Contains all the logic for the dashboard, including state management and UI rendering.
-- `style.css`: Styles for the application.
-- `links.json`: The default list of links used to populate the dashboard if no local data is found.
+- `js/hub.js`: Contains all the logic for the dashboard, including state management and UI rendering.
+- `css/style.css`: Styles for the application.
+- `data/url_links.json`: The default list of links used to populate the dashboard if no local data is found.
+- `data/url_cat.json`: The configuration for category icons.
 
 
 ## Customization
 
-You can manually edit `links.json` to change the default set of links that load for a new user (or if you clear your local storage).
+You can manually edit `data/url_links.json` to change the default set of links that load for a new user (or if you clear your local storage).
 
-Modify the `links.json` file with the following structure:
+Modify the `data/url_links.json` file with the following structure:
 
 ```json
 [
@@ -69,4 +70,4 @@ The application provides several customization options via the Settings modal:
 ### Data Management
 - **Export Backup**: Downloads your current link collection as a JSON file.
 - **Import Backup**: Restores your collection from a previously exported JSON file.
-- **Reset Dashboard**: Clears all local changes and restores the default set of links from `links.json`.
+- **Reset Dashboard**: Clears all local changes and restores the default set of links from `data/url_links.json`.

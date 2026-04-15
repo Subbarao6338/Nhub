@@ -150,8 +150,8 @@ const Core = {
 
       if (STATE.currentProfile === 'Personal') {
         const [cat1, cat2] = await Promise.all([
-          fetch('data/' + PROFILES['Default'].cat).then(r => r.json()),
-          fetch('data/' + PROFILES['Private'].cat).then(r => r.json())
+          fetch('data/' + PROFILES['Default'].cat).then(r => r.ok ? r.json() : {}).catch(() => ({})),
+          fetch('data/' + PROFILES['Private'].cat).then(r => r.ok ? r.json() : {}).catch(() => ({}))
         ]);
         categories = { ...cat1, ...cat2 };
       } else {
@@ -209,8 +209,8 @@ const Core = {
 
       if (STATE.currentProfile === 'Personal') {
         const [data1, data2] = await Promise.all([
-          fetch(`data/${PROFILES['Default'].links}?t=${new Date().getTime()}`).then(r => r.ok ? r.json() : []),
-          fetch(`data/${PROFILES['Private'].links}?t=${new Date().getTime()}`).then(r => r.ok ? r.json() : [])
+          fetch(`data/${PROFILES['Default'].links}?t=${new Date().getTime()}`).then(r => r.ok ? r.json() : []).catch(() => []),
+          fetch(`data/${PROFILES['Private'].links}?t=${new Date().getTime()}`).then(r => r.ok ? r.json() : []).catch(() => [])
         ]);
         raw = [...data1, ...data2];
         // Deduplicate by URL
@@ -261,6 +261,7 @@ const Core = {
           url: item.url, // Keep primary URL for backward compatibility
           urls: urls, // Store all URLs for fallback
           icon: item.icon || "",
+          optional_icon: item.optional_icon || "",
           category: category
         };
       });
@@ -560,8 +561,16 @@ const UI = {
         tooltip.style.display = 'block';
 
         const rect = target.getBoundingClientRect();
-        tooltip.style.top = (rect.top - tooltip.offsetHeight - 8) + 'px';
-        tooltip.style.left = (rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2)) + 'px';
+        let top = rect.top - tooltip.offsetHeight - 8;
+        let left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2);
+
+        // Boundary checks
+        if (top < 8) top = rect.bottom + 8;
+        if (left < 8) left = 8;
+        if (left + tooltip.offsetWidth > window.innerWidth - 8) left = window.innerWidth - tooltip.offsetWidth - 8;
+
+        tooltip.style.top = top + 'px';
+        tooltip.style.left = left + 'px';
       }
     });
 
@@ -1074,12 +1083,15 @@ const UI = {
       if (val && val !== primaryUrl) urls.push(val);
     });
 
+    const originalLink = id ? STATE.links.find(l => l.id === id) : null;
+
     const data = {
       title: document.getElementById('tool-title').value.trim(),
       url: primaryUrl,
       urls: urls, // Store all URLs
       icon: document.getElementById('tool-icon').value.trim(),
-      category: document.getElementById('tool-category').value.trim() || 'Others'
+      category: document.getElementById('tool-category').value.trim() || 'Others',
+      optional_icon: originalLink ? (originalLink.optional_icon || "") : ""
     };
 
     if (id) {
