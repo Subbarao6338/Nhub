@@ -436,20 +436,40 @@ const UI = {
     if (!logoContainer) return;
 
     let pressTimer;
+    let startX, startY;
+
     const startPress = (e) => {
       // Restrict to left click for mouse events
       if (e.type === 'mousedown' && e.button !== 0) return;
 
-      // Only trigger if clicking on the logo itself
-      if (!e.target.closest('.app-logo')) return;
+      // Only trigger if clicking on the logo or title
+      if (!e.target.closest('.app-logo') && !e.target.closest('.page-title')) return;
+
+      clearTimeout(pressTimer);
+
+      if (e.type === 'touchstart') {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }
 
       pressTimer = setTimeout(() => {
         this.openProfileModal();
-      }, 700);
+      }, 500);
     };
 
     const cancelPress = () => {
       clearTimeout(pressTimer);
+    };
+
+    const handleMove = (e) => {
+      if (e.type === 'touchmove') {
+        const moveX = e.touches[0].clientX;
+        const moveY = e.touches[0].clientY;
+        const dist = Math.sqrt(Math.pow(moveX - startX, 2) + Math.pow(moveY - startY, 2));
+        if (dist > 10) cancelPress();
+      } else {
+        cancelPress();
+      }
     };
 
     logoContainer.addEventListener('mousedown', startPress);
@@ -457,8 +477,15 @@ const UI = {
     logoContainer.addEventListener('mouseleave', cancelPress);
     logoContainer.addEventListener('touchstart', startPress, { passive: true });
     logoContainer.addEventListener('touchend', cancelPress);
-    logoContainer.addEventListener('touchmove', cancelPress);
+    logoContainer.addEventListener('touchmove', handleMove, { passive: true });
     logoContainer.addEventListener('touchcancel', cancelPress);
+
+    // Prevent default context menu on logo/title to allow long press
+    logoContainer.addEventListener('contextmenu', (e) => {
+      if (e.target.closest('.app-logo') || e.target.closest('.page-title')) {
+        e.preventDefault();
+      }
+    });
   },
 
   openProfileModal() {
