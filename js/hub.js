@@ -191,7 +191,7 @@ const Core = {
 
   async loadData() {
     const saved = Storage.getJson('links_v1', null);
-    if (saved) {
+    if (saved !== null) {
       try {
         STATE.links = saved;
         // Ensure IDs exist and migrate category name
@@ -207,9 +207,15 @@ const Core = {
           }
         });
         if (changed) this.saveData();
+
+        // Self-healing: If dashboard is empty and not yet successfully initialized, try migration
+        if (STATE.links.length === 0 && Storage.get('initialized') !== 'true') {
+          await this.migrateFromJSON();
+        }
       } catch (e) {
         console.error("Data load error", e);
         STATE.links = [];
+        await this.migrateFromJSON();
       }
     } else {
       // First load / Migration
@@ -252,11 +258,11 @@ const Core = {
       }
 
       if (!Array.isArray(raw) || raw.length === 0) {
-        if (STATE.currentProfile !== 'Private') {
-          console.warn(`No links found for ${STATE.currentProfile} profile.`);
-        }
+        console.warn(`No links found for ${STATE.currentProfile} profile.`);
+        // Ensure state is cleared but don't save empty state to storage to allow retry on next load
         STATE.links = [];
-        this.saveData();
+        UI.render();
+        UI.renderBreadcrumb();
         return;
       }
 
@@ -276,6 +282,7 @@ const Core = {
         };
       });
       this.saveData();
+      Storage.set('initialized', 'true');
       if (STATE.currentProfile !== 'Personal') {
         alert(`${STATE.currentProfile} links successfully updated from server!`);
       }
@@ -1348,8 +1355,11 @@ const Tools = {
   },
 
   resetData() {
-    if (confirm("This will reset your dashboard to the default list from links.json. Any local changes will be lost. Continue?")) {
+    const profile = STATE.currentProfile;
+    const filename = PROFILES[profile].links;
+    if (confirm(`This will reset your ${profile} dashboard to the default list from ${filename}. Any local changes will be lost. Continue?`)) {
       Storage.setJson('links_v1', null);
+      Storage.set('initialized', 'false');
       location.reload();
     }
   }
