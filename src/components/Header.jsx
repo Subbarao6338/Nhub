@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Header = ({ currentProfile, profiles, setView, onSettingsClick, onSearchToggle, searchActive, searchQuery, onSearchChange, onSearchClear, onLogoLongPress }) => {
+const Header = ({ currentProfile, profiles, currentTab, setView, onSettingsClick, onSearchToggle, searchActive, searchQuery, onSearchChange, onSearchClear, onLogoLongPress }) => {
   const profile = profiles.find(p => p.name === currentProfile) || { icon: 'inbox' };
 
   const [longPressTimer, setLongPressTimer] = React.useState(null);
@@ -32,7 +32,7 @@ const Header = ({ currentProfile, profiles, setView, onSettingsClick, onSearchTo
         onContextMenu={(e) => e.preventDefault()}
       >
         <span className="material-icons app-logo">
-          {currentProfile === 'Default' ? 'inbox' : profile.icon}
+          {currentProfile === 'Default' ? 'inbox' : (profile.icon || 'person')}
         </span>
         <h1 className="page-title">N Box</h1>
       </div>
@@ -44,7 +44,7 @@ const Header = ({ currentProfile, profiles, setView, onSettingsClick, onSearchTo
           <input
             type="search"
             id="search"
-            placeholder="Search Bookmarks or Toolbox... [/]"
+            placeholder={`Search ${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}... [/]`}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
           />

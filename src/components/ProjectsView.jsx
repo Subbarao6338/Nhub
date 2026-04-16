@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CategoryNav from './CategoryNav';
 
 const ProjectsView = ({ searchQuery, openInternally }) => {
   const [projects, setProjects] = useState([]);
@@ -19,12 +20,25 @@ const ProjectsView = ({ searchQuery, openInternally }) => {
   }, []);
 
   const filteredProjects = projects.filter(p => {
-    const matchesSearch = !searchQuery ||
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase());
+    let matchesSearch = true;
+    let matchesCat = true;
 
-    const matchesCat = activeCategory === 'All' || p.category === activeCategory;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      if (query.startsWith('cat:')) {
+        const catQuery = query.replace('cat:', '').trim();
+        matchesCat = p.category.toLowerCase().includes(catQuery);
+        matchesSearch = true;
+      } else {
+        matchesSearch = p.title.toLowerCase().includes(query) ||
+          p.description.toLowerCase().includes(query) ||
+          p.category.toLowerCase().includes(query);
+      }
+    }
+
+    if (!searchQuery || !searchQuery.toLowerCase().startsWith('cat:')) {
+      if (activeCategory !== 'All') matchesCat = p.category === activeCategory;
+    }
 
     return matchesSearch && matchesCat;
   });
@@ -66,20 +80,21 @@ const ProjectsView = ({ searchQuery, openInternally }) => {
     );
   }
 
+  const projectCategories = {};
+  Object.keys(stats).forEach(cat => {
+    projectCategories[cat] = 'folder';
+  });
+
   return (
     <>
-      <nav className="main-category-nav">
-        <div className={`pill ${activeCategory === 'All' ? 'active' : ''}`} onClick={() => setActiveCategory('All')}>
-          <span className="material-icons">home</span> <span>All</span>
-          <span className="count">{totalCount}</span>
-        </div>
-        {[...new Set(projects.map(p => p.category))].sort().map(cat => (
-          <div key={cat} className={`pill ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>
-            <span className="material-icons">folder</span> <span>{cat}</span>
-            <span className="count">{stats[cat]}</span>
-          </div>
-        ))}
-      </nav>
+      <CategoryNav
+        categories={projectCategories}
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+        showStats={true}
+        stats={stats}
+        totalCount={totalCount}
+      />
 
       <div className="toolbox-page-header">
         <h2>My Projects</h2>

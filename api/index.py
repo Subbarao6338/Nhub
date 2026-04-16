@@ -16,6 +16,7 @@ def get_db_connection():
     return conn
 
 def init_db():
+    db_existed = os.path.exists(DB_PATH)
     if not os.path.exists(os.path.dirname(DB_PATH)):
         os.makedirs(os.path.dirname(DB_PATH))
 
@@ -78,6 +79,22 @@ def init_db():
     cursor.execute("INSERT OR IGNORE INTO profiles (name, icon) VALUES ('Personal', 'person')")
 
     conn.commit()
+
+    # Auto-migrate if DB was just created or if it's empty
+    cursor.execute("SELECT COUNT(*) FROM links")
+    if cursor.fetchone()[0] == 0:
+        print("Database is empty. Attempting migration...")
+        try:
+            from scripts.migrate import migrate
+            # We need to change directory to root to let migrate script find data files
+            # or ensure migrate works with relative paths from where uvicorn is run.
+            # scripts/migrate.py uses 'data/...' paths.
+            migrate()
+        except ImportError:
+            print("Migration script not found.")
+        except Exception as e:
+            print(f"Migration failed: {e}")
+
     conn.close()
 
 # Pydantic Models

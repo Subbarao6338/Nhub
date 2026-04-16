@@ -3,25 +3,44 @@ import sqlite3
 import os
 import uuid
 
-DB_PATH = 'data/hub.db'
+DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'hub.db')
 
 def migrate():
     if not os.path.exists(DB_PATH):
-        print("Database not found. Please ensure it is initialized.")
-        return
+        # Try relative to current working directory if not found relative to script
+        cwd_db_path = os.path.join('data', 'hub.db')
+        if os.path.exists(cwd_db_path):
+            actual_db_path = cwd_db_path
+        else:
+            print(f"Database not found at {DB_PATH} or {cwd_db_path}. Please ensure it is initialized.")
+            return
+    else:
+        actual_db_path = DB_PATH
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(actual_db_path)
     cursor = conn.cursor()
 
     # Get profile IDs
     cursor.execute("SELECT id, name FROM profiles")
     profiles = {name: id for id, name in cursor.fetchall()}
 
+    # Helper to find data files
+    def get_data_path(filename):
+        # Try relative to script
+        path = os.path.join(os.path.dirname(__file__), '..', 'data', filename)
+        if os.path.exists(path):
+            return path
+        # Try relative to CWD
+        path = os.path.join('data', filename)
+        if os.path.exists(path):
+            return path
+        return None
+
     # Helper to migrate links
     def migrate_links(filename, profile_name):
-        filepath = os.path.join('data', filename)
-        if not os.path.exists(filepath):
-            print(f"File {filepath} not found.")
+        filepath = get_data_path(filename)
+        if not filepath:
+            print(f"File {filename} not found.")
             return
 
         profile_id = profiles.get(profile_name)
@@ -50,9 +69,9 @@ def migrate():
 
     # Helper to migrate categories
     def migrate_categories(filename, profile_name):
-        filepath = os.path.join('data', filename)
-        if not os.path.exists(filepath):
-            print(f"File {filepath} not found.")
+        filepath = get_data_path(filename)
+        if not filepath:
+            print(f"File {filename} not found.")
             return
 
         profile_id = profiles.get(profile_name)
@@ -71,9 +90,9 @@ def migrate():
 
     # Migrate Projects
     def migrate_projects():
-        filepath = 'data/projects.json'
-        if not os.path.exists(filepath):
-            print(f"File {filepath} not found.")
+        filepath = get_data_path('projects.json')
+        if not filepath:
+            print(f"File projects.json not found.")
             return
 
         with open(filepath, 'r') as f:

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CategoryNav from './CategoryNav';
 import Calculator from './tools/Calculator';
 import QrGen from './tools/QrGen';
 import PasswordGenerator from './tools/PasswordGenerator';
@@ -80,11 +81,24 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats }) => {
   };
 
   const filteredTools = TOOLS.filter(t => {
-    const matchesSearch = !searchQuery ||
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.category.toLowerCase().includes(searchQuery.toLowerCase());
+    let matchesSearch = true;
+    let matchesCat = true;
 
-    const matchesCat = activeCategory === 'All' || t.category === activeCategory;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      if (query.startsWith('cat:')) {
+        const catQuery = query.replace('cat:', '').trim();
+        matchesCat = t.category.toLowerCase().includes(catQuery);
+        matchesSearch = true;
+      } else {
+        matchesSearch = t.title.toLowerCase().includes(query) ||
+          t.category.toLowerCase().includes(query);
+      }
+    }
+
+    if (!searchQuery || !searchQuery.toLowerCase().startsWith('cat:')) {
+      if (activeCategory !== 'All') matchesCat = t.category === activeCategory;
+    }
 
     return matchesSearch && matchesCat;
   });
@@ -127,18 +141,21 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats }) => {
     );
   }
 
+  const toolboxCategories = {};
+  [...new Set(TOOLS.map(t => t.category))].forEach(cat => {
+    toolboxCategories[cat] = getCategoryIcon(cat);
+  });
+
   return (
     <>
-      <nav className="main-category-nav">
-        <div className={`pill ${activeCategory === 'All' ? 'active' : ''}`} onClick={() => setActiveCategory('All')}>
-          <span className="material-icons">home</span> <span>All</span>
-        </div>
-        {[...new Set(TOOLS.map(t => t.category))].sort().map(cat => (
-          <div key={cat} className={`pill ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>
-            <span className="material-icons">{getCategoryIcon(cat)}</span> <span>{cat}</span>
-          </div>
-        ))}
-      </nav>
+      <CategoryNav
+        categories={toolboxCategories}
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+        showStats={showStats}
+        stats={stats}
+        totalCount={TOOLS.length}
+      />
 
       <div className="toolbox-page-header">
         <h2>Toolbox</h2>
