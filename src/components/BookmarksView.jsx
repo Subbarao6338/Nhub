@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CategoryNav from './CategoryNav';
 
 const highlightText = (text, query) => {
   if (!query) return text;
@@ -10,6 +11,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, pinned
   const [links, setLinks] = useState([]);
   const [isUrlModalOpen, setIsUrlModalOpen] = useState(false);
   const [selectedLinkForUrls, setSelectedLinkForUrls] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
 
   const handleShare = async (link) => {
     if (navigator.share) {
@@ -22,12 +24,10 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, pinned
     }
   };
 
-  const handleCopy = (e, text) => {
+  const handleCopy = (id, text) => {
     navigator.clipboard.writeText(text);
-    const btn = e.currentTarget;
-    const originalIcon = btn.innerHTML;
-    btn.innerHTML = '<span class="material-icons" style="color:var(--accent-green)">check</span>';
-    setTimeout(() => btn.innerHTML = originalIcon, 2000);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
   const [categories, setCategories] = useState({});
   const [activeCategory, setActiveCategory] = useState('All');
@@ -53,14 +53,24 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, pinned
   const filteredLinks = links.filter(l => {
     if (l.is_internal) return false;
 
-    const matchesSearch = !searchQuery ||
-      l.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      l.url.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (l.urls && l.urls.some(u => u.toLowerCase().includes(searchQuery.toLowerCase())));
-
+    let matchesSearch = true;
     let matchesCat = true;
-    if (!searchQuery) {
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      if (query.startsWith('cat:')) {
+        const catQuery = query.replace('cat:', '').trim();
+        matchesCat = l.category.toLowerCase().includes(catQuery);
+        matchesSearch = true; // category match is the search match
+      } else {
+        matchesSearch = l.title.toLowerCase().includes(query) ||
+          l.category.toLowerCase().includes(query) ||
+          l.url.toLowerCase().includes(query) ||
+          (l.urls && l.urls.some(u => u.toLowerCase().includes(query)));
+      }
+    }
+
+    if (!searchQuery || !searchQuery.toLowerCase().startsWith('cat:')) {
       if (activeCategory === 'Pinned') matchesCat = pinnedIds.includes(l.id);
       else if (activeCategory !== 'All') matchesCat = l.category === activeCategory;
     }
@@ -107,22 +117,17 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, pinned
         </>
       )}
 
-      <nav className="main-category-nav">
-        <div className={`pill ${activeCategory === 'All' ? 'active' : ''}`} onClick={() => setActiveCategory('All')}>
-          <span className="material-icons">home</span> <span>All</span>
-          {showStats && <span className="count">{totalCount}</span>}
-        </div>
-        <div className={`pill ${activeCategory === 'Pinned' ? 'active' : ''}`} onClick={() => setActiveCategory('Pinned')}>
-          <span className="material-icons">push_pin</span> <span>Pinned</span>
-          {showStats && <span className="count">{pinnedCount}</span>}
-        </div>
-        {Object.keys(categories).sort().filter(c => c !== 'All' && c !== 'Pinned').map(cat => (
-          <div key={cat} className={`pill ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>
-            <span className="material-icons">{categories[cat] || 'folder'}</span> <span>{cat}</span>
-            {showStats && stats[cat] > 0 && <span className="count">{stats[cat]}</span>}
-          </div>
-        ))}
-      </nav>
+      <CategoryNav
+        categories={categories}
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+        showStats={showStats}
+        stats={stats}
+        totalCount={totalCount}
+        extraCategories={[
+          { name: 'Pinned', icon: 'push_pin', count: pinnedCount }
+        ]}
+      />
 
       <div className="toolbox-page-header">
         <h2>Bookmarks</h2>
@@ -155,6 +160,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, pinned
                   onDelete={onDelete}
                   handleShare={handleShare}
                   handleCopy={handleCopy}
+                  isCopied={copiedId === link.id}
                   onLongPress={() => { setSelectedLinkForUrls(link); setIsUrlModalOpen(true); }}
                   categoryIcon={categories[cat]}
                   hideIcons={hideIcons}
@@ -170,7 +176,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, pinned
   );
 };
 
-const BookmarkCard = ({ link, idx, openInNewTab, pinnedIds, onPin, onEdit, onDelete, handleShare, handleCopy, onLongPress, categoryIcon, hideIcons, hideUrls, searchQuery }) => {
+const BookmarkCard = ({ link, idx, openInNewTab, pinnedIds, onPin, onEdit, onDelete, handleShare, handleCopy, isCopied, onLongPress, categoryIcon, hideIcons, hideUrls, searchQuery }) => {
   const [pressTimer, setPressTimer] = useState(null);
   const [isLongPress, setIsLongPress] = useState(false);
 
@@ -199,6 +205,13 @@ const BookmarkCard = ({ link, idx, openInNewTab, pinnedIds, onPin, onEdit, onDel
     window.open(link.url, openInNewTab ? '_blank' : '_self');
   };
 
+  let hostname = '';
+  try {
+    hostname = new URL(link.url.startsWith('http') ? link.url : 'http://' + link.url).hostname;
+  } catch (e) {
+    hostname = 'invalid-url';
+  }
+
   return (
     <div
       className="card"
@@ -216,7 +229,7 @@ const BookmarkCard = ({ link, idx, openInNewTab, pinnedIds, onPin, onEdit, onDel
       </div>
       {!hideUrls && (
         <div className="card-url">
-          {new URL(link.url.startsWith('http') ? link.url : 'http://' + link.url).hostname}
+          {hostname}
           {link.urls && link.urls.length > 1 && <span className="fallback-badge">{link.urls.length} URLs</span>}
         </div>
       )}
@@ -227,8 +240,10 @@ const BookmarkCard = ({ link, idx, openInNewTab, pinnedIds, onPin, onEdit, onDel
         <button onClick={() => handleShare(link)} title="Share Bookmark">
           <span className="material-icons">share</span>
         </button>
-        <button onClick={(e) => handleCopy(e, link.url)} title="Copy URL">
-          <span className="material-icons">content_copy</span>
+        <button onClick={() => handleCopy(link.id, link.url)} title="Copy URL">
+          <span className="material-icons" style={{color: isCopied ? 'var(--accent-green)' : 'inherit'}}>
+            {isCopied ? 'check' : 'content_copy'}
+          </span>
         </button>
         <button onClick={() => onEdit(link)} title="Edit">
           <span className="material-icons">edit</span>
@@ -242,15 +257,23 @@ const BookmarkCard = ({ link, idx, openInNewTab, pinnedIds, onPin, onEdit, onDel
 };
 
 const BookmarkIcon = ({ link, categoryIcon }) => {
-  const [src, setSrc] = useState(link.icon || `https://www.google.com/s2/favicons?domain=${new URL(link.url.startsWith('http') ? link.url : 'http://' + link.url).hostname}&sz=64`);
+  const getHostname = (url) => {
+    try {
+      return new URL(url.startsWith('http') ? url : 'http://' + url).hostname;
+    } catch (e) {
+      return '';
+    }
+  };
+
+  const [src, setSrc] = useState(link.icon || `https://www.google.com/s2/favicons?domain=${getHostname(link.url)}&sz=64`);
   const [errorCount, setErrorCount] = useState(0);
 
   const handleError = () => {
     if (errorCount === 0 && link.optional_icon) {
       setSrc(link.optional_icon);
     } else if (errorCount === 1) {
-      const hostname = new URL(link.url.startsWith('http') ? link.url : 'http://' + link.url).hostname;
-      setSrc(`https://icons.duckduckgo.com/ip3/${hostname}.ico`);
+      const hostname = getHostname(link.url);
+      setSrc(hostname ? `https://icons.duckduckgo.com/ip3/${hostname}.ico` : null);
     } else {
       setSrc(null); // Will render fallback
     }

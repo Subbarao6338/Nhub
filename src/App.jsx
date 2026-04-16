@@ -155,6 +155,7 @@ function App() {
         <Header
           currentProfile={currentProfileName}
           profiles={profiles}
+          currentTab={currentTab}
           setView={(view) => setCurrentTab(view)}
           onSettingsClick={() => setIsSettingsOpen(true)}
           onSearchToggle={handleSearchToggle}
