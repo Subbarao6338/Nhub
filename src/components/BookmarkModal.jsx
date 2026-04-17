@@ -55,12 +55,21 @@ const BookmarkModal = ({ link, profileId, profiles, onClose, onSave }) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     })
-    .then(res => res.json())
+    .then(async res => {
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || "Failed to save bookmark");
+      }
+      return res.json();
+    })
     .then(savedLink => {
       onSave(savedLink);
       onClose();
     })
-    .catch(err => console.error("Failed to save bookmark:", err));
+    .catch(err => {
+      console.error("Failed to save bookmark:", err);
+      alert(err.message || "Failed to save bookmark");
+    });
   };
 
   return (
@@ -95,13 +104,15 @@ const BookmarkModal = ({ link, profileId, profiles, onClose, onSave }) => {
             </button>
           </label>
           <div id="alternative-urls-container">
-            {urls.filter(u => u !== url).map((u, i) => (
-              <div key={i} className="url-field-wrapper">
-                <input type="url" value={u} onChange={(e) => handleUrlChange(i, e.target.value)} placeholder="https://alternative-url.com" />
-                <button type="button" className="btn-remove" onClick={() => handleRemoveUrl(i)}>
-                  <span className="material-icons">close</span>
-                </button>
-              </div>
+            {urls.map((u, i) => (
+              u !== url && (
+                <div key={i} className="url-field-wrapper">
+                  <input type="url" value={u} onChange={(e) => handleUrlChange(i, e.target.value)} placeholder="https://alternative-url.com" />
+                  <button type="button" className="btn-remove" onClick={() => handleRemoveUrl(i)}>
+                    <span className="material-icons">close</span>
+                  </button>
+                </div>
+              )
             ))}
           </div>
         </div>

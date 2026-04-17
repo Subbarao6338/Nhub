@@ -341,7 +341,17 @@ function App() {
           profileId={currentProfile?.id}
           profiles={profiles}
           onClose={() => setIsBookmarkOpen(false)}
-          onSave={() => setRefreshTrigger(prev => prev + 1)}
+          onSave={(savedLink) => {
+            setRefreshTrigger(prev => prev + 1);
+            setCurrentTab('bookmarks');
+            setSearchQuery('');
+            if (savedLink && savedLink.profile_id) {
+              const targetProfile = profiles.find(p => p.id === savedLink.profile_id);
+              if (targetProfile && targetProfile.name !== currentProfileName) {
+                setCurrentProfileName(targetProfile.name);
+              }
+            }
+          }}
         />
       )}
 
