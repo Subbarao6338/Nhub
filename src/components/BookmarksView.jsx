@@ -48,6 +48,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
       }
       setCategories(catsMap);
       setLoading(false);
+      setActiveCategory('All');
     }).catch(err => {
       console.error("Failed to fetch bookmarks:", err);
       setLoading(false);
