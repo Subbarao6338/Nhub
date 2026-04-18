@@ -181,7 +181,7 @@ const SettingsModal = ({
             <h3>Appearance</h3>
             <p className="settings-desc">Customize the look and feel of your dashboard.</p>
             <div className="pill-group">
-              {['light', 'dark', 'forest', 'ocean', 'earth'].map(t => (
+              {['light', 'dark', 'nature', 'forest', 'ocean', 'earth'].map(t => (
                 <button
                   key={t}
                   className={`pill ${theme === t ? 'active' : ''}`}
@@ -190,6 +190,7 @@ const SettingsModal = ({
                   <span className="material-icons">
                     {t === 'light' ? 'light_mode' :
                      t === 'dark' ? 'dark_mode' :
+                     t === 'nature' ? 'eco' :
                      t === 'forest' ? 'forest' :
                      t === 'ocean' ? 'water' : 'landscape'}
                   </span>
