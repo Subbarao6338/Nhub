@@ -39,12 +39,18 @@ import Observability from './tools/Observability';
 import DataPortal from './tools/DataPortal';
 import AzureIntegration from './tools/AzureIntegration';
 import SpecializedTools from './tools/SpecializedTools';
+import UuidGenerator from './tools/UuidGenerator';
+import DiceRoller from './tools/DiceRoller';
+import CoinFlipper from './tools/CoinFlipper';
+import Counter from './tools/Counter';
+import MarkdownTable from './tools/MarkdownTable';
 
 const TOOLS = [
     { id: 'notes', title: 'Notes', icon: 'description', category: 'Personal', component: Notes },
     { id: 'pomodoro', title: 'Pomodoro', icon: 'timer', category: 'Productivity', component: PomodoroTimer },
     { id: 'ai-summary', title: 'AI Summary', icon: 'auto_fix_high', category: 'Productivity', component: AiSummary },
     { id: 'calculator', title: 'Calculator', icon: 'calculate', category: 'Productivity', component: Calculator },
+    { id: 'counter', title: 'Counter', icon: 'add_circle_outline', category: 'Productivity', component: Counter },
     { id: 'qr-gen', title: 'QR Gen', icon: 'qr_code_2', category: 'Productivity', component: QrGen },
     { id: 'stopwatch', title: 'Stopwatch', icon: 'timer', category: 'Productivity', component: Stopwatch },
     { id: 'translate', title: 'Translate', icon: 'translate', category: 'Productivity', component: Translate },
@@ -53,6 +59,9 @@ const TOOLS = [
     { id: 'color-picker', title: 'Color', icon: 'palette', category: 'Productivity', component: ColorPicker },
     { id: 'timestamp-conv', title: 'Timestamp', icon: 'schedule', category: 'Productivity', component: TimestampConverter },
     { id: 'password-gen', title: 'Password', icon: 'vpn_key', category: 'Utilities', component: PasswordGenerator },
+    { id: 'uuid-gen', title: 'UUID Gen', icon: 'fingerprint', category: 'Utilities', component: UuidGenerator },
+    { id: 'dice-roller', title: 'Dice Roller', icon: 'casino', category: 'Utilities', component: DiceRoller },
+    { id: 'coin-flipper', title: 'Coin Flip', icon: 'monetization_on', category: 'Utilities', component: CoinFlipper },
     { id: 'unit-converter', title: 'Unit Converter', icon: 'balance', category: 'Utilities', component: UnitConverter },
     { id: 'currency-converter', title: 'Currency', icon: 'payments', category: 'Utilities', component: CurrencyConverter },
     { id: 'panchangam', title: 'Panchangam', icon: 'auto_awesome', category: 'Utilities', component: TeluguPanchangam },
@@ -71,6 +80,7 @@ const TOOLS = [
     { id: 'device-info', title: 'Device', icon: 'memory', category: 'System', component: DeviceInfo },
     { id: 'security-info', title: 'Security', icon: 'verified_user', category: 'System', component: SecurityInfo },
     { id: 'user-scripts', title: 'User Scripts', icon: 'add', category: 'Dev Tools', component: UserScripts },
+    { id: 'markdown-table', title: 'MD Table', icon: 'grid_on', category: 'Dev Tools', component: MarkdownTable },
     { id: 'markdown-preview', title: 'Markdown', icon: 'article', category: 'Dev Tools', component: MarkdownPreview },
     { id: 'diff-viewer', title: 'Diff Viewer', icon: 'difference', category: 'Dev Tools', component: DiffViewer },
     { id: 'anomaly-detection', title: 'Anomaly Detection', icon: 'notifications_active', category: 'Graviton', component: AnomalyDetection },
