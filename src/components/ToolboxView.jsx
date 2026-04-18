@@ -92,7 +92,7 @@ const TOOLS = [
     { id: 'specialized-tools', title: 'Specialized Tools', icon: 'construction', category: 'Graviton', component: SpecializedTools },
 ];
 
-const ToolboxView = ({ searchQuery, groupToolbox, showStats }) => {
+const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRecentTools, hideRecentTools }) => {
   const [activeToolId, setActiveToolId] = useState(null);
   const [currentResult, setCurrentResult] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -115,8 +115,6 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats }) => {
     setPinnedTools(newPinned);
     localStorage.setItem('hub_pinned_tools', JSON.stringify(newPinned));
   };
-
-  const [recentTools, setRecentTools] = useState(JSON.parse(localStorage.getItem('hub_recent_tools') || '[]'));
 
   const openTool = (id) => {
     setActiveToolId(id);
@@ -286,7 +284,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats }) => {
 
       {activeCategory === 'All' && !searchQuery && (
         <div style={{ padding: '0 10px', marginBottom: '2rem' }}>
-          {(pinnedTools.length > 0 || recentTools.length > 0) && (
+          {(pinnedTools.length > 0 || (recentTools.length > 0 && !hideRecentTools)) && (
             <div className="toolbox-special-sections" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
               {pinnedTools.length > 0 && (
                 <div className="special-section">
@@ -312,7 +310,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats }) => {
                   </div>
                 </div>
               )}
-              {recentTools.length > 0 && (
+              {recentTools.length > 0 && !hideRecentTools && (
                 <div className="special-section">
                   <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', opacity: 0.6, display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span className="material-icons" style={{ fontSize: '1.2rem' }}>history</span> Recent

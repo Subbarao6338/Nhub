@@ -82,6 +82,8 @@ const SettingsModal = ({
   reducedMotion, setReducedMotion,
   confirmDelete, setConfirmDelete,
   groupToolbox, setGroupToolbox,
+  hideRecentTools, setHideRecentTools,
+  clearRecentTools,
   onClose,
   resetData
 }) => {
@@ -181,7 +183,7 @@ const SettingsModal = ({
             <h3>Appearance</h3>
             <p className="settings-desc">Customize the look and feel of your dashboard.</p>
             <div className="pill-group">
-              {['light', 'dark', 'nature', 'forest', 'ocean', 'earth'].map(t => (
+              {['light', 'dark', 'nature', 'forest', 'ocean', 'earth', 'mountain', 'desert', 'sunset', 'winter'].map(t => (
                 <button
                   key={t}
                   className={`pill ${theme === t ? 'active' : ''}`}
@@ -192,7 +194,11 @@ const SettingsModal = ({
                      t === 'dark' ? 'dark_mode' :
                      t === 'nature' ? 'eco' :
                      t === 'forest' ? 'forest' :
-                     t === 'ocean' ? 'water' : 'landscape'}
+                     t === 'ocean' ? 'water' :
+                     t === 'earth' ? 'landscape' :
+                     t === 'mountain' ? 'terrain' :
+                     t === 'desert' ? 'wb_sunny' :
+                     t === 'sunset' ? 'wb_twilight' : 'ac_unit'}
                   </span>
                   <span>{t.charAt(0).toUpperCase() + t.slice(1)}</span>
                 </button>
@@ -271,6 +277,19 @@ const SettingsModal = ({
                 }
               }}>
                 <span className="material-icons">storage</span> Refresh Database
+              </button>
+            </div>
+          </div>
+          <div className="settings-section">
+            <h3>Recents</h3>
+            <div className="pill-group">
+              <button className={`pill ${hideRecentTools ? 'active' : ''}`} onClick={() => setHideRecentTools(!hideRecentTools)}>
+                <span className="material-icons">{hideRecentTools ? 'visibility_off' : 'visibility'}</span>
+                <span>Hide Recents</span>
+              </button>
+              <button className="pill" onClick={() => { if(window.confirm("Clear recent tools history?")) clearRecentTools(); }}>
+                <span className="material-icons">history</span>
+                <span>Clear Recents</span>
               </button>
             </div>
           </div>
