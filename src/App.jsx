@@ -64,6 +64,13 @@ function App() {
   const [openProjectsInternally, setOpenProjectsInternally] = useState(localStorage.getItem('hub_open_projects_internally') === 'true');
   const [startupTab, setStartupTab] = useState(localStorage.getItem('hub_startup_tab') || 'toolbox');
   const [showProjectsTab, setShowProjectsTab] = useState(localStorage.getItem('hub_show_projects_tab') !== 'false');
+  const [hideRecentTools, setHideRecentTools] = useState(localStorage.getItem('hub_hide_recent_tools') === 'true');
+  const [recentTools, setRecentTools] = useState(JSON.parse(localStorage.getItem('hub_recent_tools') || '[]'));
+
+  const clearRecentTools = () => {
+    setRecentTools([]);
+    localStorage.removeItem('hub_recent_tools');
+  };
 
   // Visual Settings
   const [disableGlass, setDisableGlass] = useState(localStorage.getItem('hub_disable_glass') === 'true');
@@ -125,6 +132,7 @@ function App() {
   useEffect(() => { localStorage.setItem('hub_app_name', appName); }, [appName]);
   useEffect(() => { localStorage.setItem('hub_startup_tab', startupTab); }, [startupTab]);
   useEffect(() => { localStorage.setItem('hub_show_projects_tab', showProjectsTab); }, [showProjectsTab]);
+  useEffect(() => { localStorage.setItem('hub_hide_recent_tools', hideRecentTools); }, [hideRecentTools]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-color', accentColor);
@@ -260,6 +268,9 @@ function App() {
               searchQuery={searchQuery}
               groupToolbox={groupToolbox}
               showStats={showStats}
+              recentTools={recentTools}
+              setRecentTools={setRecentTools}
+              hideRecentTools={hideRecentTools}
             />
           )}
         </div>
@@ -316,6 +327,9 @@ function App() {
           setConfirmDelete={setConfirmDelete}
           groupToolbox={groupToolbox}
           setGroupToolbox={setGroupToolbox}
+          hideRecentTools={hideRecentTools}
+          setHideRecentTools={setHideRecentTools}
+          clearRecentTools={clearRecentTools}
           onClose={() => setIsSettingsOpen(false)}
           resetData={() => {
             if (window.confirm("Reset all dashboard data?")) {
