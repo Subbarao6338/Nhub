@@ -22,6 +22,7 @@ import CsvJsonConverter from './tools/CsvJsonConverter';
 import ImageOptimizer from './tools/ImageOptimizer';
 import Base64Converter from './tools/Base64Converter';
 import DeviceInfo from './tools/DeviceInfo';
+import AndroidSensors from './tools/AndroidSensors';
 import PomodoroTimer from './tools/PomodoroTimer';
 import MarkdownPreview from './tools/MarkdownPreview';
 import TeluguPanchangam from './tools/TeluguPanchangam';
@@ -87,6 +88,7 @@ const TOOLS = [
     { id: 'url-tool', title: 'URL Tool', icon: 'link', category: 'Web Tools', component: UrlTool },
     { id: 'morse', title: 'Morse', icon: 'timeline', category: 'Web Tools', component: MorseCode },
     { id: 'device-info', title: 'Device', icon: 'memory', category: 'System', component: DeviceInfo },
+    { id: 'android-sensors', title: 'Sensors', icon: 'sensors', category: 'System', component: AndroidSensors },
     { id: 'security-info', title: 'Security', icon: 'verified_user', category: 'System', component: SecurityInfo },
     { id: 'user-scripts', title: 'User Scripts', icon: 'add', category: 'Dev Tools', component: UserScripts },
     { id: 'markdown-table', title: 'MD Table', icon: 'grid_on', category: 'Dev Tools', component: MarkdownTable },
