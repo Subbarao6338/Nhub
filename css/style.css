@@ -733,6 +733,7 @@ body.no-aurora::after {
 .tools-container {
   flex: 1;
   overflow-y: auto;
+  position: relative;
   min-height: 0;
   padding: 2.5rem;
   background: var(--sidebar-bg);
@@ -1715,6 +1716,8 @@ body.no-aurora::after {
     border-left: none;
     border-right: none;
     border-bottom: none;
+    flex: 1;
+    height: 100%;
   }
 
   .category-section {
@@ -1845,6 +1848,46 @@ body.no-aurora::after {
 .tools-container.compact .category-header {
   margin-bottom: 1rem;
   padding: 0.5rem 1.25rem;
+}
+
+/* Refresh Indicator */
+.refresh-indicator {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  z-index: 1000;
+  animation: fadeInDown 0.3s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.rotating {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Solid Mode (No Glass) */

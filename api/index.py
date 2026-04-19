@@ -95,17 +95,6 @@ def init_db():
         )
     ''')
 
-    # Projects table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS projects (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            description TEXT,
-            url TEXT NOT NULL,
-            icon TEXT,
-            category TEXT NOT NULL
-        )
-    ''')
 
     # Deduplicate before adding unique index
     cursor.execute('''
@@ -175,14 +164,6 @@ class Category(BaseModel):
     name: str
     icon: str
     profile_id: int
-
-class Project(BaseModel):
-    id: str
-    title: str
-    description: Optional[str] = None
-    url: str
-    icon: Optional[str] = None
-    category: str
 
 class Profile(BaseModel):
     id: int
@@ -353,21 +334,3 @@ def create_category(category: Category):
     conn.close()
     return category
 
-# Projects Endpoints
-@app.get("/api/projects", response_model=List[Project])
-def get_projects():
-    conn = get_db_connection()
-    projects = conn.execute('SELECT * FROM projects').fetchall()
-    conn.close()
-    return [dict(p) for p in projects]
-
-@app.post("/api/projects", response_model=Project)
-def create_project(project: Project):
-    conn = get_db_connection()
-    conn.execute('''
-        INSERT OR REPLACE INTO projects (id, title, description, url, icon, category)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (project.id, project.title, project.description, project.url, project.icon, project.category))
-    conn.commit()
-    conn.close()
-    return project

@@ -119,6 +119,13 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
 
   if (loading) return <div style={{textAlign:'center', padding:'3rem', opacity:0.5}}>Loading bookmarks...</div>;
 
+  if (!profileId) return (
+    <div style={{textAlign:'center', padding:'3rem', opacity:0.5}}>
+      <p>No profile selected.</p>
+      <button className="btn-primary" style={{marginTop: '1rem'}} onClick={() => window.location.reload()}>Retry</button>
+    </div>
+  );
+
   const copyAllUrls = () => {
     const allUrls = selectedLinkForUrls.urls || [selectedLinkForUrls.url];
     navigator.clipboard.writeText(allUrls.join('\n'));

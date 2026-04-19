@@ -4,7 +4,6 @@ import { Analytics } from '@vercel/analytics/react';
 import Header from './components/Header';
 import TabBar from './components/TabBar';
 import BookmarksView from './components/BookmarksView';
-import ProjectsView from './components/ProjectsView';
 import ToolboxView from './components/ToolboxView';
 import SettingsModal from './components/SettingsModal';
 import ProfileModal from './components/ProfileModal';
@@ -54,7 +53,7 @@ function App() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const tab = params.get('tab');
-    if (tab && ['bookmarks', 'toolbox', 'projects'].includes(tab)) {
+    if (tab && ['bookmarks', 'toolbox'].includes(tab)) {
       setCurrentTab(tab);
     }
   }, []);
@@ -88,9 +87,7 @@ function App() {
   const [showStats, setShowStats] = useState(localStorage.getItem('hub_show_stats') !== 'false');
   const [autoFocusSearch, setAutoFocusSearch] = useState(localStorage.getItem('hub_auto_focus_search') === 'true');
   const [openInNewTab, setOpenInNewTab] = useState(localStorage.getItem('hub_open_newtab') !== 'false');
-  const [openProjectsInternally, setOpenProjectsInternally] = useState(localStorage.getItem('hub_open_projects_internally') === 'true');
   const [startupTab, setStartupTab] = useState(localStorage.getItem('hub_startup_tab') || 'toolbox');
-  const [showProjectsTab, setShowProjectsTab] = useState(localStorage.getItem('hub_show_projects_tab') !== 'false');
   const [hideRecentTools, setHideRecentTools] = useState(localStorage.getItem('hub_hide_recent_tools') === 'true');
   const [recentTools, setRecentTools] = useState(JSON.parse(localStorage.getItem('hub_recent_tools') || '[]'));
 
@@ -112,6 +109,48 @@ function App() {
   const [isBookmarkOpen, setIsBookmarkOpen] = useState(false);
   const [editingLink, setEditingLink] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const refreshData = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await fetch(`${API_BASE}/profiles`);
+      const data = res.ok ? await res.json() : [];
+      if (Array.isArray(data)) setProfiles(data);
+      setRefreshTrigger(prev => prev + 1);
+    } catch (err) {
+      console.error("Refresh failed:", err);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
+  };
+
+  const touchStart = React.useRef(0);
+  const touchEnd = React.useRef(0);
+
+  const handleTouchStart = (e) => {
+    const container = document.querySelector('.tools-container');
+    if (container && container.scrollTop === 0) {
+      touchStart.current = e.targetTouches[0].clientY;
+    } else {
+      touchStart.current = 0;
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (touchStart.current === 0) return;
+    touchEnd.current = e.targetTouches[0].clientY;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart.current === 0) return;
+    const distance = touchEnd.current - touchStart.current;
+    if (distance > 100) {
+      refreshData();
+    }
+    touchStart.current = 0;
+    touchEnd.current = 0;
+  };
 
   useEffect(() => {
     fetch(`${API_BASE}/profiles`)
@@ -158,7 +197,6 @@ function App() {
   useEffect(() => { localStorage.setItem('hub_group_toolbox', groupToolbox); }, [groupToolbox]);
   useEffect(() => { localStorage.setItem('hub_app_name', appName); }, [appName]);
   useEffect(() => { localStorage.setItem('hub_startup_tab', startupTab); }, [startupTab]);
-  useEffect(() => { localStorage.setItem('hub_show_projects_tab', showProjectsTab); }, [showProjectsTab]);
   useEffect(() => { localStorage.setItem('hub_hide_recent_tools', hideRecentTools); }, [hideRecentTools]);
   useEffect(() => { localStorage.setItem('hub_enable_profiles', enableProfiles); }, [enableProfiles]);
 
@@ -214,12 +252,11 @@ function App() {
         }, 100);
       }
 
-      // Tab Switching Shortcuts (Alt + 1/2/3/4)
+      // Tab Switching Shortcuts (Alt + 1/2/3)
       if (e.altKey) {
         if (e.key === '1') { e.preventDefault(); setCurrentTab('toolbox'); }
         if (e.key === '2') { e.preventDefault(); setCurrentTab('bookmarks'); }
-        if (e.key === '3') { e.preventDefault(); setCurrentTab('projects'); }
-        if (e.key === '4') { e.preventDefault(); setIsSettingsOpen(true); }
+        if (e.key === '3') { e.preventDefault(); setIsSettingsOpen(true); }
       }
 
       if (e.key === 'Escape') {
@@ -230,7 +267,7 @@ function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSettingsOpen, isProfileOpen, showProjectsTab]);
+  }, [isSettingsOpen, isProfileOpen]);
 
   useEffect(() => { localStorage.setItem('hub_compact', isCompact); }, [isCompact]);
   useEffect(() => { localStorage.setItem('hub_hide_urls', hideUrls); }, [hideUrls]);
@@ -238,13 +275,12 @@ function App() {
   useEffect(() => { localStorage.setItem('hub_show_stats', showStats); }, [showStats]);
   useEffect(() => { localStorage.setItem('hub_auto_focus_search', autoFocusSearch); }, [autoFocusSearch]);
   useEffect(() => { localStorage.setItem('hub_open_newtab', openInNewTab); }, [openInNewTab]);
-  useEffect(() => { localStorage.setItem('hub_open_projects_internally', openProjectsInternally); }, [openProjectsInternally]);
 
   const currentProfile = Array.isArray(profiles) && profiles.length > 0
     ? (profiles.find(p => p.name.trim() === (enableProfiles ? (currentProfileName?.trim() || 'Default') : 'Default')) ||
        profiles.find(p => p.name.trim() === 'Default') ||
        profiles[0])
-    : null;
+    : { id: 1, name: 'Default', icon: 'home' }; // Fallback for initial load
 
   const handleSearchToggle = () => setSearchActive(!searchActive);
   const handleSearchClear = () => {
@@ -329,11 +365,22 @@ function App() {
           onSettingsClick={() => setIsSettingsOpen(true)}
           onSearchClick={handleSearchToggle}
           searchActive={searchActive}
-          showProjectsTab={showProjectsTab}
           enableProfiles={enableProfiles}
         />
 
-        <div id="content" className={`tools-container ${isCompact ? 'compact' : ''}`}>
+        <div
+          id="content"
+          className={`tools-container ${isCompact ? 'compact' : ''} ${isRefreshing ? 'refreshing' : ''}`}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {isRefreshing && (
+            <div className="refresh-indicator">
+              <span className="material-icons rotating">refresh</span>
+              <span>Refreshing...</span>
+            </div>
+          )}
           {currentTab === 'bookmarks' && currentProfile && (
             <BookmarksView
               profileId={currentProfile.id}
@@ -346,12 +393,6 @@ function App() {
               hideIcons={hideIcons}
               showStats={showStats}
               openInNewTab={openInNewTab}
-            />
-          )}
-          {currentTab === 'projects' && showProjectsTab && (
-            <ProjectsView
-              searchQuery={searchQuery}
-              openInternally={openProjectsInternally}
             />
           )}
           {currentTab === 'toolbox' && (
@@ -388,8 +429,6 @@ function App() {
           setEnableProfiles={setEnableProfiles}
           startupTab={startupTab}
           setStartupTab={setStartupTab}
-          showProjectsTab={showProjectsTab}
-          setShowProjectsTab={setShowProjectsTab}
           enableHoverEffects={enableHoverEffects}
           setEnableHoverEffects={setEnableHoverEffects}
           theme={theme}
@@ -408,8 +447,6 @@ function App() {
           setAutoFocusSearch={setAutoFocusSearch}
           openInNewTab={openInNewTab}
           setOpenInNewTab={setOpenInNewTab}
-          openProjectsInternally={openProjectsInternally}
-          setOpenProjectsInternally={setOpenProjectsInternally}
           disableGlass={disableGlass}
           setDisableGlass={setDisableGlass}
           enableAurora={enableAurora}
