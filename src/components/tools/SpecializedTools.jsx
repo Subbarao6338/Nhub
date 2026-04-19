@@ -10,6 +10,29 @@ const SpecializedTools = ({ onResultChange }) => {
   const [listB, setListB] = useState('');
   const [reconResult, setReconResult] = useState(null);
 
+  // Data Cleaner state
+  const [cleanInput, setCleanInput] = useState('');
+  const [cleanOutput, setCleanOutput] = useState('');
+
+  const runDataCleaning = (type) => {
+    let result = cleanInput;
+    switch (type) {
+      case 'trim': result = cleanInput.split('\n').map(s => s.trim()).join('\n'); break;
+      case 'lowercase': result = cleanInput.toLowerCase(); break;
+      case 'uppercase': result = cleanInput.toUpperCase(); break;
+      case 'remove-empty': result = cleanInput.split('\n').filter(s => s.trim()).join('\n'); break;
+      case 'unique': result = [...new Set(cleanInput.split('\n'))].join('\n'); break;
+      default: break;
+    }
+    setCleanOutput(result);
+    if (onResultChange) {
+      onResultChange({
+        text: result,
+        filename: 'cleaned_data.txt'
+      });
+    }
+  };
+
   const generateRegex = () => {
     if (!input) return;
     const res = `^${input.replace(/[^a-zA-Z0-9]/g, '\\$&')}.*`;
@@ -59,7 +82,7 @@ const SpecializedTools = ({ onResultChange }) => {
 
       <div className="pill-group" style={{ marginBottom: '20px', justifyContent: 'center' }}>
         <button className={`pill ${activeTab === 'regex' ? 'active' : ''}`} onClick={() => setActiveTab('regex')}>Regex Gen</button>
-        <button className={`pill ${activeTab === 'refine' ? 'active' : ''}`} onClick={() => setActiveTab('refine')}>OpenRefine</button>
+        <button className={`pill ${activeTab === 'refine' ? 'active' : ''}`} onClick={() => setActiveTab('refine')}>Data Cleaner</button>
         <button className={`pill ${activeTab === 'recon' ? 'active' : ''}`} onClick={() => setActiveTab('recon')}>Reconciliation</button>
       </div>
 
@@ -88,15 +111,35 @@ const SpecializedTools = ({ onResultChange }) => {
       )}
 
       {activeTab === 'refine' && (
-        <div style={{ display: 'grid', gap: '10px' }}>
-          <div className="tool-result">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span className="material-icons" style={{ color: 'var(--primary)' }}>cleaning_services</span>
-              <span>OpenRefine API Integration</span>
-            </div>
-            <p style={{ fontSize: '0.85rem', opacity: 0.6, marginTop: '8px' }}>Transform, reconcile, and clean datasets via the OpenRefine backend service.</p>
+        <div style={{ display: 'grid', gap: '12px' }}>
+          <div className="form-group">
+            <label>Input Data (Line separated)</label>
+            <textarea
+              rows="5"
+              value={cleanInput}
+              onChange={(e) => setCleanInput(e.target.value)}
+              placeholder="Enter data to clean..."
+              style={{ width: '100%', fontFamily: 'monospace' }}
+            />
           </div>
-          <button className="pill">Launch Refine Workspace</button>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            <button className="pill" onClick={() => runDataCleaning('trim')}>Trim</button>
+            <button className="pill" onClick={() => runDataCleaning('lowercase')}>Lower</button>
+            <button className="pill" onClick={() => runDataCleaning('uppercase')}>Upper</button>
+            <button className="pill" onClick={() => runDataCleaning('remove-empty')}>Compact</button>
+            <button className="pill" onClick={() => runDataCleaning('unique')}>Unique</button>
+          </div>
+          {cleanOutput && (
+            <div className="form-group">
+              <label>Cleaned Result</label>
+              <textarea
+                rows="5"
+                value={cleanOutput}
+                readOnly
+                style={{ width: '100%', fontFamily: 'monospace', background: 'rgba(var(--primary-rgb), 0.05)' }}
+              />
+            </div>
+          )}
         </div>
       )}
 

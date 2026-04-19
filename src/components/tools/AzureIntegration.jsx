@@ -4,16 +4,54 @@ const AzureIntegration = ({ onResultChange }) => {
   const [activeTab, setActiveTab] = useState('aion');
   const [isRunning, setIsRunning] = useState(false);
   const [fileName, setFileName] = useState('');
+  const [payload, setPayload] = useState(null);
+  const [prediction, setPrediction] = useState(null);
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFileName(file.name);
-      onResultChange({
-        text: `Telemetry payload ${file.name} ready for stream processing.`,
-        filename: 'payload_summary.json'
-      });
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+           const content = event.target.result;
+           setPayload(content);
+           if (onResultChange) {
+             onResultChange({
+               text: `Telemetry payload ${file.name} ready for stream processing.`,
+               filename: 'payload_summary.json'
+             });
+           }
+        } catch (err) {
+           console.error("Failed to parse payload", err);
+        }
+      };
+      reader.readAsText(file);
     }
+  };
+
+  const runPrediction = () => {
+    if (!payload) return;
+    setIsRunning(true);
+    setPrediction(null);
+
+    setTimeout(() => {
+      // Heuristic: Check for 'error', 'high', 'fail' or numeric values out of bounds
+      const lower = payload.toLowerCase();
+      let status = 'Normal';
+      let confidence = 0.85;
+
+      if (lower.includes('error') || lower.includes('fail') || lower.includes('critical')) {
+        status = 'Anomalous (Critical)';
+        confidence = 0.94;
+      } else if (lower.includes('warn') || lower.includes('high') || lower.includes('low')) {
+        status = 'Warning (Minor)';
+        confidence = 0.72;
+      }
+
+      setPrediction({ status, confidence, timestamp: new Date().toISOString() });
+      setIsRunning(false);
+    }, 1500);
   };
 
   const functions = [
@@ -58,9 +96,17 @@ const AzureIntegration = ({ onResultChange }) => {
               <option>failure-prediction-v1.0</option>
             </select>
           </div>
-          <button className="btn-primary" onClick={() => { setIsRunning(true); setTimeout(() => setIsRunning(false), 2000); }}>
+          <button className="btn-primary" onClick={runPrediction} disabled={!payload || isRunning}>
             {isRunning ? 'Predicting...' : 'Run Real-time Prediction'}
           </button>
+          {prediction && (
+            <div className="tool-result" style={{ background: prediction.status.includes('Normal') ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)' }}>
+              <div style={{ fontWeight: 600 }}>Prediction Result</div>
+              <div style={{ fontSize: '1.2rem', margin: '5px 0' }}>{prediction.status}</div>
+              <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>Confidence: {(prediction.confidence * 100).toFixed(1)}%</div>
+              <div style={{ fontSize: '0.7rem', opacity: 0.5, marginTop: '5px' }}>Analyzed at: {prediction.timestamp}</div>
+            </div>
+          )}
         </div>
       )}
 

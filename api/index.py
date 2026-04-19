@@ -196,14 +196,6 @@ def startup_event():
     except Exception as e:
         print(f"Application startup failed: {e}")
 
-@app.middleware("http")
-async def ensure_db_middleware(request, call_next):
-    if request.url.path.startswith("/api") and request.url.path != "/api/hello":
-        try:
-            init_db()
-        except Exception as e:
-            print(f"Lazy DB init failed: {e}")
-    return await call_next(request)
 
 @app.get("/api/hello")
 def hello():

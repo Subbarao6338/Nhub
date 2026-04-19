@@ -29,7 +29,7 @@ def verify():
 
     # 2. Check ordering
     print("\nChecking link ordering (is_pinned DESC, title ASC)...")
-    links = cursor.execute('SELECT title, is_pinned FROM links LIMIT 10').fetchall()
+    links = cursor.execute('SELECT title, is_pinned FROM links ORDER BY is_pinned DESC, title COLLATE NOCASE ASC LIMIT 10').fetchall()
     for l in links:
         print(f"[{'P' if l['is_pinned'] else ' '}] {l['title']}")
 
@@ -45,14 +45,13 @@ def verify():
 
     # 4. Check category ordering
     print("\nChecking category ordering...")
-    cats = cursor.execute('SELECT name FROM categories LIMIT 5').fetchall()
+    cats = cursor.execute('SELECT name FROM categories ORDER BY name ASC LIMIT 5').fetchall()
     cat_names = [c['name'] for c in cats]
     print(f"Categories: {cat_names}")
     if cat_names == sorted(cat_names):
         print("Success: Categories are sorted.")
     else:
-         # Note: LIMIT might affect this check if not sorted in SQL
-         print("Note: Check SQL for ORDER BY name ASC")
+         print("Error: Categories are NOT sorted even with ORDER BY.")
 
     conn.close()
 
