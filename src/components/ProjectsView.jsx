@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CategoryNav from './CategoryNav';
+import API_BASE from '../api';
 
 const ProjectsView = ({ searchQuery, openInternally }) => {
   const [projects, setProjects] = useState([]);
@@ -7,7 +8,7 @@ const ProjectsView = ({ searchQuery, openInternally }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/projects')
+    fetch(`${API_BASE}/projects`)
       .then(res => res.json())
       .then(data => {
         setProjects(Array.isArray(data) ? data : []);
