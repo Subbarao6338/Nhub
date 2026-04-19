@@ -3,17 +3,32 @@ import React, { useState } from 'react';
 const Observability = ({ onResultChange }) => {
   const [activeTab, setActiveTab] = useState('airflow');
   const [fileName, setFileName] = useState('');
+  const [logContent, setLogContent] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       setFileName(file.name);
-      onResultChange({
-        text: `Loaded log file: ${file.name}\nSize: ${file.size} bytes`,
-        filename: `log_analysis_${Date.now()}.txt`
-      });
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const text = event.target.result;
+        const lines = text.split('\n');
+        setLogContent(lines);
+        if (onResultChange) {
+          onResultChange({
+            text: `Loaded log file: ${file.name}\nTotal Lines: ${lines.length}\nSize: ${file.size} bytes`,
+            filename: `log_analysis_${Date.now()}.txt`
+          });
+        }
+      };
+      reader.readAsText(file);
     }
   };
+
+  const filteredLogs = searchQuery
+    ? logContent.filter(line => line.toLowerCase().includes(searchQuery.toLowerCase()))
+    : logContent.slice(0, 500); // Limit to 500 for performance
 
   const clusters = [
     { name: 'Prod-US-East', status: 'Healthy', lag: '2ms', load: '45%' },
@@ -43,14 +58,37 @@ const Observability = ({ onResultChange }) => {
                 <span className="material-icons" style={{ fontSize: '1rem' }}>upload_file</span>
                 {fileName ? 'Change Log' : 'Upload Log'}
               </label>
-              <input type="text" placeholder="Search entries..." style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }} />
+              <input
+                type="text"
+                placeholder="Search entries..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
+              />
             </div>
           </div>
-          <div style={{ maxHeight: '200px', overflowY: 'auto', background: '#1e1e1e', padding: '10px', borderRadius: '8px', fontSize: '0.8rem', color: '#d4d4d4', fontFamily: 'monospace' }}>
-            <div>[2024-05-12 10:20:01] INFO - Executing task: data_mask_01</div>
-            <div>[2024-05-12 10:20:05] INFO - Successfully connected to Snowflake</div>
-            <div style={{ color: '#f59e0b' }}>[2024-05-12 10:20:12] WARNING - Retrying connection (1/3)...</div>
+          <div style={{ maxHeight: '300px', overflowY: 'auto', background: '#1e1e1e', padding: '10px', borderRadius: '8px', fontSize: '0.8rem', color: '#d4d4d4', fontFamily: 'monospace' }}>
+            {filteredLogs.length > 0 ? (
+              filteredLogs.map((line, idx) => {
+                const isError = line.toLowerCase().includes('error') || line.toLowerCase().includes('fail');
+                const isWarning = line.toLowerCase().includes('warning') || line.toLowerCase().includes('warn');
+                return (
+                  <div key={idx} style={{ color: isError ? '#ef4444' : isWarning ? '#f59e0b' : 'inherit', marginBottom: '2px', whiteSpace: 'pre-wrap' }}>
+                    {line}
+                  </div>
+                );
+              })
+            ) : (
+              <div style={{ opacity: 0.5, textAlign: 'center', padding: '20px' }}>
+                {fileName ? 'No matching entries found.' : 'Upload a log file to start analysis.'}
+              </div>
+            )}
           </div>
+          {logContent.length > 500 && !searchQuery && (
+            <div style={{ fontSize: '0.7rem', opacity: 0.5, textAlign: 'center' }}>
+              Showing first 500 lines of {logContent.length}. Use search to find specific entries.
+            </div>
+          )}
         </div>
       )}
 
