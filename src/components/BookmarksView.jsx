@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CategoryNav from './CategoryNav';
+import API_BASE from '../api';
 
 const highlightText = (text, query) => {
   if (!query) return text;
@@ -38,8 +39,8 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
     if (!profileId) return;
     setLoading(true);
     Promise.all([
-      fetch(`/api/links?profile_id=${profileId}`).then(res => res.json()),
-      fetch(`/api/categories?profile_id=${profileId}`).then(res => res.json())
+      fetch(`${API_BASE}/links?profile_id=${profileId}`).then(res => res.json()),
+      fetch(`${API_BASE}/categories?profile_id=${profileId}`).then(res => res.json())
     ]).then(([linksData, catsData]) => {
       setLinks(Array.isArray(linksData) ? linksData : []);
       const catsMap = {};

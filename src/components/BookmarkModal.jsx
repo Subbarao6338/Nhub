@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API_BASE from '../api';
 
 const BookmarkModal = ({ link, profileId, profiles, enableProfiles, onClose, onSave }) => {
   const [title, setTitle] = useState(link?.title || '');
@@ -11,7 +12,7 @@ const BookmarkModal = ({ link, profileId, profiles, enableProfiles, onClose, onS
 
   useEffect(() => {
     if (selectedProfileId) {
-      fetch(`/api/links/categories?profile_id=${selectedProfileId}`)
+      fetch(`${API_BASE}/links/categories?profile_id=${selectedProfileId}`)
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) setSuggestedCategories(data);
@@ -48,7 +49,7 @@ const BookmarkModal = ({ link, profileId, profiles, enableProfiles, onClose, onS
     };
 
     const method = link ? 'PUT' : 'POST';
-    const endpoint = link ? `/api/links/${link.id}` : '/api/links';
+    const endpoint = link ? `${API_BASE}/links/${link.id}` : `${API_BASE}/links`;
 
     fetch(endpoint, {
       method,

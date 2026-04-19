@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getApiBase, setApiBase } from '../api';
 
 const markdownToHTML = (markdown) => {
   if (!markdown) return '';
@@ -111,6 +112,7 @@ const SettingsModal = ({
   resetData
 }) => {
   const [openSections, setOpenSections] = useState([]);
+  const [tempApiBase, setTempApiBase] = useState(getApiBase());
 
   const toggleSection = (id) => {
     setOpenSections(prev =>
@@ -403,13 +405,42 @@ const SettingsModal = ({
             </button>
             <button className="pill" style={{color: 'var(--primary)'}} onClick={() => {
               if (window.confirm("This will refresh the database with latest entries from source files. Existing links will NOT be deleted. Continue?")) {
-                fetch('/api/refresh-db', { method: 'POST' })
+                fetch(`${getApiBase()}/refresh-db`, { method: 'POST' })
                   .then(res => res.ok ? alert("Database refreshed successfully") : alert("Failed to refresh database"))
                   .then(() => window.location.reload());
               }
             }}>
               <span className="material-icons">sync</span> Refresh Database
             </button>
+          </div>
+        </CollapsibleSection>
+
+        <CollapsibleSection
+          id="advanced"
+          title="Advanced"
+          icon="code"
+          isOpen={openSections.includes('advanced')}
+          onToggle={toggleSection}
+        >
+          <div className="form-group">
+            <label>API Base URL</label>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <input
+                type="text"
+                value={tempApiBase}
+                onChange={(e) => setTempApiBase(e.target.value)}
+                placeholder="/api or https://your-vercel-app.vercel.app/api"
+                style={{ flex: 1 }}
+              />
+              <button className="pill active" onClick={() => {
+                setApiBase(tempApiBase);
+                alert("API Base URL updated. App will reload.");
+                window.location.reload();
+              }}>Save</button>
+            </div>
+            <p style={{ fontSize: '0.75rem', opacity: 0.6, marginTop: '8px' }}>
+              Default: <code>/api</code>. For APK builds, set this to your hosted backend URL.
+            </p>
           </div>
         </CollapsibleSection>
 

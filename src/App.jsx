@@ -8,6 +8,7 @@ import ToolboxView from './components/ToolboxView';
 import SettingsModal from './components/SettingsModal';
 import ProfileModal from './components/ProfileModal';
 import BookmarkModal from './components/BookmarkModal';
+import API_BASE from './api';
 
 function App() {
   const [appName, setAppName] = useState(localStorage.getItem('hub_app_name') || 'N Box');
@@ -88,7 +89,7 @@ function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
-    fetch('/api/profiles')
+    fetch(`${API_BASE}/profiles`)
       .then(res => res.ok ? res.json() : [])
       .then(data => {
         if (Array.isArray(data)) setProfiles(data);
@@ -205,7 +206,7 @@ function App() {
 
   const togglePin = (link) => {
     const newPinnedStatus = !link.is_pinned;
-    fetch(`/api/links/${link.id}`, {
+    fetch(`${API_BASE}/links/${link.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_pinned: newPinnedStatus })
@@ -233,7 +234,7 @@ function App() {
 
   const deleteLink = (id) => {
     if (!confirmDelete || window.confirm("Are you sure you want to delete this bookmark?")) {
-      fetch(`/api/links/${id}`, { method: 'DELETE' })
+      fetch(`${API_BASE}/links/${id}`, { method: 'DELETE' })
         .then(async (res) => {
           if (res.ok) {
             if ('caches' in window) {
