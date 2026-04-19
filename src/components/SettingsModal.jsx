@@ -89,7 +89,6 @@ const SettingsModal = ({
   appName, setAppName,
   enableProfiles, setEnableProfiles,
   startupTab, setStartupTab,
-  showProjectsTab, setShowProjectsTab,
   enableHoverEffects, setEnableHoverEffects,
   theme, setTheme,
   accentColor, setAccentColor,
@@ -99,7 +98,6 @@ const SettingsModal = ({
   showStats, setShowStats,
   autoFocusSearch, setAutoFocusSearch,
   openInNewTab, setOpenInNewTab,
-  openProjectsInternally, setOpenProjectsInternally,
   disableGlass, setDisableGlass,
   enableAurora, setEnableAurora,
   reducedMotion, setReducedMotion,
@@ -185,7 +183,7 @@ const SettingsModal = ({
           <div className="form-group">
             <label>Startup Tab</label>
             <div className="pill-group">
-              {['toolbox', 'bookmarks', 'projects'].map(tab => (
+              {['toolbox', 'bookmarks'].map(tab => (
                 <button
                   key={tab}
                   className={`pill ${startupTab === tab ? 'active' : ''}`}
@@ -206,10 +204,6 @@ const SettingsModal = ({
               <button className={`pill ${openInNewTab ? 'active' : ''}`} onClick={() => setOpenInNewTab(!openInNewTab)}>
                 <span className="material-icons">open_in_new</span>
                 <span>Open in New Tab</span>
-              </button>
-              <button className={`pill ${showProjectsTab ? 'active' : ''}`} onClick={() => setShowProjectsTab(!showProjectsTab)}>
-                <span className="material-icons">{showProjectsTab ? 'visibility' : 'visibility_off'}</span>
-                <span>Show Projects</span>
               </button>
             </div>
           </div>
@@ -347,20 +341,6 @@ const SettingsModal = ({
           </div>
         </CollapsibleSection>
 
-        <CollapsibleSection
-          id="projects"
-          title="Projects"
-          icon="rocket_launch"
-          isOpen={openSections.includes('projects')}
-          onToggle={toggleSection}
-        >
-          <div className="pill-group">
-            <button className={`pill ${openProjectsInternally ? 'active' : ''}`} onClick={() => setOpenProjectsInternally(!openProjectsInternally)}>
-              <span className="material-icons">tab</span>
-              <span>Open Projects Internally</span>
-            </button>
-          </div>
-        </CollapsibleSection>
 
         <CollapsibleSection
           id="toolbox"
