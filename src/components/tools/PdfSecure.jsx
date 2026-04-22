@@ -60,11 +60,11 @@ const PdfSecure = ({ onResultChange, toolId }) => {
 
   return (
     <div className="tool-form">
-      <div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
+      {!toolId && (<div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
         <button className={`pill ${activeTab === 'lock' ? 'active' : ''}`} onClick={() => setActiveTab('lock')}>Lock</button>
         <button className={`pill ${activeTab === 'unlock' ? 'active' : ''}`} onClick={() => setActiveTab('unlock')}>Unlock</button>
         <button className={`pill ${activeTab === 'metadata' ? 'active' : ''}`} onClick={() => setActiveTab('metadata')}>Metadata</button>
-      </div>
+      </div>)}
 
       <div className="form-group">
         <label>Upload PDF</label>

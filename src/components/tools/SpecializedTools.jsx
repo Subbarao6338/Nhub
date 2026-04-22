@@ -80,11 +80,11 @@ const SpecializedTools = ({ onResultChange }) => {
         <p style={{ opacity: 0.7 }}>Niche tools for data engineering: Reconciliation, OpenRefine cleaning, and Regex Generation.</p>
       </div>
 
-      <div className="pill-group" style={{ marginBottom: '20px', justifyContent: 'center' }}>
+      {!toolId && (<div className="pill-group" style={{ marginBottom: '20px', justifyContent: 'center' }}>
         <button className={`pill ${activeTab === 'regex' ? 'active' : ''}`} onClick={() => setActiveTab('regex')}>Regex Gen</button>
         <button className={`pill ${activeTab === 'refine' ? 'active' : ''}`} onClick={() => setActiveTab('refine')}>Data Cleaner</button>
         <button className={`pill ${activeTab === 'recon' ? 'active' : ''}`} onClick={() => setActiveTab('recon')}>Reconciliation</button>
-      </div>
+      </div>)}
 
       {activeTab === 'regex' && (
         <div style={{ display: 'grid', gap: '15px' }}>

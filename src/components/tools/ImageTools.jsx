@@ -29,13 +29,13 @@ const ImageTools = ({ onResultChange, toolId }) => {
 
   return (
     <div className="tool-form">
-      <div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
+      {!toolId && (<div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
         <button className={`pill ${activeTab === 'format' ? 'active' : ''}`} onClick={() => setActiveTab('format')}>Convert</button>
         <button className={`pill ${activeTab === 'resize' ? 'active' : ''}`} onClick={() => setActiveTab('resize')}>Resize</button>
         <button className={`pill ${activeTab === 'blur' ? 'active' : ''}`} onClick={() => setActiveTab('blur')}>Privacy Blur</button>
         <button className={`pill ${activeTab === 'metadata' ? 'active' : ''}`} onClick={() => setActiveTab('metadata')}>Clean Meta</button>
         <button className={`pill ${activeTab === 'bw' ? 'active' : ''}`} onClick={() => setActiveTab('bw')}>B&W Filter</button>
-      </div>
+      </div>)}
 
       <input type="file" onChange={handleUpload} accept="image/*" className="pill" style={{ width: '100%', marginBottom: '20px' }} />
       {preview && (

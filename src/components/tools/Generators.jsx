@@ -38,9 +38,15 @@ const BarcodeTool = ({ onResultChange }) => {
     useEffect(() => {
         if (!canvasRef.current || !input) return;
         try {
-            // Basic validation to prevent jsbarcode from crashing
-            if (format === 'EAN13' && !/^\d{12,13}$/.test(input)) return;
-            if (format === 'UPC' && !/^\d{11,12}$/.test(input)) return;
+            // Stricter validation for specific formats
+            if (format === 'EAN13' && !/^\d{12,13}$/.test(input)) {
+                console.warn("Invalid EAN13 input");
+                return;
+            }
+            if (format === 'UPC' && !/^\d{11,12}$/.test(input)) {
+                console.warn("Invalid UPC input");
+                return;
+            }
 
             JsBarcode(canvasRef.current, input, {
                 format,

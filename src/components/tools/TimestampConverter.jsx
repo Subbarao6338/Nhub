@@ -13,9 +13,23 @@ const TimestampConverter = ({ onResultChange }) => {
   }, [unix, local, iso, onResultChange]);
 
   useEffect(() => {
-    const d = new Date(unix * 1000);
-    setLocal(d.toLocaleString());
-    setIso(d.toISOString());
+    try {
+      const d = new Date(unix * 1000);
+      if (isNaN(d.getTime())) {
+        setLocal('Invalid Date');
+        setIso('Invalid Date');
+        return;
+      }
+      setLocal(d.toLocaleString());
+      try {
+        setIso(d.toISOString());
+      } catch (e) {
+        setIso('Out of Range');
+      }
+    } catch (e) {
+      setLocal('Error');
+      setIso('Error');
+    }
   }, [unix]);
 
   return (

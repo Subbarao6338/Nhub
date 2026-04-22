@@ -13,7 +13,7 @@ const Games = ({ onResultChange, toolId }) => {
 
   return (
     <div className="tool-form">
-      <div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
+      {!toolId && (<div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
         <button className={`pill ${activeTab === 'spin-wheel' ? 'active' : ''}`} onClick={() => setActiveTab('spin-wheel')}>Spin Wheel</button>
         <button className={`pill ${activeTab === 'spin-bottle' ? 'active' : ''}`} onClick={() => setActiveTab('spin-bottle')}>Spin Bottle</button>
         <button className={`pill ${activeTab === 'team-maker' ? 'active' : ''}`} onClick={() => setActiveTab('team-maker')}>Team Maker</button>
@@ -22,7 +22,7 @@ const Games = ({ onResultChange, toolId }) => {
         <button className={`pill ${activeTab === 'chess-clock' ? 'active' : ''}`} onClick={() => setActiveTab('chess-clock')}>Chess Clock</button>
         <button className={`pill ${activeTab === 'chess-960' ? 'active' : ''}`} onClick={() => setActiveTab('chess-960')}>Chess960</button>
         <button className={`pill ${activeTab === 'darts' ? 'active' : ''}`} onClick={() => setActiveTab('darts')}>Darts</button>
-      </div>
+      </div>)}
 
       {activeTab === 'spin-wheel' && <SpinWheelTool />}
       {activeTab === 'spin-bottle' && <SpinBottleTool />}

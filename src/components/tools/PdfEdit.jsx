@@ -159,7 +159,7 @@ const PdfEdit = ({ onResultChange, toolId }) => {
 
   return (
     <div className="tool-form">
-      <div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
+      {!toolId && (<div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
         <button className={`pill ${activeTab === 'merge' ? 'active' : ''}`} onClick={() => setActiveTab('merge')}>Merge</button>
         <button className={`pill ${activeTab === 'split' ? 'active' : ''}`} onClick={() => setActiveTab('split')}>Split</button>
         <button className={`pill ${activeTab === 'rotate' ? 'active' : ''}`} onClick={() => setActiveTab('rotate')}>Rotate</button>
@@ -167,7 +167,7 @@ const PdfEdit = ({ onResultChange, toolId }) => {
         <button className={`pill ${activeTab === 'rearrange' ? 'active' : ''}`} onClick={() => setActiveTab('rearrange')}>Rearrange</button>
         <button className={`pill ${activeTab === 'numbers' ? 'active' : ''}`} onClick={() => setActiveTab('numbers')}>Page Numbers</button>
         <button className={`pill ${activeTab === 'watermark' ? 'active' : ''}`} onClick={() => setActiveTab('watermark')}>Watermark</button>
-      </div>
+      </div>)}
 
       <div className="form-group">
         <label>Upload PDF(s)</label>

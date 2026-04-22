@@ -66,6 +66,8 @@ import OutdoorTools from './tools/OutdoorTools';
 import PdfEdit from './tools/PdfEdit';
 import PdfSecure from './tools/PdfSecure';
 import PdfConvert from './tools/PdfConvert';
+import SocialTools from './tools/SocialTools';
+import WebToMarkdown from './tools/WebToMarkdown';
 
 const TOOLS = [
     // Measurements (6 Tools)
@@ -183,6 +185,15 @@ const TOOLS = [
     { id: 'pdf-lock', title: 'Lock PDF', icon: 'lock', category: 'PDF Tools', component: PdfSecure },
     { id: 'pdf-unlock', title: 'Unlock PDF', icon: 'lock_open', category: 'PDF Tools', component: PdfSecure },
     { id: 'pdf-meta', title: 'PDF Metadata', icon: 'info', category: 'PDF Tools', component: PdfSecure },
+
+    // Social Tools
+    { id: 'social-downloader', title: 'Social Downloader', icon: 'download', category: 'Social', component: SocialTools },
+    { id: 'whatsapp-link', title: 'WhatsApp Link', icon: 'chat', category: 'Social', component: SocialTools },
+    { id: 'telegram-link', title: 'Telegram Link', icon: 'send', category: 'Social', component: SocialTools },
+    { id: 'hashtag-gen', title: 'Hashtag Gen', icon: 'tag', category: 'Social', component: SocialTools },
+
+    // Web Tools
+    { id: 'web-to-md', title: 'Web to MD', icon: 'article', category: 'Web Tools', component: WebToMarkdown },
 
     // PDF Convert (Convert & Office)
     { id: 'pdf-to-img', title: 'PDF to Img', icon: 'image', category: 'PDF Convert', component: PdfConvert },

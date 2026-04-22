@@ -14,11 +14,11 @@ const MiscCalculators = ({ toolId }) => {
 
   return (
     <div className="tool-form">
-      <div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
+      {!toolId && (<div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
         <button className={`pill ${activeTab === 'tip' ? 'active' : ''}`} onClick={() => setActiveTab('tip')}>Tip & Split</button>
         <button className={`pill ${activeTab === 'weighted' ? 'active' : ''}`} onClick={() => setActiveTab('weighted')}>Weighted Average</button>
         <button className={`pill ${activeTab === 'date-diff' ? 'active' : ''}`} onClick={() => setActiveTab('date-diff')}>Date Difference</button>
-      </div>
+      </div>)}
 
       {activeTab === 'tip' && <TipSplitCalculator />}
       {activeTab === 'weighted' && <WeightedAverageCalculator />}
