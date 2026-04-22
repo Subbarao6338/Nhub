@@ -369,7 +369,8 @@ def refresh_db():
 # Social Media Downloader
 class DownloadRequest(BaseModel):
     url: str
-    limit: Optional[int] = Field(5, ge=1, le=50)
+    limit: Optional[int] = Field(5, ge=0, le=500) # 0 for unlimited
+    download_type: Optional[str] = "auto" # auto, video, audio
 
 def cleanup_temp(temp_dir: str, zip_path: str):
     try:
@@ -386,14 +387,24 @@ def download_social_media(request: DownloadRequest, background_tasks: Background
     zip_id = str(uuid.uuid4())
     zip_path = os.path.join(tempfile.gettempdir(), f"media_{zip_id}.zip")
 
+    # Select format based on download type
+    fmt = 'best'
+    if request.download_type == 'video':
+        fmt = 'bestvideo+bestaudio/best'
+    elif request.download_type == 'audio':
+        fmt = 'bestaudio/best'
+
     ydl_opts = {
-        'format': 'best',
+        'format': fmt,
         'outtmpl': os.path.join(temp_dir, '%(title).50s-%(id)s.%(ext)s'),
-        'playlist_items': f'1-{request.limit}',
         'quiet': True,
         'no_warnings': True,
         'ignoreerrors': True,
+        'extract_flat': False,
     }
+
+    if request.limit and request.limit > 0:
+        ydl_opts['playlist_items'] = f'1-{request.limit}'
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:

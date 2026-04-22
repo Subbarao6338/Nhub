@@ -19,6 +19,8 @@ const SocialTools = ({ toolId }) => {
   // Downloader state
   const [url, setUrl] = useState('');
   const [limit, setLimit] = useState(5);
+  const [isUnlimited, setIsUnlimited] = useState(false);
+  const [downloadType, setDownloadType] = useState('auto');
   const [status, setStatus] = useState('idle'); // idle, downloading, error
   const [error, setError] = useState('');
 
@@ -38,7 +40,11 @@ const SocialTools = ({ toolId }) => {
       const response = await fetch('/api/social/download', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, limit })
+        body: JSON.stringify({
+          url,
+          limit: isUnlimited ? 0 : limit,
+          download_type: downloadType
+        })
       });
 
       if (!response.ok) {
@@ -97,29 +103,58 @@ const SocialTools = ({ toolId }) => {
       {activeTab === 'downloader' && (
         <div style={{ display: 'grid', gap: '15px' }}>
           <div className="form-group">
-            <label>Profile or Post URL</label>
+            <label>Video, Profile, or Playlist URL</label>
             <input
               type="text"
               value={url}
               onChange={e => setUrl(e.target.value)}
-              placeholder="https://instagram.com/profile or post url"
+              placeholder="https://youtube.com/... or https://instagram.com/..."
               className="pill"
               style={{ width: '100%' }}
               disabled={status === 'downloading'}
             />
           </div>
+
           <div className="form-group">
-            <label>Item Limit (Latest)</label>
-            <input
-              type="number"
-              value={limit}
-              onChange={e => setLimit(parseInt(e.target.value) || 1)}
-              min="1"
-              max="20"
+            <label>Download Type</label>
+            <select
               className="pill"
-              style={{ width: '100%' }}
+              value={downloadType}
+              onChange={e => setDownloadType(e.target.value)}
+              style={{ width: '100%', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
               disabled={status === 'downloading'}
-            />
+            >
+              <option value="auto">Auto (Best Quality / Media)</option>
+              <option value="video">Video (With Audio)</option>
+              <option value="audio">Audio Only (MP3/M4A)</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+              <label>Item Limit (Latest)</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={isUnlimited}
+                  onChange={e => setIsUnlimited(e.target.checked)}
+                  disabled={status === 'downloading'}
+                />
+                Unlimited (Slow)
+              </label>
+            </div>
+            {!isUnlimited && (
+              <input
+                type="number"
+                value={limit}
+                onChange={e => setLimit(parseInt(e.target.value) || 1)}
+                min="1"
+                max="500"
+                className="pill"
+                style={{ width: '100%' }}
+                disabled={status === 'downloading'}
+              />
+            )}
           </div>
 
           {status === 'downloading' ? (
@@ -146,7 +181,7 @@ const SocialTools = ({ toolId }) => {
           )}
 
           <div className="tool-result" style={{ padding: '15px', fontSize: '0.85rem', opacity: 0.8 }}>
-            <p><strong>Note:</strong> Supports Instagram, Twitter/X, Threads, Pinterest and more. Bulk downloads are limited to ensure performance. Private profiles cannot be accessed.</p>
+            <p><strong>Note:</strong> Supports YouTube, Instagram, Twitter/X, Pinterest and more. Full profiles and playlists are supported. High limits or "Unlimited" may take significant time to process. Private content cannot be accessed.</p>
           </div>
         </div>
       )}
