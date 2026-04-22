@@ -1,6 +1,7 @@
-from fastapi import FastAPI, HTTPException, Body, Query
+from fastapi import FastAPI, HTTPException, Body, Query, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi.responses import FileResponse
+from pydantic import BaseModel, Field
 from typing import List, Optional
 import sqlite3
 import os
@@ -8,6 +9,9 @@ import json
 import uuid
 import sys
 import shutil
+import tempfile
+import zipfile
+import yt_dlp
 
 # Add the project root to sys.path so we can import from scripts
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -361,6 +365,60 @@ def refresh_db():
         raise HTTPException(status_code=500, detail=str(e))
 
     return {"message": "Database refreshed successfully"}
+
+# Social Media Downloader
+class DownloadRequest(BaseModel):
+    url: str
+    limit: Optional[int] = Field(5, ge=1, le=50)
+
+def cleanup_temp(temp_dir: str, zip_path: str):
+    try:
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+    except Exception as e:
+        print(f"Cleanup error: {e}")
+
+@app.post("/api/social/download")
+def download_social_media(request: DownloadRequest, background_tasks: BackgroundTasks):
+    temp_dir = tempfile.mkdtemp(dir='/tmp' if IS_VERCEL else None)
+    zip_id = str(uuid.uuid4())
+    zip_path = os.path.join(tempfile.gettempdir(), f"media_{zip_id}.zip")
+
+    ydl_opts = {
+        'format': 'best',
+        'outtmpl': os.path.join(temp_dir, '%(title).50s-%(id)s.%(ext)s'),
+        'playlist_items': f'1-{request.limit}',
+        'quiet': True,
+        'no_warnings': True,
+        'ignoreerrors': True,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([request.url])
+
+        files = os.listdir(temp_dir)
+        if not files:
+             cleanup_temp(temp_dir, zip_path)
+             raise HTTPException(status_code=404, detail="No media found or download failed. Some platforms may require authentication or have strict rate limits.")
+
+        with zipfile.ZipFile(zip_path, 'w') as zipf:
+            for file in files:
+                zipf.write(os.path.join(temp_dir, file), file)
+
+        background_tasks.add_task(cleanup_temp, temp_dir, zip_path)
+
+        return FileResponse(
+            zip_path,
+            media_type='application/zip',
+            filename=f"social_media_{zip_id}.zip"
+        )
+
+    except Exception as e:
+        cleanup_temp(temp_dir, zip_path)
+        raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
 
 # Categories Endpoints
 @app.get("/api/categories", response_model=List[Category])
