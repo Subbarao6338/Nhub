@@ -53,20 +53,27 @@ const PomodoroTimer = ({ onResultChange }) => {
     setTimeLeft(modes[newMode].time);
   };
 
-  const playAlarm = () => {
-    const context = new (window.AudioContext || window.webkitAudioContext)();
-    const oscillator = context.createOscillator();
-    const gainNode = context.createGain();
+  const playAlarm = async () => {
+    try {
+      const context = new (window.AudioContext || window.webkitAudioContext)();
+      if (context.state === 'suspended') {
+        await context.resume();
+      }
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
 
-    oscillator.connect(gainNode);
-    gainNode.connect(context.destination);
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
 
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(440, context.currentTime);
-    gainNode.gain.setValueAtTime(0.1, context.currentTime);
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(440, context.currentTime);
+      gainNode.gain.setValueAtTime(0.1, context.currentTime);
 
-    oscillator.start();
-    oscillator.stop(context.currentTime + 1);
+      oscillator.start();
+      oscillator.stop(context.currentTime + 1);
+    } catch (e) {
+      console.error("Failed to play alarm:", e);
+    }
   };
 
   return (

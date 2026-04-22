@@ -42,11 +42,11 @@ const PdfConvert = ({ onResultChange, toolId }) => {
 
   return (
     <div className="tool-form">
-      <div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
+      {!toolId && (<div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
         <button className={`pill ${activeTab === 'img-to-pdf' ? 'active' : ''}`} onClick={() => setActiveTab('img-to-pdf')}>Img to PDF</button>
         <button className={`pill ${activeTab === 'pdf-to-img' ? 'active' : ''}`} onClick={() => setActiveTab('pdf-to-img')}>PDF to Img</button>
         <button className={`pill ${activeTab === 'word-to-pdf' ? 'active' : ''}`} onClick={() => setActiveTab('word-to-pdf')}>Word to PDF</button>
-      </div>
+      </div>)}
 
       <input type="file" multiple onChange={handleFileUpload} className="pill" style={{ width: '100%', marginBottom: '20px' }} />
 
