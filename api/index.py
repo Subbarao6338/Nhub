@@ -218,12 +218,17 @@ class ProjectUpdate(BaseModel):
 class Project(ProjectBase):
     id: str
 
-@app.on_event("startup")
-def startup_event():
-    try:
-        init_db()
-    except Exception as e:
-        print(f"Application startup failed: {e}")
+@app.middleware("http")
+async def ensure_db_initialized(request, call_next):
+    global _db_initialized
+    if not _db_initialized:
+        try:
+            init_db()
+        except Exception as e:
+            # We don't set _db_initialized = True here so it retries on next request
+            print(f"Database initialization failed: {e}")
+    response = await call_next(request)
+    return response
 
 
 @app.get("/api/hello")
