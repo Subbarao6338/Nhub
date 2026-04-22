@@ -18,7 +18,9 @@ const SocialTools = ({ toolId }) => {
 
   // Downloader state
   const [url, setUrl] = useState('');
-  const [platform, setPlatform] = useState('instagram');
+  const [limit, setLimit] = useState(5);
+  const [status, setStatus] = useState('idle'); // idle, downloading, error
+  const [error, setError] = useState('');
 
   // Link Builder state
   const [phone, setPhone] = useState('');
@@ -28,6 +30,37 @@ const SocialTools = ({ toolId }) => {
 
   // Hashtag state
   const [category, setCategory] = useState('nature');
+
+  const handleDownload = async () => {
+    setStatus('downloading');
+    setError('');
+    try {
+      const response = await fetch('/api/social/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, limit })
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.detail || 'Download failed');
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', `social_media_${new Date().getTime()}.zip`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setStatus('idle');
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+      setStatus('error');
+    }
+  };
 
   const hashtags = {
     nature: "#nature #photography #naturephotography #love #landscape #travel #wildlife #outdoor #beautiful #naturelovers",
@@ -64,25 +97,56 @@ const SocialTools = ({ toolId }) => {
       {activeTab === 'downloader' && (
         <div style={{ display: 'grid', gap: '15px' }}>
           <div className="form-group">
-            <label>Platform</label>
-            <select value={platform} onChange={e => setPlatform(e.target.value)} className="pill" style={{ width: '100%' }}>
-              <option value="instagram">Instagram</option>
-              <option value="twitter">Twitter / X</option>
-              <option value="threads">Threads</option>
-              <option value="pinterest">Pinterest</option>
-            </select>
+            <label>Profile or Post URL</label>
+            <input
+              type="text"
+              value={url}
+              onChange={e => setUrl(e.target.value)}
+              placeholder="https://instagram.com/profile or post url"
+              className="pill"
+              style={{ width: '100%' }}
+              disabled={status === 'downloading'}
+            />
           </div>
           <div className="form-group">
-            <label>Profile or Post URL</label>
-            <input type="text" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." className="pill" style={{ width: '100%' }} />
+            <label>Item Limit (Latest)</label>
+            <input
+              type="number"
+              value={limit}
+              onChange={e => setLimit(parseInt(e.target.value) || 1)}
+              min="1"
+              max="20"
+              className="pill"
+              style={{ width: '100%' }}
+              disabled={status === 'downloading'}
+            />
           </div>
-          <div className="tool-result" style={{ padding: '15px', fontSize: '0.9rem' }}>
-            <p><strong>Instructions:</strong></p>
-            {platform === 'instagram' && <p>To download all media from an Instagram profile, you can use browser extensions like "FastSave" or web services like "Instadp". Paste the URL here to keep track.</p>}
-            {platform === 'twitter' && <p>For Twitter media, "Twitter Video Downloader" or "Gallery-dl" (CLI) are recommended for bulk downloads.</p>}
-            {platform === 'threads' && <p>Threads media can be saved using "Threads Downloader" services.</p>}
-            {platform === 'pinterest' && <p>For Pinterest boards, use "Pinterest Downloader" or Chrome extensions that allow bulk image saving.</p>}
-            <button className="btn-primary" onClick={() => window.open(`https://www.google.com/search?q=${platform}+media+downloader+${encodeURIComponent(url)}`, '_blank')} style={{ width: '100%', marginTop: '10px' }}>Search for Downloader</button>
+
+          {status === 'downloading' ? (
+            <div className="tool-result" style={{ textAlign: 'center', padding: '20px' }}>
+              <div className="spinner" style={{ marginBottom: '10px' }}></div>
+              <p>Downloading and Zipping media...</p>
+              <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>This may take a minute depending on the number of items.</p>
+            </div>
+          ) : (
+            <button
+              className="btn-primary"
+              onClick={handleDownload}
+              style={{ width: '100%' }}
+              disabled={!url}
+            >
+              Download Media ZIP
+            </button>
+          )}
+
+          {status === 'error' && (
+            <div className="tool-result" style={{ color: 'var(--error)', padding: '10px', fontSize: '0.9rem', border: '1px solid var(--error)' }}>
+              {error}
+            </div>
+          )}
+
+          <div className="tool-result" style={{ padding: '15px', fontSize: '0.85rem', opacity: 0.8 }}>
+            <p><strong>Note:</strong> Supports Instagram, Twitter/X, Threads, Pinterest and more. Bulk downloads are limited to ensure performance. Private profiles cannot be accessed.</p>
           </div>
         </div>
       )}
