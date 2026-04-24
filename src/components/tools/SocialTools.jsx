@@ -94,7 +94,7 @@ const SocialTools = ({ toolId }) => {
   return (
     <div className="tool-form">
       {!toolId && (
-        <div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
+        <div className="pill-group mb-20 scrollable-x">
           <button className={`pill ${activeTab === 'downloader' ? 'active' : ''}`} onClick={() => setActiveTab('downloader')}>Media Downloader</button>
           <button className={`pill ${activeTab === 'builder' ? 'active' : ''}`} onClick={() => setActiveTab('builder')}>Link Builder</button>
           <button className={`pill ${activeTab === 'hashtags' ? 'active' : ''}`} onClick={() => setActiveTab('hashtags')}>Hashtag Gen</button>
@@ -102,7 +102,7 @@ const SocialTools = ({ toolId }) => {
       )}
 
       {activeTab === 'downloader' && (
-        <div style={{ display: 'grid', gap: '15px' }}>
+        <div className="grid gap-15">
           <div className="form-group">
             <label>Video, Profile, or Playlist URL</label>
             <input
@@ -110,8 +110,7 @@ const SocialTools = ({ toolId }) => {
               value={url}
               onChange={e => setUrl(e.target.value)}
               placeholder="https://youtube.com/... or https://instagram.com/..."
-              className="pill"
-              style={{ width: '100%' }}
+              className="pill w-full"
               disabled={status === 'downloading'}
             />
           </div>
@@ -119,10 +118,9 @@ const SocialTools = ({ toolId }) => {
           <div className="form-group">
             <label>Download Type</label>
             <select
-              className="pill"
+              className="pill w-full"
               value={downloadType}
               onChange={e => setDownloadType(e.target.value)}
-              style={{ width: '100%', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
               disabled={status === 'downloading'}
             >
               <option value="auto">Auto (Best Quality / Media)</option>
@@ -132,9 +130,9 @@ const SocialTools = ({ toolId }) => {
           </div>
 
           <div className="form-group">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+            <div className="flex-between mb-10">
               <label>Item Limit (Latest)</label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.8rem', cursor: 'pointer' }}>
+              <label className="flex-center gap-5 font-semibold opacity-7 cursor-pointer" style={{ fontSize: '0.8rem' }}>
                 <input
                   type="checkbox"
                   checked={isUnlimited}
@@ -151,24 +149,22 @@ const SocialTools = ({ toolId }) => {
                 onChange={e => setLimit(parseInt(e.target.value) || 1)}
                 min="1"
                 max="500"
-                className="pill"
-                style={{ width: '100%' }}
+                className="pill w-full"
                 disabled={status === 'downloading'}
               />
             )}
           </div>
 
           {status === 'downloading' ? (
-            <div className="tool-result" style={{ textAlign: 'center', padding: '20px' }}>
-              <div className="spinner" style={{ marginBottom: '10px' }}></div>
+            <div className="tool-result text-center p-20">
+              <div className="spinner mb-10"></div>
               <p>Downloading and Zipping media...</p>
-              <p style={{ fontSize: '0.8rem', opacity: 0.7 }}>This may take a minute depending on the number of items.</p>
+              <p className="opacity-7" style={{ fontSize: '0.8rem' }}>This may take a minute depending on the number of items.</p>
             </div>
           ) : (
             <button
-              className="btn-primary"
+              className="btn-primary w-full"
               onClick={handleDownload}
-              style={{ width: '100%' }}
               disabled={!url}
             >
               Download Media ZIP
@@ -176,19 +172,19 @@ const SocialTools = ({ toolId }) => {
           )}
 
           {status === 'error' && (
-            <div className="tool-result" style={{ color: 'var(--error)', padding: '10px', fontSize: '0.9rem', border: '1px solid var(--error)' }}>
+            <div className="tool-result p-10 font-semibold" style={{ color: 'var(--error)', border: '1px solid var(--error)', fontSize: '0.9rem' }}>
               {error}
             </div>
           )}
 
-          <div className="tool-result" style={{ padding: '15px', fontSize: '0.85rem', opacity: 0.8 }}>
+          <div className="tool-result p-15 opacity-8" style={{ fontSize: '0.85rem' }}>
             <p><strong>Note:</strong> Supports YouTube, Instagram, Twitter/X, Pinterest and more. Full profiles and playlists are supported. High limits or "Unlimited" may take significant time to process. Private content cannot be accessed.</p>
           </div>
         </div>
       )}
 
       {activeTab === 'builder' && (
-        <div style={{ display: 'grid', gap: '15px' }}>
+        <div className="grid gap-15">
           <div className="form-group">
             <label>Platform</label>
             <div className="pill-group">
@@ -200,11 +196,11 @@ const SocialTools = ({ toolId }) => {
             <>
               <div className="form-group">
                 <label>Phone Number (with country code)</label>
-                <input type="text" value={phone} onChange={e => setPhone(e.target.value)} placeholder="e.g. 1234567890" className="pill" style={{ width: '100%' }} />
+                <input type="text" value={phone} onChange={e => setPhone(e.target.value)} placeholder="e.g. 1234567890" className="pill w-full" />
               </div>
               <div className="form-group">
                 <label>Pre-filled Message</label>
-                <input type="text" value={message} onChange={e => setMessage(e.target.value)} placeholder="Hello!" className="pill" style={{ width: '100%' }} />
+                <input type="text" value={message} onChange={e => setMessage(e.target.value)} placeholder="Hello!" className="pill w-full" />
               </div>
               <button className="btn-primary" onClick={() => handleCopy(generateWaLink())}>Copy WhatsApp Link</button>
             </>
@@ -212,7 +208,7 @@ const SocialTools = ({ toolId }) => {
             <>
               <div className="form-group">
                 <label>Username</label>
-                <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="@username" className="pill" style={{ width: '100%' }} />
+                <input type="text" value={username} onChange={e => setUsername(e.target.value)} placeholder="@username" className="pill w-full" />
               </div>
               <button className="btn-primary" onClick={() => handleCopy(generateTgLink())}>Copy Telegram Link</button>
             </>
@@ -221,17 +217,17 @@ const SocialTools = ({ toolId }) => {
       )}
 
       {activeTab === 'hashtags' && (
-        <div style={{ display: 'grid', gap: '15px' }}>
+        <div className="grid gap-15">
           <div className="form-group">
             <label>Category</label>
-            <div className="pill-group" style={{ flexWrap: 'wrap' }}>
+            <div className="pill-group flex-wrap">
               {Object.keys(hashtags).map(cat => (
                 <button key={cat} className={`pill ${category === cat ? 'active' : ''}`} onClick={() => setCategory(cat)} style={{ textTransform: 'capitalize' }}>{cat}</button>
               ))}
             </div>
           </div>
-          <div className="tool-result" style={{ textAlign: 'center', padding: '20px' }}>
-            <div style={{ marginBottom: '15px', lineHeight: '1.6' }}>{hashtags[category]}</div>
+          <div className="tool-result text-center p-20">
+            <div className="mb-10 line-height-1-6">{hashtags[category]}</div>
             <button className="btn-primary" onClick={() => handleCopy(hashtags[category])}>Copy All</button>
           </div>
         </div>

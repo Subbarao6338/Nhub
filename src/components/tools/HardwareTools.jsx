@@ -37,7 +37,10 @@ const SoundMeter = () => {
     const streamRef = useRef(null);
     const rafRef = useRef(null);
 
+    const [error, setError] = useState(null);
+
     const start = async () => {
+        setError(null);
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             streamRef.current = stream;
@@ -66,7 +69,7 @@ const SoundMeter = () => {
             update();
         } catch (err) {
             console.error("Mic access denied", err);
-            alert("Microphone access is required for Sound Meter");
+            setError("Microphone access denied. Please enable microphone permissions in your browser settings to use the Sound Meter.");
         }
     };
 
@@ -82,6 +85,7 @@ const SoundMeter = () => {
 
     return (
         <div className="text-center">
+            {error && <div className="danger mb-20 p-10 font-semibold" style={{ border: '1px solid var(--error)', borderRadius: '12px' }}>{error}</div>}
             <div className="sensor-circle" style={{
                 margin: '20px auto',
                 width: '180px',
@@ -107,9 +111,11 @@ const SoundMeter = () => {
 
 const Flashlight = () => {
     const [on, setOn] = useState(false);
+    const [error, setError] = useState(null);
     const trackRef = useRef(null);
 
     const toggle = async () => {
+        setError(null);
         try {
             if (!on) {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
@@ -120,7 +126,7 @@ const Flashlight = () => {
                     trackRef.current = track;
                     setOn(true);
                 } else {
-                    alert("Torch not supported on this device");
+                    setError("Torch not supported on this device's camera.");
                     track.stop();
                 }
             } else {
@@ -132,7 +138,7 @@ const Flashlight = () => {
             }
         } catch (err) {
             console.error(err);
-            alert("Camera access denied or torch not available");
+            setError("Camera access denied. Flashlight requires camera permission to control the torch.");
         }
     };
 
@@ -142,6 +148,7 @@ const Flashlight = () => {
 
     return (
         <div className="text-center">
+            {error && <div className="danger mb-20 p-10 font-semibold" style={{ border: '1px solid var(--error)', borderRadius: '12px' }}>{error}</div>}
             <div className={`sensor-circle ${on ? 'active' : ''}`} onClick={toggle} style={{
                 margin: '20px auto',
                 width: '150px',

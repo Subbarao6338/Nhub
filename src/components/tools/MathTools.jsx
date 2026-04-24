@@ -58,15 +58,15 @@ const PercentagesTool = () => {
     };
 
     return (
-        <div style={{ display: 'grid', gap: '10px' }}>
+        <div className="grid gap-10">
             <input type="number" value={val1} onChange={e => setVal1(e.target.value)} placeholder="Value A" className="pill" />
             <input type="number" value={val2} onChange={e => setVal2(e.target.value)} placeholder="Value B / %" className="pill" />
-            <div style={{ display: 'flex', gap: '10px' }}>
-                <button className="pill active" onClick={() => calc('percentOf')} style={{ flex: 1 }}>A% of B</button>
-                <button className="pill active" onClick={() => calc('whatPercent')} style={{ flex: 1 }}>A is what % of B</button>
-                <button className="pill active" onClick={() => calc('discount')} style={{ flex: 1 }}>A with B% discount</button>
+            <div className="flex-gap">
+                <button className="pill active flex-1" onClick={() => calc('percentOf')}>A% of B</button>
+                <button className="pill active flex-1" onClick={() => calc('whatPercent')}>A is what % of B</button>
+                <button className="pill active flex-1" onClick={() => calc('discount')}>A with B% discount</button>
             </div>
-            {res !== null && <div style={{ fontSize: '1.5rem', textAlign: 'center', marginTop: '10px' }}>Result: {res.toFixed(2)}</div>}
+            {res !== null && <div className="text-center mt-10" style={{ fontSize: '1.5rem' }}>Result: {res.toFixed(2)}</div>}
         </div>
     );
 };
@@ -87,16 +87,16 @@ const GeometryTool = () => {
 
     return (
         <div>
-            <select value={shape} onChange={e => setShape(e.target.value)} className="pill" style={{ width: '100%', marginBottom: '10px' }}>
+            <select value={shape} onChange={e => setShape(e.target.value)} className="pill w-full mb-10">
                 <option value="circle">Circle (v1=radius)</option>
                 <option value="rect">Rectangle (v1=w, v2=h)</option>
                 <option value="tri">Triangle (v1=base, v2=height)</option>
             </select>
-            <input type="number" value={v1} onChange={e => setV1(e.target.value)} placeholder="Value 1" className="pill" style={{ width: '100%', marginBottom: '10px' }} />
-            {shape !== 'circle' && <input type="number" value={v2} onChange={e => setV2(e.target.value)} placeholder="Value 2" className="pill" style={{ width: '100%', marginBottom: '10px' }} />}
-            <button className="btn-primary" onClick={calc} style={{ width: '100%' }}>Calculate</button>
+            <input type="number" value={v1} onChange={e => setV1(e.target.value)} placeholder="Value 1" className="pill w-full mb-10" />
+            {shape !== 'circle' && <input type="number" value={v2} onChange={e => setV2(e.target.value)} placeholder="Value 2" className="pill w-full mb-10" />}
+            <button className="btn-primary w-full" onClick={calc}>Calculate</button>
             {res && (
-                <div style={{ marginTop: '15px', textAlign: 'center' }}>
+                <div className="text-center mt-20">
                     {res.area && <div>Area: {res.area.toFixed(2)}</div>}
                     {res.circ && <div>Circumference/Perim: {res.circ.toFixed(2)}</div>}
                 </div>
@@ -120,7 +120,7 @@ const PythagorasTool = () => {
     };
 
     return (
-        <div style={{ display: 'grid', gap: '10px' }}>
+        <div className="grid gap-10">
             <input type="number" value={a} onChange={e => setA(e.target.value)} placeholder="Side a" className="pill" />
             <input type="number" value={b} onChange={e => setB(e.target.value)} placeholder="Side b" className="pill" />
             <input type="number" value={c} onChange={e => setC(e.target.value)} placeholder="Hypotenuse c" className="pill" />
