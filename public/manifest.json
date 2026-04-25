@@ -55,6 +55,20 @@
       "description": "Digital Compass",
       "url": "/?tab=toolbox&tool=compass",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Networking",
+      "short_name": "Networking",
+      "description": "Network tools and IP info",
+      "url": "/?tab=toolbox&tool=networking-main",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "DevOps",
+      "short_name": "DevOps",
+      "description": "Developer and DevOps utilities",
+      "url": "/?tab=toolbox&tool=devops-main",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     }
   ],
   "icons": [

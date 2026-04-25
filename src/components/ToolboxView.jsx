@@ -77,6 +77,9 @@ const WaterReminder = lazy(() => import('./tools/WaterReminder'));
 const HardwareTools = lazy(() => import('./tools/HardwareTools'));
 const HealthTools = lazy(() => import('./tools/HealthTools'));
 const PrivacyDashboard = lazy(() => import('./tools/PrivacyDashboard'));
+const NetworkingTools = lazy(() => import('./tools/NetworkingTools'));
+const DevOpsTools = lazy(() => import('./tools/DevOpsTools'));
+const DataScienceTools = lazy(() => import('./tools/DataScienceTools'));
 
 const TOOLS = [
     // Measurements (6 Tools)
@@ -235,6 +238,12 @@ const TOOLS = [
     { id: 'inspect', title: 'Inspect', icon: 'search', category: 'Web Tools', component: Inspect },
     { id: 'omni-hub', title: 'Omni Hub', icon: 'public', category: 'Web Tools', component: OmniHub },
 
+    // Networking
+    { id: 'networking-main', title: 'Network Info', icon: 'router', category: 'Networking', component: NetworkingTools },
+    { id: 'ping', title: 'Ping', icon: 'settings_input_antenna', category: 'Networking', component: NetworkingTools },
+    { id: 'dns', title: 'DNS Lookup', icon: 'dns', category: 'Networking', component: NetworkingTools },
+    { id: 'whois', title: 'Whois', icon: 'person_search', category: 'Networking', component: NetworkingTools },
+
     // Dev Tools
     { id: 'markdown-preview', title: 'Markdown', icon: 'article', category: 'Dev Tools', component: MarkdownPreview },
     { id: 'markdown-table', title: 'MD Table', icon: 'grid_on', category: 'Dev Tools', component: MarkdownTable },
@@ -242,6 +251,14 @@ const TOOLS = [
     { id: 'base64-converter', title: 'Base64', icon: 'transform', category: 'Dev Tools', component: Base64Converter },
     { id: 'user-scripts', title: 'User Scripts', icon: 'add', category: 'Dev Tools', component: UserScripts },
     { id: 'cron-desc', title: 'Cron Explainer', icon: 'event_repeat', category: 'Dev Tools', component: CronExpressionDescriptor },
+    { id: 'devops-main', title: 'DevOps Tools', icon: 'terminal', category: 'Dev Tools', component: DevOpsTools },
+    { id: 'jwt-decoder', title: 'JWT Decoder', icon: 'api', category: 'Dev Tools', component: DevOpsTools },
+    { id: 'cron-gen', title: 'Cron Generator', icon: 'schedule', category: 'Dev Tools', component: DevOpsTools },
+    { id: 'sql-format', title: 'SQL Formatter', icon: 'storage', category: 'Dev Tools', component: DevOpsTools },
+
+    // Data Science
+    { id: 'regression', title: 'Linear Regression', icon: 'show_chart', category: 'Data Science', component: DataScienceTools },
+    { id: 'correlation', title: 'Correlation Matrix', icon: 'grid_on', category: 'Data Science', component: DataScienceTools },
 
     // Security (Integration)
     { id: 'hash-gen', title: 'Hash Gen', icon: 'security', category: 'Security', component: HashGenerator },
@@ -516,35 +533,35 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
         <h2>Toolbox</h2>
         <p>Collection of useful offline utilities.</p>
         {groupToolbox && cats.length > 0 && (
-          <div className="pill-group" style={{justifyContent: 'center', marginTop: '1rem'}}>
-            <button className="pill" onClick={collapseAll} style={{padding: '8px 16px', fontSize: '0.8rem'}}>
-              <span className="material-icons" style={{fontSize: '1.1rem'}}>unfold_less</span> Collapse All
+          <div className="pill-group flex-center mt-20">
+            <button className="pill p-8-16" onClick={collapseAll} style={{ fontSize: '0.8rem' }}>
+              <span className="material-icons" style={{ fontSize: '1.1rem' }}>unfold_less</span> Collapse All
             </button>
-            <button className="pill" onClick={expandAll} style={{padding: '8px 16px', fontSize: '0.8rem'}}>
-              <span className="material-icons" style={{fontSize: '1.1rem'}}>unfold_more</span> Expand All
+            <button className="pill p-8-16" onClick={expandAll} style={{ fontSize: '0.8rem' }}>
+              <span className="material-icons" style={{ fontSize: '1.1rem' }}>unfold_more</span> Expand All
             </button>
           </div>
         )}
       </div>
 
       {activeCategory === 'All' && !searchQuery && (
-        <div style={{ padding: '0 10px', marginBottom: '2rem' }}>
+        <div className="p-0-10 mb-20">
           {(pinnedTools.length > 0 || (recentTools.length > 0 && !hideRecentTools)) && (
-            <div className="toolbox-special-sections" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <div className="toolbox-special-sections grid gap-15" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', marginBottom: '1.5rem' }}>
               {pinnedTools.length > 0 && (
                 <div className="special-section">
-                  <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', opacity: 0.6, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h3 className="uppercase tracking-wider opacity-6 mb-10 flex-center gap-10" style={{ fontSize: '0.9rem', justifyContent: 'flex-start' }}>
                     <span className="material-icons" style={{ fontSize: '1.2rem' }}>push_pin</span> Pinned
                   </h3>
-                  <div style={{ display: 'grid', gap: '12px' }}>
+                  <div className="grid gap-12">
                     {pinnedTools.map(id => {
                       const tool = TOOLS.find(t => t.id === id);
                       if (!tool) return null;
                       return (
-                        <div key={id} className="card" style={{ padding: '12px 16px', minHeight: 'unset', animation: 'none' }} onClick={() => openTool(tool.id)}>
-                          <div className="card-header" style={{ marginBottom: 0, gap: '12px' }}>
+                        <div key={id} className="card p-15 min-h-unset no-animation" onClick={() => openTool(tool.id)}>
+                          <div className="card-header m-0 gap-12">
                             <span className="material-icons" style={{ color: 'var(--primary)' }}>{tool.icon}</span>
-                            <span style={{ fontWeight: 600 }}>{tool.title}</span>
+                            <span className="font-semibold">{tool.title}</span>
                           </div>
                           <div className="card-actions">
                             <button className="pin-btn active" onClick={(e) => togglePin(e, tool.id)}><span className="material-icons">push_pin</span></button>
@@ -557,18 +574,18 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
               )}
               {recentTools.length > 0 && !hideRecentTools && (
                 <div className="special-section">
-                  <h3 style={{ fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '1rem', opacity: 0.6, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <h3 className="uppercase tracking-wider opacity-6 mb-10 flex-center gap-10" style={{ fontSize: '0.9rem', justifyContent: 'flex-start' }}>
                     <span className="material-icons" style={{ fontSize: '1.2rem' }}>history</span> Recent
                   </h3>
-                  <div style={{ display: 'grid', gap: '12px' }}>
+                  <div className="grid gap-12">
                     {recentTools.filter(id => !pinnedTools.includes(id)).map(id => {
                       const tool = TOOLS.find(t => t.id === id);
                       if (!tool) return null;
                       return (
-                        <div key={id} className="card" style={{ padding: '12px 16px', minHeight: 'unset', animation: 'none' }} onClick={() => openTool(tool.id)}>
-                          <div className="card-header" style={{ marginBottom: 0, gap: '12px' }}>
+                        <div key={id} className="card p-15 min-h-unset no-animation" onClick={() => openTool(tool.id)}>
+                          <div className="card-header m-0 gap-12">
                             <span className="material-icons" style={{ color: 'var(--text-muted)' }}>{tool.icon}</span>
-                            <span style={{ fontWeight: 600 }}>{tool.title}</span>
+                            <span className="font-semibold">{tool.title}</span>
                           </div>
                         </div>
                       );
@@ -587,7 +604,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
           body={searchQuery ? `No tools match "${searchQuery}". Try a different search.` : "Wait for the seeds to grow or check back later."}
         />
       ) : !groupToolbox ? (
-        <div className="category-grid" style={{padding: '0 10px'}}>
+        <div className="category-grid p-0-10">
            {filteredTools.map((tool, idx) => (
               <ToolCard
                 key={tool.id}
@@ -646,7 +663,7 @@ const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, 
             </button>
        </div>
        <div className="card-header">
-            <div className="card-icon" style={{display:'grid', placeItems:'center', background:'var(--bg)'}}>
+            <div className="card-icon flex-center" style={{ background: 'var(--bg)' }}>
                 <span className="material-icons">{tool.icon}</span>
             </div>
             <div className="card-title" dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
@@ -670,6 +687,8 @@ const getCategoryIcon = (cat) => {
         'PDF Convert': 'transform',
         'Web Tools': 'public',
         'Dev Tools': 'terminal',
+        'Networking': 'router',
+        'Data Science': 'insights',
         'Misc': 'auto_fix_high',
         'Specialized': 'insights',
         'Time': 'schedule',

@@ -11,6 +11,9 @@ import sys
 import shutil
 import tempfile
 import zipfile
+import subprocess
+import socket
+import dns.resolver
 import yt_dlp
 
 # Add the project root to sys.path so we can import from scripts
@@ -380,6 +383,43 @@ def cleanup_temp(temp_dir: str, zip_path: str):
             os.remove(zip_path)
     except Exception as e:
         print(f"Cleanup error: {e}")
+
+@app.get("/api/networking/ping")
+def ping_host(host: str = Query(...)):
+    try:
+        # Use subprocess for actual ping (limited to 4 packets)
+        # Note: on Linux it's -c, on Windows it's -n
+        cmd = ["ping", "-c", "4", host]
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+        return {"output": output}
+    except Exception as e:
+        # Fallback if ping command fails (e.g. not installed or permission)
+        try:
+            socket.gethostbyname(host)
+            return {"output": f"Host {host} is reachable (DNS resolved), but ping command failed: {str(e)}"}
+        except:
+            raise HTTPException(status_code=400, detail=f"Ping failed: {str(e)}")
+
+@app.get("/api/networking/dns")
+def dns_lookup(domain: str = Query(...)):
+    results = {}
+    types = ['A', 'AAAA', 'MX', 'TXT', 'NS', 'CNAME']
+    for t in types:
+        try:
+            answers = dns.resolver.resolve(domain, t)
+            results[t] = [str(r) for r in answers]
+        except:
+            continue
+    return results
+
+@app.get("/api/networking/whois")
+def whois_lookup(domain: str = Query(...)):
+    # Simple whois via subprocess (requires whois installed on system)
+    try:
+        output = subprocess.check_output(["whois", domain], stderr=subprocess.STDOUT, universal_newlines=True)
+        return {"output": output}
+    except Exception as e:
+        return {"output": f"Whois command failed: {str(e)}"}
 
 @app.post("/api/social/download")
 def download_social_media(request: DownloadRequest, background_tasks: BackgroundTasks):
