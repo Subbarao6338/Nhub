@@ -405,23 +405,30 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     }
 
     if (!searchQuery || !searchQuery.toLowerCase().startsWith('cat:')) {
-      if (activeCategory !== 'All') matchesCat = t.category === activeCategory;
+      if (activeCategory === 'Pinned') matchesCat = pinnedTools.includes(t.id);
+      else if (activeCategory !== 'All') matchesCat = t.category === activeCategory;
     }
 
     return matchesSearch && matchesCat;
-  }), [searchQuery, activeCategory]);
+  }), [searchQuery, activeCategory, pinnedTools]);
 
   const { grouped, cats } = useMemo(() => {
     const grouped = {};
     filteredTools.forEach(t => {
       (grouped[t.category] || (grouped[t.category] = [])).push(t);
     });
-    // Sort tools within each category
+    // Sort tools within each category: Pinned first, then Alphabetical
     Object.keys(grouped).forEach(cat => {
-      grouped[cat].sort((a, b) => a.title.localeCompare(b.title));
+      grouped[cat].sort((a, b) => {
+        const aPinned = pinnedTools.includes(a.id);
+        const bPinned = pinnedTools.includes(b.id);
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
+        return a.title.localeCompare(b.title);
+      });
     });
     return { grouped, cats: Object.keys(grouped).sort() };
-  }, [filteredTools]);
+  }, [filteredTools, pinnedTools]);
 
   const toggleCategoryCollapse = (cat) => {
     setCollapsedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
@@ -523,10 +530,13 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     );
   }
 
-  const toolboxCategories = {};
-  [...new Set(TOOLS.map(t => t.category))].forEach(cat => {
-    toolboxCategories[cat] = getCategoryIcon(cat);
-  });
+  const toolboxCategories = useMemo(() => {
+    const cats = {};
+    [...new Set(TOOLS.map(t => t.category))].forEach(cat => {
+      cats[cat] = getCategoryIcon(cat);
+    });
+    return cats;
+  }, []);
 
   return (
     <>
@@ -537,6 +547,9 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
         showStats={showStats}
         stats={stats}
         totalCount={TOOLS.length}
+        extraCategories={[
+          { name: 'Pinned', icon: 'push_pin', count: pinnedTools.length }
+        ]}
       />
 
       <div className="toolbox-page-header">
@@ -615,7 +628,15 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
         />
       ) : !groupToolbox ? (
         <div className="category-grid p-0-10">
-           {filteredTools.map((tool, idx) => (
+           {[...filteredTools]
+             .sort((a, b) => {
+               const aPinned = pinnedTools.includes(a.id);
+               const bPinned = pinnedTools.includes(b.id);
+               if (aPinned && !bPinned) return -1;
+               if (!aPinned && bPinned) return 1;
+               return 0; // Keep original search order if both pinned or both not pinned
+             })
+             .map((tool, idx) => (
               <ToolCard
                 key={tool.id}
                 tool={tool}
