@@ -286,10 +286,11 @@ def get_links(profile_id: Optional[int] = None):
         profile = conn.execute("SELECT name FROM profiles WHERE id = ?", (profile_id,)).fetchone()
         if profile and profile['name'] == 'Personal':
             # For Personal profile, we merge all links and de-duplicate by title and url
-            # We use MAX(is_pinned) to ensure if a link is pinned in any profile, it remains pinned
+            # We use a subquery to ensure that if a link is pinned in any profile, we pick that record's ID
+            # so that toggling the pin state works correctly on the right record.
             links = conn.execute('''
-                SELECT id, profile_id, title, url, urls, icon, optional_icon, category, is_internal, tool_id, MAX(is_pinned) as is_pinned
-                FROM links
+                SELECT id, profile_id, title, url, urls, icon, optional_icon, category, is_internal, tool_id, is_pinned
+                FROM (SELECT * FROM links ORDER BY is_pinned DESC)
                 GROUP BY title, url
                 ORDER BY is_pinned DESC, title COLLATE NOCASE ASC
             ''').fetchall()

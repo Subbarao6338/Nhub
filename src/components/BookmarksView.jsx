@@ -99,6 +99,15 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
     (grouped[l.category] || (grouped[l.category] = [])).push(l);
   });
 
+  // Sort bookmarks within each category: Pinned first
+  Object.keys(grouped).forEach(cat => {
+    grouped[cat].sort((a, b) => {
+      if (a.is_pinned && !b.is_pinned) return -1;
+      if (!a.is_pinned && b.is_pinned) return 1;
+      return a.title.localeCompare(b.title);
+    });
+  });
+
   const cats = Object.keys(grouped).sort();
 
   const toggleCategoryCollapse = (cat) => {
@@ -217,6 +226,36 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
       <div className="toolbox-page-header">
         <h2>Bookmarks</h2>
         <p>Access your favorite links and resources.</p>
+
+        {activeCategory === 'All' && !searchQuery && pinnedCount > 0 && (
+          <div className="p-0-10 mb-20 text-left">
+            <h3 className="uppercase tracking-wider opacity-6 mb-10 flex-center gap-10" style={{ fontSize: '0.9rem', justifyContent: 'flex-start' }}>
+              <span className="material-icons" style={{ fontSize: '1.2rem' }}>push_pin</span> Pinned Bookmarks
+            </h3>
+            <div className="category-grid">
+              {currentLinks.filter(l => l.is_pinned).map((link, idx) => (
+                <BookmarkCard
+                  key={`pinned-${link.id}`}
+                  link={link}
+                  idx={idx}
+                  openInNewTab={openInNewTab}
+                  onPin={onPin}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  handleShare={handleShare}
+                  handleCopy={handleCopy}
+                  isCopied={copiedId === link.id}
+                  onLongPress={() => { setSelectedLinkForUrls(link); setIsUrlModalOpen(true); }}
+                  categoryIcon={categories[link.category]}
+                  hideIcons={hideIcons}
+                  hideUrls={hideUrls}
+                  searchQuery={searchQuery}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
         {cats.length > 0 && (
           <div className="pill-group" style={{justifyContent: 'center', marginTop: '1rem'}}>
             <button className="pill" onClick={collapseAll} style={{padding: '8px 16px', fontSize: '0.8rem'}}>
