@@ -10,78 +10,55 @@
     {
       "name": "Toolbox",
       "short_name": "Toolbox",
-      "description": "Open utility tools",
       "url": "/?tab=toolbox",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
       "name": "Bookmarks",
       "short_name": "Bookmarks",
-      "description": "View your bookmarks",
       "url": "/?tab=bookmarks",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
-      "name": "QR Code",
-      "short_name": "QR Code",
-      "description": "Generate QR Codes",
-      "url": "/?tab=toolbox&tool=qr-gen",
+      "name": "QR Scanner",
+      "short_name": "Scanner",
+      "description": "Scan QR codes offline with your camera",
+      "url": "/?tab=toolbox&tool=qr-scan",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
-      "name": "Scientific Calc",
-      "short_name": "Calc",
-      "description": "Open scientific calculator",
-      "url": "/?tab=toolbox&tool=calculator-main",
+      "name": "Notes",
+      "short_name": "Notes",
+      "description": "Quick offline notes and lists",
+      "url": "/?tab=toolbox&tool=notes",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
-      "name": "Security Info",
-      "short_name": "Security",
-      "description": "Check security info",
-      "url": "/?tab=toolbox&tool=security-info",
+      "name": "Flashcards",
+      "short_name": "Learn",
+      "description": "Create and study flashcard sets",
+      "url": "/?tab=toolbox&tool=flashcards",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "World Clock",
+      "short_name": "Clock",
+      "description": "Check time across the globe",
+      "url": "/?tab=toolbox&tool=world-clock",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
       "name": "Flashlight",
-      "short_name": "Flashlight",
-      "description": "Device Flashlight",
+      "short_name": "Light",
+      "description": "Use your phone's camera torch",
       "url": "/?tab=toolbox&tool=flashlight",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "Sound Meter",
-      "short_name": "Sound Meter",
-      "description": "Decibel Meter",
-      "url": "/?tab=toolbox&tool=soundmeter",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
       "name": "SOS",
       "short_name": "SOS",
-      "description": "Emergency SOS Flasher",
+      "description": "Emergency Morse code and strobe light",
       "url": "/?tab=toolbox&tool=sos",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "Compass",
-      "short_name": "Compass",
-      "description": "Digital Compass",
-      "url": "/?tab=toolbox&tool=compass",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "Networking",
-      "short_name": "Networking",
-      "description": "Network tools and IP info",
-      "url": "/?tab=toolbox&tool=networking-main",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "DevOps",
-      "short_name": "DevOps",
-      "description": "Developer and DevOps utilities",
-      "url": "/?tab=toolbox&tool=devops-main",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     }
   ],

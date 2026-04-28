@@ -5,7 +5,13 @@ const HardwareTools = ({ toolId }) => {
 
   useEffect(() => {
     if (toolId) {
-      setActiveTab(toolId);
+      if (toolId === 'magnetic-tester') {
+        setActiveTab('magnetic');
+      } else if (toolId === 'soundmeter') {
+        setActiveTab('soundmeter');
+      } else {
+        setActiveTab(toolId);
+      }
     }
   }, [toolId]);
 
@@ -17,6 +23,8 @@ const HardwareTools = ({ toolId }) => {
           <button className={`pill ${activeTab === 'flashlight' ? 'active' : ''}`} onClick={() => setActiveTab('flashlight')}>Flashlight</button>
           <button className={`pill ${activeTab === 'vibrometer' ? 'active' : ''}`} onClick={() => setActiveTab('vibrometer')}>Vibrometer</button>
           <button className={`pill ${activeTab === 'magnifier' ? 'active' : ''}`} onClick={() => setActiveTab('magnifier')}>Magnifier</button>
+          <button className={`pill ${activeTab === 'luxmeter' ? 'active' : ''}`} onClick={() => setActiveTab('luxmeter')}>Luxmeter</button>
+          <button className={`pill ${activeTab === 'magnetic' ? 'active' : ''}`} onClick={() => setActiveTab('magnetic')}>Magnetic</button>
         </div>
       )}
 
@@ -24,6 +32,8 @@ const HardwareTools = ({ toolId }) => {
       {activeTab === 'flashlight' && <Flashlight />}
       {activeTab === 'vibrometer' && <Vibrometer />}
       {activeTab === 'magnifier' && <Magnifier />}
+      {activeTab === 'luxmeter' && <Luxmeter />}
+      {activeTab === 'magnetic' && <Magnetic />}
     </div>
   );
 };
@@ -243,6 +253,99 @@ const Magnifier = () => {
                     </div>
                 </>
             )}
+        </div>
+    );
+};
+
+const Luxmeter = () => {
+    const [light, setLight] = useState(0);
+    const [active, setActive] = useState(false);
+    const sensorRef = useRef(null);
+    const [error, setError] = useState(null);
+
+    const start = () => {
+        if (!('AmbientLightSensor' in window)) {
+            setError("Ambient Light Sensor not supported by your browser/device.");
+            return;
+        }
+        try {
+            sensorRef.current = new window.AmbientLightSensor();
+            sensorRef.current.onreading = () => setLight(sensorRef.current.illuminance);
+            sensorRef.current.onerror = (e) => setError(`Sensor error: ${e.error.message}`);
+            sensorRef.current.start();
+            setActive(true);
+        } catch (e) {
+            setError("Could not start sensor. Permission might be required.");
+        }
+    };
+
+    const stop = () => {
+        sensorRef.current?.stop();
+        setActive(false);
+    };
+
+    useEffect(() => () => stop(), []);
+
+    return (
+        <div className="text-center p-20">
+            {error && <div className="danger mb-20 p-10 font-semibold" style={{ border: '1px solid var(--error)', borderRadius: '12px' }}>{error}</div>}
+            <div className="sensor-circle" style={{ margin: '20px auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--primary)' }}>{light.toFixed(0)}</div>
+                <div style={{ fontSize: '1rem', opacity: 0.6 }}>lux</div>
+            </div>
+            <button className={`btn-primary w-full ${active ? 'danger' : ''}`} onClick={active ? stop : start}>
+                {active ? 'Stop Sensor' : 'Start Sensor'}
+            </button>
+        </div>
+    );
+};
+
+const Magnetic = () => {
+    const [mag, setMag] = useState({ x: 0, y: 0, z: 0 });
+    const [active, setActive] = useState(false);
+    const sensorRef = useRef(null);
+    const [error, setError] = useState(null);
+
+    const start = () => {
+        if (!('Magnetometer' in window)) {
+            setError("Magnetometer not supported by your browser/device.");
+            return;
+        }
+        try {
+            sensorRef.current = new window.Magnetometer();
+            sensorRef.current.onreading = () => setMag({ x: sensorRef.current.x, y: sensorRef.current.y, z: sensorRef.current.z });
+            sensorRef.current.onerror = (e) => setError(`Sensor error: ${e.error.message}`);
+            sensorRef.current.start();
+            setActive(true);
+        } catch (e) {
+            setError("Could not start sensor. Permission might be required.");
+        }
+    };
+
+    const stop = () => {
+        sensorRef.current?.stop();
+        setActive(false);
+    };
+
+    useEffect(() => () => stop(), []);
+
+    const total = Math.sqrt(mag.x**2 + mag.y**2 + mag.z**2).toFixed(1);
+
+    return (
+        <div className="text-center p-20">
+            {error && <div className="danger mb-20 p-10 font-semibold" style={{ border: '1px solid var(--error)', borderRadius: '12px' }}>{error}</div>}
+            <div className="sensor-circle" style={{ margin: '20px auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--primary)' }}>{total}</div>
+                <div style={{ fontSize: '1rem', opacity: 0.6 }}>µT</div>
+            </div>
+            <div className="grid grid-3 gap-10 mb-20">
+                <div className="card p-10">X: {mag.x.toFixed(1)}</div>
+                <div className="card p-10">Y: {mag.y.toFixed(1)}</div>
+                <div className="card p-10">Z: {mag.z.toFixed(1)}</div>
+            </div>
+            <button className={`btn-primary w-full ${active ? 'danger' : ''}`} onClick={active ? stop : start}>
+                {active ? 'Stop Sensor' : 'Start Sensor'}
+            </button>
         </div>
     );
 };
