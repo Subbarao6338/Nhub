@@ -21,6 +21,7 @@ const LoremIpsum = lazy(() => import('./tools/LoremIpsum'));
 const TextUtils = lazy(() => import('./tools/TextUtils'));
 const WordCounter = lazy(() => import('./tools/WordCounter'));
 const WordRankCalculator = lazy(() => import('./tools/WordRankCalculator'));
+const Flashcards = lazy(() => import('./tools/Flashcards'));
 const JsonFormatter = lazy(() => import('./tools/JsonFormatter'));
 const CsvJsonConverter = lazy(() => import('./tools/CsvJsonConverter'));
 const ImageOptimizer = lazy(() => import('./tools/ImageOptimizer'));
@@ -77,6 +78,7 @@ const WaterReminder = lazy(() => import('./tools/WaterReminder'));
 const HardwareTools = lazy(() => import('./tools/HardwareTools'));
 const HealthTools = lazy(() => import('./tools/HealthTools'));
 const PrivacyDashboard = lazy(() => import('./tools/PrivacyDashboard'));
+const QrScanner = lazy(() => import('./tools/QrScanner'));
 const NetworkingTools = lazy(() => import('./tools/NetworkingTools'));
 const DevOpsTools = lazy(() => import('./tools/DevOpsTools'));
 const DataScienceTools = lazy(() => import('./tools/DataScienceTools'));
@@ -88,13 +90,14 @@ const TOOLS = [
     { id: 'ruler', title: 'Ruler', icon: 'straighten', category: 'Measurements', component: Measurements },
     { id: 'level-pendulum', title: 'Level & Pendulum', icon: 'vibration', category: 'Measurements', component: Measurements },
     { id: 'protractor', title: 'Protractor', icon: 'architecture', category: 'Measurements', component: Measurements },
-    { id: 'luxmeter', title: 'Luxmeter', icon: 'light_mode', category: 'Measurements', component: Measurements },
+    { id: 'luxmeter', title: 'Luxmeter', icon: 'light_mode', category: 'Measurements', component: HardwareTools },
     { id: 'soundmeter', title: 'Soundmeter', icon: 'volume_up', category: 'Measurements', component: HardwareTools },
-    { id: 'magnetic-tester', title: 'Magnetic Tester', icon: 'explore', category: 'Measurements', component: Measurements },
+    { id: 'magnetic-tester', title: 'Magnetic Tester', icon: 'explore', category: 'Measurements', component: HardwareTools },
 
     // Productivity
     { id: 'tally-counter', title: 'Tally Counter', icon: 'add_circle_outline', category: 'Productivity', component: Counter },
     { id: 'notes', title: 'Notes', icon: 'description', category: 'Productivity', component: Notes },
+    { id: 'flashcards', title: 'Flashcards', icon: 'style', category: 'Productivity', component: Flashcards },
     { id: 'ai-summary', title: 'AI Summary', icon: 'auto_fix_high', category: 'Productivity', component: AiSummary },
     { id: 'water-reminder', title: 'Water Reminder', icon: 'local_drink', category: 'Productivity', component: WaterReminder },
     { id: 'nature-sounds', title: 'Nature Sounds', icon: 'filter_drama', category: 'Productivity', component: NatureSounds },
@@ -142,7 +145,8 @@ const TOOLS = [
     { id: 'matrix', title: 'Matrix Multiply', icon: 'grid_on', category: 'Math', component: MathTools },
 
     // Generators
-    { id: 'qr-gen', title: 'QR Code', icon: 'qr_code_2', category: 'Generators', component: QrGen },
+    { id: 'qr-gen', title: 'QR Generator', icon: 'qr_code_2', category: 'Generators', component: QrGen },
+    { id: 'qr-scan', title: 'QR Scanner', icon: 'qr_code_scanner', category: 'Generators', component: QrScanner },
     { id: 'barcode-gen', title: 'Barcode Generator', icon: 'barcode_reader', category: 'Generators', component: Generators },
     { id: 'password-gen', title: 'Password', icon: 'vpn_key', category: 'Generators', component: PasswordGenerator },
     { id: 'random-numbers', title: 'Random Numbers', icon: 'pin', category: 'Generators', component: Generators },
@@ -477,6 +481,14 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     URL.revokeObjectURL(url);
   };
 
+  const toolboxCategories = useMemo(() => {
+    const cats = {};
+    [...new Set(TOOLS.map(t => t.category))].forEach(cat => {
+      cats[cat] = getCategoryIcon(cat);
+    });
+    return cats;
+  }, []);
+
   if (activeToolId) {
     const tool = TOOLS.find(t => t.id === activeToolId);
     if (!tool) {
@@ -529,14 +541,6 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
       </div>
     );
   }
-
-  const toolboxCategories = useMemo(() => {
-    const cats = {};
-    [...new Set(TOOLS.map(t => t.category))].forEach(cat => {
-      cats[cat] = getCategoryIcon(cat);
-    });
-    return cats;
-  }, []);
 
   return (
     <>

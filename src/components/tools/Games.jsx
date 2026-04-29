@@ -209,36 +209,67 @@ const TournamentMakerTool = () => {
 };
 
 const ScoreboardTool = () => {
-    const [scores, setScores] = useState([{ name: 'Team 1', score: 0 }, { name: 'Team 2', score: 0 }]);
+    const [scores, setScores] = useState([{ name: 'Player 1', score: 0 }, { name: 'Player 2', score: 0 }]);
+    const [history, setHistory] = useState([]);
 
     const updateScore = (index, delta) => {
         const newScores = [...scores];
         newScores[index].score += delta;
         setScores(newScores);
+        setHistory([{ player: newScores[index].name, delta, time: new Date().toLocaleTimeString() }, ...history].slice(0, 10));
+    };
+
+    const reset = () => {
+        if (window.confirm("Reset all scores?")) {
+            setScores(scores.map(s => ({ ...s, score: 0 })));
+            setHistory([]);
+        }
     };
 
     return (
         <div style={{ display: 'grid', gap: '20px' }}>
-            {scores.map((s, i) => (
-                <div key={i} style={{ background: 'var(--surface)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border)', textAlign: 'center' }}>
-                    <input
-                        value={s.name}
-                        onChange={e => {
-                            const newScores = [...scores];
-                            newScores[i].name = e.target.value;
-                            setScores(newScores);
-                        }}
-                        style={{ background: 'transparent', border: 'none', textAlign: 'center', fontSize: '1.2rem', fontWeight: 'bold', width: '100%', color: 'var(--on-surface)' }}
-                    />
-                    <div style={{ fontSize: '4rem', fontWeight: 'bold', color: 'var(--primary)', margin: '10px 0' }}>{s.score}</div>
-                    <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                        <button className="pill" onClick={() => updateScore(i, -1)}>-1</button>
-                        <button className="pill" onClick={() => updateScore(i, 1)}>+1</button>
-                        <button className="pill" onClick={() => updateScore(i, 5)}>+5</button>
+            <div className="grid grid-2 gap-15">
+                {scores.map((s, i) => (
+                    <div key={i} className="card p-20 text-center" style={{ border: '2px solid var(--primary-light)' }}>
+                        <input
+                            value={s.name}
+                            onChange={e => {
+                                const newScores = [...scores];
+                                newScores[i].name = e.target.value;
+                                setScores(newScores);
+                            }}
+                            className="w-full mb-10 text-center font-bold"
+                            style={{ background: 'transparent', border: 'none', color: 'var(--on-surface)', fontSize: '1.1rem' }}
+                        />
+                        <div style={{ fontSize: '3.5rem', fontWeight: 'bold', color: 'var(--primary)', margin: '10px 0' }}>{s.score}</div>
+                        <div className="flex-center gap-10">
+                            <button className="pill p-8-16" onClick={() => updateScore(i, -1)}>-1</button>
+                            <button className="pill active p-8-16" onClick={() => updateScore(i, 1)}>+1</button>
+                            <button className="pill p-8-16" onClick={() => updateScore(i, 5)}>+5</button>
+                        </div>
                     </div>
+                ))}
+            </div>
+
+            <div className="flex-gap">
+                <button className="pill flex-1" onClick={() => setScores([...scores, { name: `Player ${scores.length + 1}`, score: 0 }])} disabled={scores.length >= 4}>
+                    <span className="material-icons" style={{ fontSize: '1.2rem' }}>person_add</span> Add Player
+                </button>
+                <button className="pill flex-1" onClick={reset}>Reset All</button>
+            </div>
+
+            {history.length > 0 && (
+                <div className="card p-15">
+                    <h4 className="mb-10 opacity-6 uppercase tracking-wider" style={{ fontSize: '0.8rem' }}>Recent History</h4>
+                    {history.map((h, i) => (
+                        <div key={i} className="flex-between mb-5 opacity-8" style={{ fontSize: '0.9rem' }}>
+                            <span>{h.player}</span>
+                            <span>{h.delta > 0 ? `+${h.delta}` : h.delta}</span>
+                            <span className="opacity-5" style={{ fontSize: '0.7rem' }}>{h.time}</span>
+                        </div>
+                    ))}
                 </div>
-            ))}
-            <button className="pill" onClick={() => setScores([...scores, { name: `Team ${scores.length + 1}`, score: 0 }])}>Add Team</button>
+            )}
         </div>
     );
 };

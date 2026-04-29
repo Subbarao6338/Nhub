@@ -29,6 +29,9 @@ const PdfEdit = ({ onResultChange, toolId }) => {
   const [splitRange, setSplitRange] = useState('');
   const [watermarkText, setWatermarkText] = useState('Confidential');
 
+  const [cropBox, setCropBox] = useState({ x: 0, y: 0, w: 0, h: 0 });
+  const [signatureImage, setSignatureImage] = useState(null);
+
   const mergePdfs = async () => {
       if (files.length < 2) return;
       try {
@@ -65,7 +68,6 @@ const PdfEdit = ({ onResultChange, toolId }) => {
         const pdfBytes = await files[0].arrayBuffer();
         const pdfDoc = await PDFDocument.load(pdfBytes);
         const indices = pagesToRemove.split(',').map(s => parseInt(s.trim()) - 1).filter(n => !isNaN(n));
-        // Sort indices in descending order to avoid shift issues
         indices.sort((a, b) => b - a);
         indices.forEach(idx => {
             if (idx >= 0 && idx < pdfDoc.getPageCount()) {
@@ -157,9 +159,56 @@ const PdfEdit = ({ onResultChange, toolId }) => {
       } catch (e) { alert("Error adding watermark: " + e.message); }
   };
 
+  const cropPdf = async () => {
+      if (files.length === 0) return;
+      try {
+          const pdfBytes = await files[0].arrayBuffer();
+          const pdfDoc = await PDFDocument.load(pdfBytes);
+          const pages = pdfDoc.getPages();
+          pages.forEach(page => {
+              const { width, height } = page.getSize();
+              // Apply crop from edges (percentage-based)
+              const x = (cropBox.x / 100) * width;
+              const y = (cropBox.y / 100) * height;
+              const w = ((100 - cropBox.w - cropBox.x) / 100) * width;
+              const h = ((100 - cropBox.h - cropBox.y) / 100) * height;
+              page.setCropBox(x, y, w, h);
+          });
+          const croppedBytes = await pdfDoc.save();
+          onResultChange({ text: 'Cropped PDF', blob: new Blob([croppedBytes], { type: 'application/pdf' }), filename: 'cropped.pdf' });
+      } catch (e) { alert("Error cropping PDF: " + e.message); }
+  };
+
+  const signPdf = async () => {
+      if (files.length === 0 || !signatureImage) return;
+      try {
+          const pdfBytes = await files[0].arrayBuffer();
+          const pdfDoc = await PDFDocument.load(pdfBytes);
+          const signatureBytes = await signatureImage.arrayBuffer();
+
+          let embeddedImage;
+          if (signatureImage.type === 'image/png') embeddedImage = await pdfDoc.embedPng(signatureBytes);
+          else embeddedImage = await pdfDoc.embedJpg(signatureBytes);
+
+          const pages = pdfDoc.getPages();
+          const lastPage = pages[pages.length - 1];
+          const { width, height } = lastPage.getSize();
+
+          lastPage.drawImage(embeddedImage, {
+              x: width - 150,
+              y: 50,
+              width: 100,
+              height: 50,
+          });
+
+          const signedBytes = await pdfDoc.save();
+          onResultChange({ text: 'Signed PDF', blob: new Blob([signedBytes], { type: 'application/pdf' }), filename: 'signed.pdf' });
+      } catch (e) { alert("Error signing PDF: " + e.message); }
+  };
+
   return (
     <div className="tool-form">
-      {!toolId && (<div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
+      {!toolId && (<div className="pill-group scrollable-x" style={{ marginBottom: '20px' }}>
         <button className={`pill ${activeTab === 'merge' ? 'active' : ''}`} onClick={() => setActiveTab('merge')}>Merge</button>
         <button className={`pill ${activeTab === 'split' ? 'active' : ''}`} onClick={() => setActiveTab('split')}>Split</button>
         <button className={`pill ${activeTab === 'rotate' ? 'active' : ''}`} onClick={() => setActiveTab('rotate')}>Rotate</button>
@@ -167,6 +216,8 @@ const PdfEdit = ({ onResultChange, toolId }) => {
         <button className={`pill ${activeTab === 'rearrange' ? 'active' : ''}`} onClick={() => setActiveTab('rearrange')}>Rearrange</button>
         <button className={`pill ${activeTab === 'numbers' ? 'active' : ''}`} onClick={() => setActiveTab('numbers')}>Page Numbers</button>
         <button className={`pill ${activeTab === 'watermark' ? 'active' : ''}`} onClick={() => setActiveTab('watermark')}>Watermark</button>
+        <button className={`pill ${activeTab === 'crop' ? 'active' : ''}`} onClick={() => setActiveTab('crop')}>Crop</button>
+        <button className={`pill ${activeTab === 'sign' ? 'active' : ''}`} onClick={() => setActiveTab('sign')}>Sign</button>
       </div>)}
 
       <div className="form-group">
@@ -177,15 +228,13 @@ const PdfEdit = ({ onResultChange, toolId }) => {
 
       {activeTab === 'merge' && (
           <div style={{ marginTop: '20px' }}>
-              <p style={{ fontSize: '0.9rem', marginBottom: '10px', opacity: 0.7 }}>Combines multiple PDF files into one in the order they were selected.</p>
-              <button className="btn-primary" onClick={mergePdfs} disabled={files.length < 2} style={{ width: '100%' }}>Merge {files.length} PDFs</button>
+              <button className="btn-primary w-full" onClick={mergePdfs} disabled={files.length < 2}>Merge {files.length} PDFs</button>
           </div>
       )}
 
       {activeTab === 'rotate' && (
           <div style={{ marginTop: '20px' }}>
-              <p style={{ fontSize: '0.9rem', marginBottom: '10px', opacity: 0.7 }}>Rotates all pages in the first PDF file by 90 degrees clockwise.</p>
-              <button className="btn-primary" onClick={rotatePdf} disabled={files.length === 0} style={{ width: '100%' }}>Rotate 90° Clockwise</button>
+              <button className="btn-primary w-full" onClick={rotatePdf} disabled={files.length === 0}>Rotate 90° Clockwise</button>
           </div>
       )}
 
@@ -193,9 +242,9 @@ const PdfEdit = ({ onResultChange, toolId }) => {
           <div style={{ marginTop: '20px' }}>
               <div className="form-group">
                   <label>Pages to Remove (e.g. 1, 3, 5)</label>
-                  <input type="text" value={pagesToRemove} onChange={e => setPagesToRemove(e.target.value)} placeholder="1, 3, 5" className="pill" style={{ width: '100%' }} />
+                  <input type="text" value={pagesToRemove} onChange={e => setPagesToRemove(e.target.value)} placeholder="1, 3, 5" className="pill w-full" />
               </div>
-              <button className="btn-primary" onClick={deletePages} disabled={files.length === 0 || !pagesToRemove} style={{ width: '100%' }}>Remove Pages</button>
+              <button className="btn-primary w-full" onClick={deletePages} disabled={files.length === 0 || !pagesToRemove}>Remove Pages</button>
           </div>
       )}
 
@@ -203,9 +252,9 @@ const PdfEdit = ({ onResultChange, toolId }) => {
           <div style={{ marginTop: '20px' }}>
               <div className="form-group">
                   <label>New Page Order (e.g. 3, 1, 2)</label>
-                  <input type="text" value={pageOrder} onChange={e => setPageOrder(e.target.value)} placeholder="3, 1, 2" className="pill" style={{ width: '100%' }} />
+                  <input type="text" value={pageOrder} onChange={e => setPageOrder(e.target.value)} placeholder="3, 1, 2" className="pill w-full" />
               </div>
-              <button className="btn-primary" onClick={rearrangePages} disabled={files.length === 0 || !pageOrder} style={{ width: '100%' }}>Rearrange Pages</button>
+              <button className="btn-primary w-full" onClick={rearrangePages} disabled={files.length === 0 || !pageOrder}>Rearrange Pages</button>
           </div>
       )}
 
@@ -213,16 +262,50 @@ const PdfEdit = ({ onResultChange, toolId }) => {
           <div style={{ marginTop: '20px' }}>
               <div className="form-group">
                   <label>Page Range (e.g. 1-3, 5)</label>
-                  <input type="text" value={splitRange} onChange={e => setSplitRange(e.target.value)} placeholder="1-3, 5" className="pill" style={{ width: '100%' }} />
+                  <input type="text" value={splitRange} onChange={e => setSplitRange(e.target.value)} placeholder="1-3, 5" className="pill w-full" />
               </div>
-              <button className="btn-primary" onClick={splitPdf} disabled={files.length === 0 || !splitRange} style={{ width: '100%' }}>Split PDF</button>
+              <button className="btn-primary w-full" onClick={splitPdf} disabled={files.length === 0 || !splitRange}>Split PDF</button>
+          </div>
+      )}
+
+      {activeTab === 'crop' && (
+          <div style={{ marginTop: '20px' }}>
+              <div className="grid grid-2 gap-10 mb-15">
+                  <div className="form-group">
+                      <label>Left Margin %</label>
+                      <input type="number" value={cropBox.x} onChange={e => setCropBox({...cropBox, x: parseInt(e.target.value) || 0})} className="pill w-full" />
+                  </div>
+                  <div className="form-group">
+                      <label>Top Margin %</label>
+                      <input type="number" value={cropBox.y} onChange={e => setCropBox({...cropBox, y: parseInt(e.target.value) || 0})} className="pill w-full" />
+                  </div>
+                  <div className="form-group">
+                      <label>Right Margin %</label>
+                      <input type="number" value={cropBox.w} onChange={e => setCropBox({...cropBox, w: parseInt(e.target.value) || 0})} className="pill w-full" />
+                  </div>
+                  <div className="form-group">
+                      <label>Bottom Margin %</label>
+                      <input type="number" value={cropBox.h} onChange={e => setCropBox({...cropBox, h: parseInt(e.target.value) || 0})} className="pill w-full" />
+                  </div>
+              </div>
+              <button className="btn-primary w-full" onClick={cropPdf} disabled={files.length === 0}>Apply Crop</button>
+          </div>
+      )}
+
+      {activeTab === 'sign' && (
+          <div style={{ marginTop: '20px' }}>
+              <div className="form-group">
+                  <label>Upload Signature (PNG/JPG)</label>
+                  <input type="file" onChange={e => setSignatureImage(e.target.files[0])} accept="image/*" className="pill w-full" />
+              </div>
+              <p className="opacity-6 mb-15" style={{ fontSize: '0.8rem' }}>Signature will be placed on the bottom right of the last page.</p>
+              <button className="btn-primary w-full" onClick={signPdf} disabled={files.length === 0 || !signatureImage}>Sign PDF</button>
           </div>
       )}
 
       {activeTab === 'numbers' && (
           <div style={{ marginTop: '20px' }}>
-              <p style={{ fontSize: '0.9rem', marginBottom: '10px', opacity: 0.7 }}>Adds page numbers at the bottom center of each page.</p>
-              <button className="btn-primary" onClick={addPageNumbers} disabled={files.length === 0} style={{ width: '100%' }}>Add Page Numbers</button>
+              <button className="btn-primary w-full" onClick={addPageNumbers} disabled={files.length === 0}>Add Page Numbers</button>
           </div>
       )}
 
@@ -230,13 +313,13 @@ const PdfEdit = ({ onResultChange, toolId }) => {
           <div style={{ marginTop: '20px' }}>
               <div className="form-group">
                   <label>Watermark Text</label>
-                  <input type="text" value={watermarkText} onChange={e => setWatermarkText(e.target.value)} placeholder="Confidential" className="pill" style={{ width: '100%' }} />
+                  <input type="text" value={watermarkText} onChange={e => setWatermarkText(e.target.value)} placeholder="Confidential" className="pill w-full" />
               </div>
-              <button className="btn-primary" onClick={addWatermark} disabled={files.length === 0 || !watermarkText} style={{ width: '100%' }}>Add Watermark</button>
+              <button className="btn-primary w-full" onClick={addWatermark} disabled={files.length === 0 || !watermarkText}>Add Watermark</button>
           </div>
       )}
 
-      {(activeTab === 'sign' || activeTab === 'bookmarks' || activeTab === 'crop') && <div style={{ textAlign: 'center', opacity: 0.6, marginTop: '20px' }}>This advanced PDF feature is coming soon.</div>}
+      {(activeTab === 'bookmarks') && <div style={{ textAlign: 'center', opacity: 0.6, marginTop: '20px' }}>This advanced PDF feature is coming soon.</div>}
     </div>
   );
 };

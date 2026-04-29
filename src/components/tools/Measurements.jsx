@@ -6,7 +6,6 @@ const Measurements = ({ onResultChange, toolId }) => {
   useEffect(() => {
     if (toolId) {
         if (toolId === 'level-pendulum') setActiveTab('level');
-        else if (toolId === 'magnetic-tester') setActiveTab('magnetic');
         else if (toolId === 'tabata-timer') setActiveTab('tabata');
         else if (toolId === 'reaction-time') setActiveTab('reaction');
         else setActiveTab(toolId);
@@ -14,8 +13,6 @@ const Measurements = ({ onResultChange, toolId }) => {
   }, [toolId]);
 
   const [orientation, setOrientation] = useState({ beta: 0, gamma: 0 });
-  const [ambient, setAmbient] = useState({ light: 0, magnetic: { x: 0, y: 0, z: 0 } });
-  const [noise, setNoise] = useState(0);
   const [permissionGranted, setPermissionGranted] = useState(false);
 
   const requestPermission = async () => {
@@ -36,56 +33,8 @@ const Measurements = ({ onResultChange, toolId }) => {
     };
     window.addEventListener('deviceorientation', handleOrientation);
 
-    let lightSensor, magSensor;
-    try {
-        if ('AmbientLightSensor' in window) {
-            lightSensor = new window.AmbientLightSensor();
-            lightSensor.onreading = () => setAmbient(prev => ({ ...prev, light: lightSensor.illuminance }));
-            lightSensor.start();
-        }
-    } catch (e) { console.warn("AmbientLightSensor not available:", e); }
-
-    try {
-        if ('Magnetometer' in window) {
-            magSensor = new window.Magnetometer();
-            magSensor.onreading = () => setAmbient(prev => ({ ...prev, magnetic: { x: magSensor.x, y: magSensor.y, z: magSensor.z } }));
-            magSensor.start();
-        }
-    } catch (e) { console.warn("Magnetometer not available:", e); }
-
-    let audioContext, analyser, microphone, scriptProcessor, audioStream;
-    if (activeTab === 'soundmeter' && navigator.mediaDevices) {
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            audioStream = stream;
-            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-            if (!AudioContextClass) return;
-
-            audioContext = new AudioContextClass();
-            analyser = audioContext.createAnalyser();
-            microphone = audioContext.createMediaStreamSource(stream);
-            scriptProcessor = audioContext.createScriptProcessor(2048, 1, 1);
-            analyser.smoothingTimeConstant = 0.8;
-            analyser.fftSize = 1024;
-            microphone.connect(analyser);
-            analyser.connect(scriptProcessor);
-            scriptProcessor.connect(audioContext.destination);
-            scriptProcessor.onaudioprocess = () => {
-                const array = new Uint8Array(analyser.frequencyBinCount);
-                analyser.getByteFrequencyData(array);
-                let values = 0;
-                for (let i = 0; i < array.length; i++) values += array[i];
-                const average = values / array.length;
-                setNoise(Math.round(average));
-            };
-        }).catch(err => console.error("Soundmeter error:", err));
-    }
-
     return () => {
         window.removeEventListener('deviceorientation', handleOrientation);
-        lightSensor?.stop();
-        magSensor?.stop();
-        if (audioContext) audioContext.close();
-        if (audioStream) audioStream.getTracks().forEach(track => track.stop());
     };
   }, [permissionGranted, activeTab]);
 
@@ -97,16 +46,13 @@ const Measurements = ({ onResultChange, toolId }) => {
           <button className={`pill ${activeTab === 'level' ? 'active' : ''}`} onClick={() => setActiveTab('level')}>Level</button>
           <button className={`pill ${activeTab === 'pendulum' ? 'active' : ''}`} onClick={() => setActiveTab('pendulum')}>Pendulum</button>
           <button className={`pill ${activeTab === 'protractor' ? 'active' : ''}`} onClick={() => setActiveTab('protractor')}>Protractor</button>
-          <button className={`pill ${activeTab === 'luxmeter' ? 'active' : ''}`} onClick={() => setActiveTab('luxmeter')}>Luxmeter</button>
-          <button className={`pill ${activeTab === 'soundmeter' ? 'active' : ''}`} onClick={() => setActiveTab('soundmeter')}>Soundmeter</button>
-          <button className={`pill ${activeTab === 'magnetic' ? 'active' : ''}`} onClick={() => setActiveTab('magnetic')}>Magnetic</button>
           <button className={`pill ${activeTab === 'metronome' ? 'active' : ''}`} onClick={() => setActiveTab('metronome')}>Metronome</button>
           <button className={`pill ${activeTab === 'reaction' ? 'active' : ''}`} onClick={() => setActiveTab('reaction')}>Reaction</button>
           <button className={`pill ${activeTab === 'tabata' ? 'active' : ''}`} onClick={() => setActiveTab('tabata')}>Tabata</button>
         </div>
       )}
 
-      {!permissionGranted && (['level', 'pendulum', 'protractor', 'luxmeter', 'magnetic'].includes(activeTab)) && (
+      {!permissionGranted && (['level', 'pendulum', 'protractor'].includes(activeTab)) && (
         <div className="text-center p-20">
           <button className="btn-primary" onClick={requestPermission}>Enable Sensors</button>
         </div>
@@ -116,9 +62,6 @@ const Measurements = ({ onResultChange, toolId }) => {
       {activeTab === 'level' && <LevelTool orientation={orientation} />}
       {activeTab === 'pendulum' && <PendulumTool orientation={orientation} />}
       {activeTab === 'protractor' && <ProtractorTool orientation={orientation} />}
-      {activeTab === 'luxmeter' && <LuxmeterTool light={ambient.light} />}
-      {activeTab === 'soundmeter' && <SoundmeterTool noise={noise} />}
-      {activeTab === 'magnetic' && <MagneticTool mag={ambient.magnetic} />}
       {activeTab === 'metronome' && <MetronomeTool />}
       {activeTab === 'reaction' && <ReactionTimeTool />}
       {activeTab === 'tabata' && <TabataTimerTool />}
@@ -213,35 +156,6 @@ const ProtractorTool = ({ orientation }) => {
         </div>
     );
 };
-
-const LuxmeterTool = ({ light }) => (
-    <div className="text-center p-20">
-        <div style={{ fontSize: '3rem', color: 'var(--primary)' }}>{light.toFixed(1)} <span style={{ fontSize: '1rem' }}>lx</span></div>
-        <p>Ambient Light Intensity</p>
-    </div>
-);
-
-const SoundmeterTool = ({ noise }) => (
-    <div className="text-center p-20">
-        <div style={{ width: '100%', height: '20px', background: 'var(--border)', borderRadius: '10px', overflow: 'hidden', marginBottom: '10px' }}>
-            <div style={{ width: `${Math.min(100, noise)}%`, height: '100%', background: 'var(--primary)', transition: 'width 0.1s ease' }} />
-        </div>
-        <div style={{ fontSize: '3rem', color: 'var(--primary)' }}>{noise} <span style={{ fontSize: '1rem' }}>dB (est)</span></div>
-        <p>Noise Level</p>
-    </div>
-);
-
-const MagneticTool = ({ mag }) => (
-    <div className="text-center p-20">
-        <div style={{ fontSize: '1.5rem', color: 'var(--primary)' }}>
-            X: {mag.x.toFixed(2)} Y: {mag.y.toFixed(2)} Z: {mag.z.toFixed(2)}
-        </div>
-        <div style={{ fontSize: '2rem', marginTop: '10px' }}>
-            Total: {Math.sqrt(mag.x**2 + mag.y**2 + mag.z**2).toFixed(2)} µT
-        </div>
-        <p>Magnetic Field Strength</p>
-    </div>
-);
 
 const MetronomeTool = () => {
     const [bpm, setBpm] = useState(120);
