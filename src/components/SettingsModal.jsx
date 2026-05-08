@@ -85,6 +85,12 @@ const CollapsibleSection = ({ id, title, icon, isOpen, onToggle, children }) => 
   );
 };
 
+const THEME_COLORS = [
+  'indigo', 'blue', 'cyan', 'green', 'yellow', 'orange', 'red', 'pink', 'purple', 'violet', 'lime', 'sky', 'rose', 'slate', 'black',
+  'nature', 'forest', 'ocean', 'earth', 'mountain', 'desert', 'sunset', 'winter', 'autumn', 'lavender', 'spring', 'galaxy', 'blackhole',
+  'midnight', 'aurora', 'blossom', 'canyon', 'glacier', 'meadow', 'sunlight', 'breeze', 'seedling', 'mist'
+];
+
 const SettingsModal = ({
   appName, setAppName,
   enableProfiles, setEnableProfiles,
@@ -157,10 +163,6 @@ const SettingsModal = ({
     reader.readAsText(file);
   };
 
-  const colors = [
-    'indigo', 'blue', 'cyan', 'green', 'yellow', 'orange', 'red', 'pink', 'purple', 'violet', 'lime', 'sky', 'rose', 'slate', 'black'
-  ];
-
   return (
     <div className="modal" style={{display: 'block', padding: '1.5rem'}}>
       <h2 style={{marginTop: 0, marginBottom: '1.5rem', fontSize: '1.5rem'}}>Settings</h2>
@@ -228,14 +230,10 @@ const SettingsModal = ({
                 className="pill"
                 style={{ padding: '4px 12px', fontSize: '0.75rem' }}
                 onClick={() => {
-                  const themes = [
-                    'light', 'dark', 'nature', 'forest', 'ocean', 'earth', 'mountain', 'desert', 'sunset', 'winter',
-                    'autumn', 'lavender', 'spring', 'galaxy', 'blackhole', 'midnight', 'aurora', 'blossom', 'canyon', 'glacier',
-                    'meadow', 'sunlight', 'breeze', 'seedling', 'mist'
-                  ];
+                  const themes = ['light', 'dark', 'system'];
                   const randomTheme = themes[Math.floor(Math.random() * themes.length)];
                   setTheme(randomTheme);
-                  const randomColor = ['indigo', 'blue', 'cyan', 'green', 'yellow', 'orange', 'red', 'pink', 'purple', 'violet', 'lime', 'sky', 'rose', 'slate', 'black'][Math.floor(Math.random() * 15)];
+                  const randomColor = THEME_COLORS[Math.floor(Math.random() * THEME_COLORS.length)];
                   setAccentColor(randomColor);
                 }}
               >
@@ -243,19 +241,9 @@ const SettingsModal = ({
               </button>
             </div>
             <div className="pill-group">
-              {[
-                'light', 'dark', 'system', 'nature', 'forest', 'ocean', 'earth', 'mountain', 'desert', 'sunset', 'winter',
-                'autumn', 'lavender', 'spring', 'galaxy', 'blackhole', 'midnight', 'aurora', 'blossom', 'canyon', 'glacier',
-                'meadow', 'sunlight', 'breeze', 'seedling', 'mist'
-              ].map(t => {
+              {['light', 'dark', 'system'].map(t => {
                 const icons = {
-                  light: 'light_mode', dark: 'dark_mode', system: 'settings_brightness', nature: 'eco', forest: 'forest',
-                  ocean: 'water', earth: 'landscape', mountain: 'terrain', desert: 'wb_sunny',
-                  sunset: 'wb_twilight', winter: 'ac_unit', autumn: 'park', lavender: 'spa',
-                  spring: 'local_florist', galaxy: 'auto_awesome', blackhole: 'cyclone',
-                  midnight: 'nights_stay', aurora: 'waves', blossom: 'filter_vintage',
-                  canyon: 'terrain', glacier: 'ac_unit', meadow: 'grass', sunlight: 'wb_sunny',
-                  breeze: 'air', seedling: 'nature', mist: 'cloud'
+                  light: 'light_mode', dark: 'dark_mode', system: 'settings_brightness'
                 };
                 return (
                   <button
@@ -273,7 +261,7 @@ const SettingsModal = ({
           <div className="form-group">
             <label>Accent Color</label>
             <div className="pill-group">
-              {colors.map(color => (
+              {THEME_COLORS.map(color => (
                 <button
                   key={color}
                   className={`color-pill ${accentColor === color ? 'active' : ''}`}
@@ -483,7 +471,13 @@ const getHex = (color) => {
         indigo: '#6366f1', blue: '#3b82f6', cyan: '#06b6d4', green: '#10b981',
         yellow: '#eab308', orange: '#f59e0b', red: '#ef4444', pink: '#ec4899',
         purple: '#8b5cf6', violet: '#7c3aed', lime: '#84cc16', sky: '#0ea5e9',
-        rose: '#f43f5e', slate: '#475569', black: '#000000'
+        rose: '#f43f5e', slate: '#475569', black: '#000000',
+        nature: '#2d6a4f', forest: '#1b4332', ocean: '#0077b6', earth: '#78350f',
+        mountain: '#475569', desert: '#dda15e', sunset: '#fb8500', winter: '#0369a1',
+        autumn: '#bc4749', lavender: '#7c3aed', spring: '#166534', galaxy: '#c084fc',
+        blackhole: '#1a1a1a', midnight: '#0f172a', aurora: '#004d40', blossom: '#e11d48',
+        canyon: '#7c2d12', glacier: '#0284c7', meadow: '#4d7c0f', sunlight: '#92400e',
+        breeze: '#0ea5e9', seedling: '#15803d', mist: '#64748b'
     };
     return map[color] || color;
 }
