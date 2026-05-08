@@ -655,6 +655,52 @@ body::before {
   z-index: 5001;
 }
 
+.modal h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.profile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.profile-item-row {
+  display: flex;
+  gap: 10px;
+}
+
+.profile-item-row .pill {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.startup-toggle {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.startup-toggle:hover {
+  background: var(--primary-glow);
+  border-color: var(--primary);
+}
+
+.startup-toggle.active {
+  color: var(--nature-gold);
+  border-color: var(--nature-gold);
+  background: var(--primary-glow);
+}
+
 /* Settings Specific */
 .settings-container {
   display: flex;
@@ -778,7 +824,7 @@ body::before {
 .form-actions {
   display: flex;
   gap: 12px;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
 
 .url-field-wrapper {
