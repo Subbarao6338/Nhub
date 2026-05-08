@@ -628,6 +628,18 @@ body::before {
   letter-spacing: 0.05em;
 }
 
+.category-section.collapsed .category-grid {
+  display: none;
+}
+
+.category-section .expand-icon {
+  transition: transform 0.3s var(--transition-bounce);
+}
+
+.category-section.collapsed .expand-icon {
+  transform: rotate(-90deg);
+}
+
 /* Modals */
 .modal-overlay {
   position: fixed;
