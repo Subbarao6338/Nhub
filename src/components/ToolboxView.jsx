@@ -22,15 +22,12 @@ const TextUtils = lazy(() => import('./tools/TextUtils'));
 const Flashcards = lazy(() => import('./tools/Flashcards'));
 const ImageOptimizer = lazy(() => import('./tools/ImageOptimizer'));
 const Base64Converter = lazy(() => import('./tools/Base64Converter'));
-const DeviceInfo = lazy(() => import('./tools/DeviceInfo'));
-const AndroidSensors = lazy(() => import('./tools/AndroidSensors'));
 const PomodoroTimer = lazy(() => import('./tools/PomodoroTimer'));
 const MarkdownPreview = lazy(() => import('./tools/MarkdownPreview'));
 const TeluguPanchangam = lazy(() => import('./tools/TeluguPanchangam'));
 const AiSummary = lazy(() => import('./tools/AiSummary'));
 const PerchanceAi = lazy(() => import('./tools/PerchanceAi'));
 const OmniHub = lazy(() => import('./tools/OmniHub'));
-const NetworkTools = lazy(() => import('./tools/NetworkTools'));
 const Cookies = lazy(() => import('./tools/Cookies'));
 const Inspect = lazy(() => import('./tools/Inspect'));
 const UrlTool = lazy(() => import('./tools/UrlTool'));
@@ -75,6 +72,7 @@ const HealthTools = lazy(() => import('./tools/HealthTools'));
 const PrivacyDashboard = lazy(() => import('./tools/PrivacyDashboard'));
 const QrScanner = lazy(() => import('./tools/QrScanner'));
 const NetworkingTools = lazy(() => import('./tools/NetworkingTools'));
+const SystemTools = lazy(() => import('./tools/SystemTools'));
 const DevOpsTools = lazy(() => import('./tools/DevOpsTools'));
 const DataScienceTools = lazy(() => import('./tools/DataScienceTools'));
 const AudioTools = lazy(() => import('./tools/AudioTools'));
@@ -154,7 +152,7 @@ const TOOLS = [
     { id: 'csv-json', title: 'CSV/JSON', icon: 'swap_horiz', category: 'Developer', component: DevOpsTools },
     { id: 'json-to-csv', title: 'JSON to CSV', icon: 'table_view', category: 'Developer', component: DevOpsTools },
     { id: 'json-validator', title: 'JSON Validator', icon: 'spellcheck', category: 'Developer', component: DevOpsTools },
-    { id: 'network-tools', title: 'Network', icon: 'timeline', category: 'Developer', component: NetworkTools },
+    { id: 'network-tools', title: 'Network', icon: 'timeline', category: 'Developer', component: NetworkingTools },
     { id: 'cookies', title: 'Cookies', icon: 'cookie', category: 'Developer', component: Cookies },
     { id: 'inspect', title: 'Inspect', icon: 'search', category: 'Developer', component: Inspect },
     { id: 'omni-hub', title: 'Omni Hub', icon: 'public', category: 'Developer', component: OmniHub },
@@ -211,8 +209,8 @@ const TOOLS = [
     { id: 'gps-info', title: 'Altitude & GPS', icon: 'location_on', category: 'Sensors', component: OutdoorTools },
     { id: 'magnifier', title: 'Magnifying Glass', icon: 'zoom_in', category: 'Sensors', component: HardwareTools },
     { id: 'mirror', title: 'Mirror', icon: 'face', category: 'Sensors', component: OutdoorTools },
-    { id: 'device-info', title: 'Device Info', icon: 'memory', category: 'Sensors', component: DeviceInfo },
-    { id: 'android-sensors', title: 'Sensors', icon: 'sensors', category: 'Sensors', component: AndroidSensors },
+    { id: 'device-info', title: 'Device Info', icon: 'memory', category: 'Sensors', component: SystemTools },
+    { id: 'android-sensors', title: 'Sensors', icon: 'sensors', category: 'Sensors', component: SystemTools },
 
     // Games
     { id: 'dice-roller', title: 'Dice Roller', icon: 'casino', category: 'Games', component: DiceRoller },
@@ -322,6 +320,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
   };
 
   const openTool = (id, skipHistory = false) => {
+    if (activeToolId === id) return;
     setActiveToolId(id);
     setCurrentResult(null);
 
@@ -333,14 +332,21 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     }
 
     if (!skipHistory) {
-      window.history.pushState({ toolId: id }, '', window.location.pathname + `?tab=toolbox&tool=${id}`);
+      const url = new URL(window.location);
+      url.searchParams.set('tab', 'toolbox');
+      url.searchParams.set('tool', id);
+      window.history.pushState({ toolId: id, tab: 'toolbox' }, '', url.toString());
     }
   };
 
   useEffect(() => {
     const handlePopState = (event) => {
-      if (event.state && event.state.toolId) {
-        openTool(event.state.toolId, true);
+      const params = new URLSearchParams(window.location.search);
+      const toolId = params.get('tool');
+      const tab = params.get('tab');
+
+      if (tab === 'toolbox' && toolId) {
+        setActiveToolId(toolId);
       } else {
         setActiveToolId(null);
       }
