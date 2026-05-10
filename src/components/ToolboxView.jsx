@@ -86,6 +86,9 @@ const DevOpsTools = lazy(() => import('./tools/DevOpsTools'));
 const DataScienceTools = lazy(() => import('./tools/DataScienceTools'));
 const AudioTools = lazy(() => import('./tools/AudioTools'));
 const SecurityTools = lazy(() => import('./tools/SecurityTools'));
+const ProductivityTools = lazy(() => import('./tools/ProductivityTools'));
+const CreativeTools = lazy(() => import('./tools/CreativeTools'));
+const EducationTools = lazy(() => import('./tools/EducationTools'));
 
 const TOOLS = [
     // Measurements (6 Tools)
@@ -98,6 +101,8 @@ const TOOLS = [
 
     // Productivity
     { id: 'tally-counter', title: 'Tally Counter', icon: 'add_circle_outline', category: 'Productivity', component: Counter },
+    { id: 'habit-tracker', title: 'Habit Tracker', icon: 'auto_graph', category: 'Productivity', component: ProductivityTools },
+    { id: 'sticky-notes', title: 'Sticky Notes', icon: 'note_alt', category: 'Productivity', component: ProductivityTools },
     { id: 'notes', title: 'Notes', icon: 'description', category: 'Productivity', component: Notes },
     { id: 'flashcards', title: 'Flashcards', icon: 'style', category: 'Productivity', component: Flashcards },
     { id: 'ai-summary', title: 'AI Summary', icon: 'auto_fix_high', category: 'Productivity', component: AiSummary },
@@ -275,6 +280,7 @@ const TOOLS = [
     // Data Science
     { id: 'regression', title: 'Linear Regression', icon: 'show_chart', category: 'Data Science', component: DataScienceTools },
     { id: 'correlation', title: 'Correlation Matrix', icon: 'grid_on', category: 'Data Science', component: DataScienceTools },
+    { id: 'descriptive-stats', title: 'Descriptive Stats', icon: 'insights', category: 'Data Science', component: DataScienceTools },
 
     // Security (Integration)
     { id: 'hash-gen', title: 'Hash Gen', icon: 'security', category: 'Security', component: HashGenerator },
@@ -303,6 +309,15 @@ const TOOLS = [
     { id: 'metronome', title: 'Metronome', icon: 'timer', category: 'Audio', component: AudioTools },
     { id: 'reaction-time', title: 'Reaction Time', icon: 'bolt', category: 'Time', component: Measurements },
     { id: 'tabata-timer', title: 'Tabata Timer', icon: 'fitness_center', category: 'Time', component: Measurements },
+
+    // Creative
+    { id: 'canvas-draw', title: 'Canvas Draw', icon: 'brush', category: 'Creative', component: CreativeTools },
+    { id: 'palette-gen', title: 'Palette Gen', icon: 'palette', category: 'Creative', component: CreativeTools },
+
+    // Education
+    { id: 'periodic-table', title: 'Periodic Table', icon: 'grid_view', category: 'Education', component: EducationTools },
+    { id: 'unit-circle', title: 'Unit Circle', icon: 'blur_circular', category: 'Education', component: EducationTools },
+    { id: 'physics-constants', title: 'Physics Constants', icon: 'square_foot', category: 'Education', component: EducationTools },
 
     // Travel
     { id: 'travel-main', title: 'Travel Hub', icon: 'travel_explore', category: 'Travel', component: TravelTools },
@@ -735,6 +750,8 @@ const getCategoryIcon = (cat) => {
         'Security': 'security',
         'Productivity': 'assignment',
         'Health': 'monitor_heart',
+        'Creative': 'brush',
+        'Education': 'school',
     };
     return icons[cat] || 'folder';
 };

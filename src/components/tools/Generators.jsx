@@ -22,6 +22,7 @@ const Generators = ({ onResultChange, toolId }) => {
           <button className={`pill ${activeTab === 'random' ? 'active' : ''}`} onClick={() => setActiveTab('random')}>Random Numbers</button>
           <button className={`pill ${activeTab === 'magic8' ? 'active' : ''}`} onClick={() => setActiveTab('magic8')}>Magic 8-Ball</button>
           <button className={`pill ${activeTab === 'fake-data' ? 'active' : ''}`} onClick={() => setActiveTab('fake-data')}>Fake Data</button>
+          <button className={`pill ${activeTab === 'passphrase' ? 'active' : ''}`} onClick={() => setActiveTab('passphrase')}>Passphrase</button>
         </div>
       )}
 
@@ -167,6 +168,38 @@ const RandomNumbersTool = () => {
             <div className="mt-20" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{results.join(', ')}</div>
         </div>
     );
+};
+
+const PassphraseGenerator = () => {
+  const words = ['nature', 'forest', 'ocean', 'mountain', 'desert', 'sunset', 'winter', 'autumn', 'lavender', 'spring', 'galaxy', 'midnight', 'aurora', 'blossom', 'canyon', 'glacier', 'meadow', 'sunlight', 'breeze', 'seedling', 'mist', 'pebble', 'river', 'leaf', 'sky', 'earth', 'stone', 'moss', 'fern', 'branch'];
+  const [length, setLength] = useState(4);
+  const [passphrase, setPassphrase] = useState('');
+
+  const generate = () => {
+    const res = [];
+    for (let i = 0; i < length; i++) {
+      res.push(words[Math.floor(Math.random() * words.length)]);
+    }
+    setPassphrase(res.join('-'));
+  };
+
+  return (
+    <div className="text-center">
+      <div className="form-group mb-15">
+        <label>Number of Words: {length}</label>
+        <input type="range" min="3" max="10" value={length} onChange={e => setLength(parseInt(e.target.value))} className="w-full" />
+      </div>
+      <button className="btn-primary w-full" onClick={generate}>Generate Passphrase</button>
+      {passphrase && (
+        <div className="tool-result mt-20">
+          <div className="font-mono" style={{ fontSize: '1.25rem', wordBreak: 'break-all' }}>{passphrase}</div>
+          <button className="icon-btn mt-10" onClick={() => navigator.clipboard.writeText(passphrase)}>
+            <span className="material-icons">content_copy</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const Magic8BallTool = () => {
