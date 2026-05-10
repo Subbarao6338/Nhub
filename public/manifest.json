@@ -40,6 +40,20 @@
       "description": "Calculate taxes and totals",
       "url": "/?tab=toolbox&tool=vat-calc",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Habits",
+      "short_name": "Habits",
+      "description": "Track your daily habits",
+      "url": "/?tab=toolbox&tool=habit-tracker",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Draw",
+      "short_name": "Draw",
+      "description": "Sketch your ideas",
+      "url": "/?tab=toolbox&tool=canvas-draw",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     }
   ],
   "icons": [

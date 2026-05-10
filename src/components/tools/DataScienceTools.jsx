@@ -8,10 +8,12 @@ const DataScienceTools = () => {
       <div className="pill-group mb-20 scrollable-x">
         <button className={`pill ${activeTab === 'regression' ? 'active' : ''}`} onClick={() => setActiveTab('regression')}>Linear Regression</button>
         <button className={`pill ${activeTab === 'correlation' ? 'active' : ''}`} onClick={() => setActiveTab('correlation')}>Correlation</button>
+        <button className={`pill ${activeTab === 'descriptive' ? 'active' : ''}`} onClick={() => setActiveTab('descriptive')}>Descriptive Stats</button>
       </div>
 
       {activeTab === 'regression' && <LinearRegressionTool />}
       {activeTab === 'correlation' && <CorrelationTool />}
+      {activeTab === 'descriptive' && <DescriptiveStatsTool />}
     </div>
   );
 };
@@ -54,6 +56,53 @@ const LinearRegressionTool = () => {
         <div className="tool-result text-center">
           <div className="font-bold" style={{ fontSize: '1.2rem' }}>y = {result.slope.toFixed(3)}x + {result.intercept.toFixed(3)}</div>
           <div className="mt-10 opacity-7">Slope: {result.slope.toFixed(4)} | Intercept: {result.intercept.toFixed(4)}</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const DescriptiveStatsTool = () => {
+  const [data, setData] = useState('10, 20, 30, 40, 50');
+  const [result, setResult] = useState(null);
+
+  const calculate = () => {
+    const nums = data.split(',').map(Number).filter(n => !isNaN(n)).sort((a,b) => a-b);
+    if (nums.length === 0) return;
+    const sum = nums.reduce((a, b) => a + b, 0);
+    const mean = sum / nums.length;
+    const variance = nums.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / nums.length;
+
+    let median;
+    const mid = Math.floor(nums.length / 2);
+    if (nums.length % 2 === 0) {
+      median = (nums[mid - 1] + nums[mid]) / 2;
+    } else {
+      median = nums[mid];
+    }
+
+    setResult({
+      mean: mean.toFixed(2),
+      median: median,
+      stdDev: Math.sqrt(variance).toFixed(2),
+      min: nums[0],
+      max: nums[nums.length - 1],
+      count: nums.length
+    });
+  };
+
+  return (
+    <div className="grid gap-15">
+      <textarea value={data} onChange={e => setData(e.target.value)} className="pill w-full" rows="3" placeholder="10, 20, 30..." />
+      <button className="btn-primary" onClick={calculate}>Calculate Stats</button>
+      {result && (
+        <div className="tool-result grid gap-10" style={{ gridTemplateColumns: '1fr 1fr' }}>
+          <div>Mean: <b>{result.mean}</b></div>
+          <div>Median: <b>{result.median}</b></div>
+          <div>Std Dev: <b>{result.stdDev}</b></div>
+          <div>Count: <b>{result.count}</b></div>
+          <div>Min: <b>{result.min}</b></div>
+          <div>Max: <b>{result.max}</b></div>
         </div>
       )}
     </div>
