@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 const DevOpsTools = ({ toolId, onResultChange }) => {
   const [activeTab, setActiveTab] = useState('jwt');
+  const [input, setInput] = useState('');
 
   useEffect(() => {
     if (toolId) {
@@ -10,6 +11,9 @@ const DevOpsTools = ({ toolId, onResultChange }) => {
       else if (toolId === 'sql-format') setActiveTab('sql');
       else if (toolId === 'http-client') setActiveTab('http');
       else if (toolId === 'regex-tester') setActiveTab('regex');
+      else if (toolId === 'json-formatter') setActiveTab('json-fmt');
+      else if (toolId === 'json-validator') setActiveTab('json-val');
+      else if (toolId === 'json-to-csv' || toolId === 'csv-json') setActiveTab('json-conv');
       else setActiveTab(toolId);
     }
   }, [toolId]);
@@ -18,19 +22,128 @@ const DevOpsTools = ({ toolId, onResultChange }) => {
     <div className="tool-form">
       {!toolId && (
         <div className="pill-group mb-20 scrollable-x">
-          <button className={`pill ${activeTab === 'jwt' ? 'active' : ''}`} onClick={() => setActiveTab('jwt')}>JWT Decoder</button>
-          <button className={`pill ${activeTab === 'cron' ? 'active' : ''}`} onClick={() => setActiveTab('cron')}>Cron Gen</button>
-          <button className={`pill ${activeTab === 'sql' ? 'active' : ''}`} onClick={() => setActiveTab('sql')}>SQL Formatter</button>
-          <button className={`pill ${activeTab === 'http' ? 'active' : ''}`} onClick={() => setActiveTab('http')}>HTTP Client</button>
-          <button className={`pill ${activeTab === 'regex' ? 'active' : ''}`} onClick={() => setActiveTab('regex')}>Regex Tester</button>
+          <button className={`pill ${activeTab === 'jwt' ? 'active' : ''}`} onClick={() => setActiveTab('jwt')}>JWT</button>
+          <button className={`pill ${activeTab === 'json-fmt' ? 'active' : ''}`} onClick={() => setActiveTab('json-fmt')}>JSON Format</button>
+          <button className={`pill ${activeTab === 'json-val' ? 'active' : ''}`} onClick={() => setActiveTab('json-val')}>JSON Valid</button>
+          <button className={`pill ${activeTab === 'json-conv' ? 'active' : ''}`} onClick={() => setActiveTab('json-conv')}>JSON Conv</button>
+          <button className={`pill ${activeTab === 'cron' ? 'active' : ''}`} onClick={() => setActiveTab('cron')}>Cron</button>
+          <button className={`pill ${activeTab === 'sql' ? 'active' : ''}`} onClick={() => setActiveTab('sql')}>SQL</button>
+          <button className={`pill ${activeTab === 'http' ? 'active' : ''}`} onClick={() => setActiveTab('http')}>HTTP</button>
+          <button className={`pill ${activeTab === 'regex' ? 'active' : ''}`} onClick={() => setActiveTab('regex')}>Regex</button>
         </div>
       )}
 
       {activeTab === 'jwt' && <JwtDecoder />}
+      {activeTab === 'json-fmt' && <JsonFormatter onResultChange={onResultChange} />}
+      {activeTab === 'json-val' && <JsonValidator onResultChange={onResultChange} />}
+      {activeTab === 'json-conv' && <JsonConverter onResultChange={onResultChange} />}
       {activeTab === 'cron' && <CronGenerator />}
       {activeTab === 'sql' && <SqlFormatter />}
       {activeTab === 'http' && <HttpClient onResultChange={onResultChange} />}
       {activeTab === 'regex' && <RegexTester onResultChange={onResultChange} />}
+    </div>
+  );
+};
+
+const JsonFormatter = ({ onResultChange }) => {
+  const [input, setInput] = useState('');
+  const [indent, setIndent] = useState(2);
+  const [output, setOutput] = useState('');
+
+  const format = () => {
+    try {
+      const parsed = JSON.parse(input);
+      const res = JSON.stringify(parsed, null, parseInt(indent));
+      setOutput(res);
+      onResultChange({ text: res, filename: 'formatted.json' });
+    } catch (e) {
+      alert("Invalid JSON: " + e.message);
+    }
+  };
+
+  return (
+    <div className="grid gap-15">
+      <textarea className="pill w-full font-mono" rows="8" value={input} onChange={e => setInput(e.target.value)} placeholder='{"key":"value"}' />
+      <div className="flex-gap">
+        <select className="pill flex-1" value={indent} onChange={e => setIndent(e.target.value)}>
+          <option value="2">2 Spaces</option>
+          <option value="4">4 Spaces</option>
+          <option value="0">Minified</option>
+        </select>
+        <button className="btn-primary flex-1" onClick={format}>Format JSON</button>
+      </div>
+      {output && <pre className="tool-result font-mono" style={{ fontSize: '0.8rem', overflow: 'auto' }}>{output}</pre>}
+    </div>
+  );
+};
+
+const JsonValidator = ({ onResultChange }) => {
+  const [input, setInput] = useState('');
+  const [report, setReport] = useState(null);
+
+  const validate = () => {
+    try {
+      JSON.parse(input);
+      setReport({ valid: true, message: "Valid JSON" });
+    } catch (e) {
+      setReport({ valid: false, message: e.message });
+    }
+  };
+
+  return (
+    <div className="grid gap-15">
+      <textarea className="pill w-full font-mono" rows="8" value={input} onChange={e => setInput(e.target.value)} placeholder="Paste JSON here..." />
+      <button className="btn-primary" onClick={validate}>Validate JSON</button>
+      {report && (
+        <div className={`tool-result ${report.valid ? 'success' : 'danger'}`} style={{ color: report.valid ? 'var(--primary)' : 'var(--danger)', borderLeftColor: report.valid ? 'var(--primary)' : 'var(--danger)' }}>
+          <div className="font-bold">{report.valid ? '✓ Valid' : '✗ Invalid'}</div>
+          <div className="opacity-7">{report.message}</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const JsonConverter = ({ onResultChange }) => {
+  const [input, setInput] = useState('');
+  const [mode, setMode] = useState('json2csv');
+  const [output, setOutput] = useState('');
+
+  const convert = () => {
+    try {
+      if (mode === 'json2csv') {
+        const json = JSON.parse(input);
+        const array = Array.isArray(json) ? json : [json];
+        const keys = Object.keys(array[0]);
+        const csv = [
+          keys.join(','),
+          ...array.map(row => keys.map(k => JSON.stringify(row[k])).join(','))
+        ].join('\n');
+        setOutput(csv);
+        onResultChange({ text: csv, filename: 'data.csv' });
+      } else {
+        const lines = input.trim().split('\n');
+        const keys = lines[0].split(',');
+        const json = lines.slice(1).map(line => {
+          const values = line.split(',');
+          return keys.reduce((acc, key, i) => ({ ...acc, [key.trim()]: values[i]?.trim() }), {});
+        });
+        const res = JSON.stringify(json, null, 2);
+        setOutput(res);
+        onResultChange({ text: res, filename: 'data.json' });
+      }
+    } catch (e) { alert("Conversion error: " + e.message); }
+  };
+
+  return (
+    <div className="grid gap-15">
+      <div className="pill-group" style={{ justifyContent: 'center' }}>
+        <button className={`pill ${mode === 'json2csv' ? 'active' : ''}`} onClick={() => setMode('json2csv')}>JSON to CSV</button>
+        <button className={`pill ${mode === 'csv2json' ? 'active' : ''}`} onClick={() => setMode('csv2json')}>CSV to JSON</button>
+      </div>
+      <textarea className="pill w-full font-mono" rows="8" value={input} onChange={e => setInput(e.target.value)} placeholder={mode === 'json2csv' ? '[{"id":1}]' : 'id,name\n1,test'} />
+      <button className="btn-primary" onClick={convert}>Convert</button>
+      {output && <pre className="tool-result font-mono" style={{ fontSize: '0.8rem', overflow: 'auto' }}>{output}</pre>}
     </div>
   );
 };
@@ -51,7 +164,7 @@ const JwtDecoder = () => {
     }
     try {
       const parts = val.split('.');
-      if (parts.length !== 3) throw new Error("Invalid JWT format");
+      if (parts.length < 2) throw new Error("Invalid JWT format");
       setHeader(JSON.parse(atob(parts[0])));
       setPayload(JSON.parse(atob(parts[1])));
     } catch (e) {

@@ -1,49 +1,53 @@
 import React, { useState } from 'react';
 
 const AnomalyDetection = ({ onResultChange }) => {
-  const [datasource, setDatasource] = useState('local');
-  const [sensitivity, setSensitivity] = useState(85);
+  const [dataInput, setDataInput] = useState('10, 12, 11, 10, 100, 10, 11, 12, 9, 10, 50, 11');
+  const [sensitivity, setSensitivity] = useState(2); // Z-score threshold
   const [isDetecting, setIsDetecting] = useState(false);
   const [results, setResults] = useState(null);
-  const [fileName, setFileName] = useState('');
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setFileName(file.name);
-    }
-  };
-
-  const [dataInput, setDataInput] = useState('');
 
   const startDetection = () => {
-    if (!dataInput && datasource !== 'local') return;
+    if (!dataInput) return;
     setIsDetecting(true);
     setResults(null);
-    onResultChange(null);
 
     setTimeout(() => {
       try {
         const numbers = dataInput.split(/[\n,]/).map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
         if (numbers.length < 3) throw new Error("Need at least 3 data points");
 
-        // Mean
+        // 1. Z-Score Calculation
         const mean = numbers.reduce((a, b) => a + b, 0) / numbers.length;
-        // Standard Deviation
         const stdDev = Math.sqrt(numbers.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b, 0) / numbers.length);
 
-        const threshold = (100 - sensitivity) / 10; // Simple heuristic for Z-score threshold
-        const anomalies = numbers.filter(x => Math.abs((x - mean) / (stdDev || 1)) > threshold);
+        const zScoreAnomalies = numbers.map((x, idx) => ({
+          value: x,
+          index: idx,
+          zScore: Math.abs((x - mean) / (stdDev || 1))
+        })).filter(item => item.zScore > sensitivity);
+
+        // 2. IQR (Interquartile Range) Method
+        const sorted = [...numbers].sort((a, b) => a - b);
+        const q1 = sorted[Math.floor(sorted.length * 0.25)];
+        const q3 = sorted[Math.floor(sorted.length * 0.75)];
+        const iqr = q3 - q1;
+        const lowerBound = q1 - 1.5 * iqr;
+        const upperBound = q3 + 1.5 * iqr;
+
+        const iqrAnomalies = numbers.map((x, idx) => ({
+          value: x,
+          index: idx,
+          isAnomaly: x < lowerBound || x > upperBound
+        })).filter(item => item.isAnomaly);
 
         const res = {
-          status: 'Complete',
           totalPoints: numbers.length,
-          anomaliesFound: anomalies.length,
-          confidence: '95.4%', // Z-score 2 sigma confidence
-          lastRun: new Date().toLocaleString(),
-          fileName: fileName || 'manual_input',
           mean: mean.toFixed(2),
-          stdDev: stdDev.toFixed(2)
+          stdDev: stdDev.toFixed(2),
+          zScoreAnomalies: zScoreAnomalies,
+          iqrAnomalies: iqrAnomalies,
+          zScoreThreshold: sensitivity,
+          iqrBounds: `[${lowerBound.toFixed(2)}, ${upperBound.toFixed(2)}]`
         };
 
         setResults(res);
@@ -51,94 +55,86 @@ const AnomalyDetection = ({ onResultChange }) => {
 
         onResultChange({
           text: JSON.stringify(res, null, 2),
-          filename: `anomaly_report_${Date.now()}.json`
+          filename: `anomaly_report.json`
         });
       } catch (e) {
         alert(e.message);
         setIsDetecting(false);
       }
-    }, 1000);
+    }, 800);
   };
 
   return (
     <div className="tool-form">
-      <div style={{ marginBottom: '20px' }}>
-        <p style={{ opacity: 0.7 }}>Identify outliers and unusual patterns in timeseries data using Azure Cognitive Services or Graviton algorithms.</p>
-      </div>
-
       <div className="form-group">
-        <label>Datasource</label>
-        <select value={datasource} onChange={(e) => setDatasource(e.target.value)} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg)', color: 'var(--text)' }}>
-          <option value="local">Local CSV File</option>
-          <option value="mssql">MSSQL Database</option>
-          <option value="postgresql">PostgreSQL (Django)</option>
-          <option value="kafka">Apache Kafka Topic</option>
-        </select>
-      </div>
-
-      {datasource === 'local' ? (
-        <div className="form-group" style={{ marginTop: '15px' }}>
-          <label>Upload CSV Data</label>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <input type="file" accept=".csv" onChange={handleFileUpload} style={{ display: 'none' }} id="csv-upload" />
-            <label htmlFor="csv-upload" className="pill" style={{ cursor: 'pointer', margin: 0 }}>
-              <span className="material-icons" style={{ fontSize: '1.2rem' }}>upload_file</span>
-              {fileName ? 'Change File' : 'Choose CSV'}
-            </label>
-            {fileName && <span style={{ fontSize: '0.85rem', opacity: 0.7 }}>{fileName}</span>}
-          </div>
-        </div>
-      ) : (
-        <div className="form-group" style={{ marginTop: '15px' }}>
-            <label>Input Numbers (comma or line separated)</label>
-            <textarea
-                value={dataInput}
-                onChange={e => setDataInput(e.target.value)}
-                placeholder="10, 12, 11, 100, 10, 11..."
-                className="pill"
-                style={{ width: '100%', height: '100px', borderRadius: '12px', padding: '12px' }}
-            />
-        </div>
-      )}
-
-      <div className="form-group" style={{ marginTop: '15px' }}>
-        <label>Sensitivity ({sensitivity}%)</label>
-        <input
-          type="range"
-          min="0"
-          max="100"
-          value={sensitivity}
-          onChange={(e) => setSensitivity(e.target.value)}
-          style={{ width: '100%' }}
+        <label>Data Points (comma or line separated)</label>
+        <textarea
+          value={dataInput}
+          onChange={e => setDataInput(e.target.value)}
+          placeholder="10, 12, 11, 100, 10..."
+          className="pill"
+          style={{ width: '100%', height: '120px', padding: '12px' }}
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '15px' }}>
-        <button className="pill" style={{ opacity: 0.8 }}>Azure Detector</button>
-        <button className="pill" style={{ opacity: 0.8 }}>Multivariate</button>
+      <div className="form-group">
+        <label>Z-Score Sensitivity: {sensitivity}σ</label>
+        <input
+          type="range"
+          min="1"
+          max="5"
+          step="0.5"
+          value={sensitivity}
+          onChange={(e) => setSensitivity(parseFloat(e.target.value))}
+          style={{ width: '100%' }}
+        />
+        <div className="flex-between opacity-5" style={{ fontSize: '0.7rem' }}>
+          <span>High Sensitivity (1σ)</span>
+          <span>Low Sensitivity (5σ)</span>
+        </div>
       </div>
 
-      <button className="btn-primary" style={{ width: '100%', marginTop: '20px' }} onClick={startDetection} disabled={isDetecting}>
-        {isDetecting ? 'Analyzing...' : 'Run Anomaly Detection'}
+      <button className="btn-primary w-full mt-10" onClick={startDetection} disabled={isDetecting}>
+        {isDetecting ? 'Running Math...' : 'Detect Outliers Locally'}
       </button>
 
       {results && (
-        <div className="tool-result" style={{ marginTop: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', color: 'var(--primary)' }}>
-            <span className="material-icons">notifications_active</span>
-            <span style={{ fontWeight: 600 }}>Detection Results</span>
+        <div className="tool-result">
+          <div className="grid gap-12" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}>
+            <div className="card p-10 text-center">
+              <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>MEAN</div>
+              <div className="font-bold">{results.mean}</div>
+            </div>
+            <div className="card p-10 text-center">
+              <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>STD DEV</div>
+              <div className="font-bold">{results.stdDev}</div>
+            </div>
+            <div className="card p-10 text-center">
+              <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>Z-SCORE OUTLIERS</div>
+              <div className="font-bold" style={{ color: results.zScoreAnomalies.length > 0 ? '#ef4444' : 'inherit' }}>
+                {results.zScoreAnomalies.length}
+              </div>
+            </div>
+            <div className="card p-10 text-center">
+              <div style={{ fontSize: '0.75rem', opacity: 0.6 }}>IQR OUTLIERS</div>
+              <div className="font-bold" style={{ color: results.iqrAnomalies.length > 0 ? '#ef4444' : 'inherit' }}>
+                {results.iqrAnomalies.length}
+              </div>
+            </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '0.9rem' }}>
-            <div>Anomalies: <b>{results.anomaliesFound}</b></div>
-            <div>Confidence: <b>{results.confidence}</b></div>
-            <div style={{ gridColumn: 'span 2' }}>Status: <span style={{ color: '#10b981' }}>{results.status}</span></div>
-            <div style={{ gridColumn: 'span 2', opacity: 0.6, fontSize: '0.8rem' }}>Last Run: {results.lastRun}</div>
-          </div>
-          <div style={{ marginTop: '15px', height: '60px', background: 'rgba(var(--primary-rgb), 0.1)', borderRadius: '8px', display: 'flex', alignItems: 'flex-end', padding: '5px', gap: '2px' }}>
-            {[40, 45, 38, 42, 85, 41, 39, 44, 40, 90, 38, 42, 41, 39].map((h, i) => (
-              <div key={i} style={{ flex: 1, height: `${h}%`, background: h > 70 ? '#ef4444' : 'var(--primary)', borderRadius: '2px' }}></div>
-            ))}
-          </div>
+
+          {results.zScoreAnomalies.length > 0 && (
+            <div className="mt-20">
+              <div className="font-semibold mb-10 opacity-7">Detected Anomalies:</div>
+              <div className="flex-wrap gap-10">
+                {results.zScoreAnomalies.map((a, i) => (
+                  <span key={i} className="pill" style={{ background: 'rgba(239, 68, 68, 0.1)', borderColor: '#ef4444', color: '#ef4444' }}>
+                    {a.value} (Idx {a.index})
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
