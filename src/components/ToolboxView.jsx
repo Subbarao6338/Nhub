@@ -556,52 +556,54 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
       {activeCategory === 'All' && !searchQuery && (
         <div className="p-0-10 mb-20">
           {(pinnedTools.length > 0 || (recentTools.length > 0 && !hideRecentTools)) && (
-            <div className="toolbox-special-sections grid gap-15" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', marginBottom: '1.5rem' }}>
-              {pinnedTools.length > 0 && (
-                <div className="special-section">
-                  <h3 className="uppercase tracking-wider opacity-6 mb-10 flex-center gap-10" style={{ fontSize: '0.9rem', justifyContent: 'flex-start' }}>
-                    <span className="material-icons" style={{ fontSize: '1.2rem' }}>push_pin</span> Pinned
-                  </h3>
-                  <div className="grid gap-12">
-                    {pinnedTools.map(id => {
-                      const tool = TOOLS.find(t => t.id === id);
-                      if (!tool) return null;
-                      return (
-                        <div key={id} className="card p-15 min-h-unset no-animation" onClick={() => openTool(tool.id)}>
-                          <div className="card-header m-0 gap-12">
-                            <span className="material-icons" style={{ color: 'var(--primary)' }}>{tool.icon}</span>
-                            <span className="font-semibold">{tool.title}</span>
+            <div className="toolbox-special-sections-container">
+              <div className="toolbox-special-sections grid gap-15" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' }}>
+                {pinnedTools.length > 0 && (
+                  <div className="special-section">
+                    <h3 className="uppercase tracking-wider opacity-6 mb-10 flex-center gap-10" style={{ fontSize: '0.9rem', justifyContent: 'flex-start' }}>
+                      <span className="material-icons" style={{ fontSize: '1.2rem' }}>push_pin</span> Pinned
+                    </h3>
+                    <div className="grid gap-12">
+                      {pinnedTools.map(id => {
+                        const tool = TOOLS.find(t => t.id === id);
+                        if (!tool) return null;
+                        return (
+                          <div key={id} className="card p-15 min-h-unset no-animation" onClick={() => openTool(tool.id)}>
+                            <div className="card-header m-0 gap-12">
+                              <span className="material-icons" style={{ color: 'var(--primary)' }}>{tool.icon}</span>
+                              <span className="font-semibold">{tool.title}</span>
+                            </div>
+                            <div className="card-actions">
+                              <button className="pin-btn active" onClick={(e) => togglePin(e, tool.id)}><span className="material-icons">push_pin</span></button>
+                            </div>
                           </div>
-                          <div className="card-actions">
-                            <button className="pin-btn active" onClick={(e) => togglePin(e, tool.id)}><span className="material-icons">push_pin</span></button>
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
-              {recentTools.length > 0 && !hideRecentTools && (
-                <div className="special-section">
-                  <h3 className="uppercase tracking-wider opacity-6 mb-10 flex-center gap-10" style={{ fontSize: '0.9rem', justifyContent: 'flex-start' }}>
-                    <span className="material-icons" style={{ fontSize: '1.2rem' }}>history</span> Recent
-                  </h3>
-                  <div className="grid gap-12">
-                    {recentTools.filter(id => !pinnedTools.includes(id)).map(id => {
-                      const tool = TOOLS.find(t => t.id === id);
-                      if (!tool) return null;
-                      return (
-                        <div key={id} className="card p-15 min-h-unset no-animation" onClick={() => openTool(tool.id)}>
-                          <div className="card-header m-0 gap-12">
-                            <span className="material-icons" style={{ color: 'var(--text-muted)' }}>{tool.icon}</span>
-                            <span className="font-semibold">{tool.title}</span>
+                )}
+                {recentTools.length > 0 && !hideRecentTools && (
+                  <div className="special-section">
+                    <h3 className="uppercase tracking-wider opacity-6 mb-10 flex-center gap-10" style={{ fontSize: '0.9rem', justifyContent: 'flex-start' }}>
+                      <span className="material-icons" style={{ fontSize: '1.2rem' }}>history</span> Recent
+                    </h3>
+                    <div className="grid gap-12">
+                      {recentTools.filter(id => !pinnedTools.includes(id)).map(id => {
+                        const tool = TOOLS.find(t => t.id === id);
+                        if (!tool) return null;
+                        return (
+                          <div key={id} className="card p-15 min-h-unset no-animation" onClick={() => openTool(tool.id)}>
+                            <div className="card-header m-0 gap-12">
+                              <span className="material-icons" style={{ color: 'var(--text-muted)' }}>{tool.icon}</span>
+                              <span className="font-semibold">{tool.title}</span>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
         </div>

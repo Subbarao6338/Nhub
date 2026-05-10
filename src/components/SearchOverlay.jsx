@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SearchOverlay = ({ active, query, onChange, onClear, currentTab }) => {
+const SearchOverlay = ({ active, setActive, query, onChange, onClear, currentTab }) => {
   return (
     <div className={`search-container ${active ? 'active' : 'desktop-only'}`}>
       <span className="material-icons search-icon">search</span>
@@ -10,7 +10,10 @@ const SearchOverlay = ({ active, query, onChange, onClear, currentTab }) => {
         placeholder={`Search ${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}... [/]`}
         value={query}
         onChange={(e) => onChange(e.target.value)}
-        onFocus={(e) => e.target.select()}
+        onFocus={(e) => {
+          e.target.select();
+          if (setActive) setActive(true);
+        }}
       />
       {query && (
         <button id="search-clear" className="search-clear-btn" title="Clear Search" onClick={onClear}>

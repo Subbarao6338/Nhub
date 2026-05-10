@@ -382,6 +382,7 @@ function App() {
 
   return (
     <div className="app-layout">
+      <div className="search-dismiss-overlay" onClick={() => setSearchActive(false)}></div>
       <main className="main-content">
         <OfflineIndicator />
         <Header
@@ -394,6 +395,7 @@ function App() {
         >
           <SearchOverlay
             active={searchActive}
+            setActive={setSearchActive}
             query={searchQuery}
             onChange={setSearchQuery}
             onClear={handleSearchClear}
