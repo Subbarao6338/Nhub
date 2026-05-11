@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const GameTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('dice');
@@ -22,7 +22,10 @@ const GameTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         'chess-clock': 'chess-clock',
         'chess960': 'chess960',
         'darts-scoreboard': 'darts',
-        'tictactoe': 'tictactoe'
+        'tictactoe': 'tictactoe',
+        'snake-game': 'snake',
+        '2048': '2048',
+        'dino-jump': 'dino'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -34,14 +37,9 @@ const GameTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'snake', label: 'Snake' },
     { id: '2048', label: '2048' },
     { id: 'sudoku', label: 'Sudoku' },
-    { id: 'tetris', label: 'Tetris' },
-    { id: 'dino', label: 'Dino Jump' },
     { id: 'tictactoe', label: 'Tic-Tac-Toe' },
-    { id: 'chess', label: 'Chess' },
-    { id: 'carrom', label: 'Carrom' },
-    { id: 'cricket', label: 'Cricket' },
-    { id: 'ludo', label: 'Ludo' },
-    { id: 'bouncer', label: 'Bouncer' }
+    { id: 'dino', label: 'Dino Jump' },
+    { id: 'tetris', label: 'Tetris' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
@@ -77,6 +75,104 @@ const GameTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       )}
     </div>
   );
+};
+
+const Game2048 = () => {
+    const [grid, setGrid] = useState(Array(4).fill().map(() => Array(4).fill(0)));
+    const [score, setScore] = useState(0);
+
+    const addRandom = (g) => {
+        let empty = [];
+        for(let r=0; r<4; r++) for(let c=0; c<4; c++) if(g[r][c] === 0) empty.push({r,c});
+        if(empty.length) {
+            let {r,c} = empty[Math.floor(Math.random()*empty.length)];
+            g[r][c] = Math.random() > 0.1 ? 2 : 4;
+        }
+    };
+
+    const init = () => {
+        let newGrid = Array(4).fill().map(() => Array(4).fill(0));
+        addRandom(newGrid);
+        addRandom(newGrid);
+        setGrid(newGrid);
+        setScore(0);
+    };
+
+    useEffect(() => { init(); }, []);
+
+    const move = (dir) => {
+        let newGrid = JSON.parse(JSON.stringify(grid));
+        let moved = false;
+        let points = 0;
+
+        const rotate = (g) => {
+            let res = Array(4).fill().map(() => Array(4).fill(0));
+            for(let r=0; r<4; r++) for(let c=0; c<4; c++) res[c][3-r] = g[r][c];
+            return res;
+        };
+
+        let rotations = { 'left': 0, 'up': 1, 'right': 2, 'down': 3 }[dir];
+        for(let i=0; i<rotations; i++) newGrid = rotate(newGrid);
+
+        for(let r=0; r<4; r++) {
+            let row = newGrid[r].filter(v => v !== 0);
+            for(let i=0; i<row.length-1; i++) {
+                if(row[i] === row[i+1]) {
+                    row[i] *= 2;
+                    points += row[i];
+                    row.splice(i+1, 1);
+                    moved = true;
+                }
+            }
+            while(row.length < 4) row.push(0);
+            if(JSON.stringify(newGrid[r]) !== JSON.stringify(row)) moved = true;
+            newGrid[r] = row;
+        }
+
+        for(let i=0; i<(4-rotations)%4; i++) newGrid = rotate(newGrid);
+
+        if(moved) {
+            addRandom(newGrid);
+            setGrid(newGrid);
+            setScore(s => s + points);
+        }
+    };
+
+    useEffect(() => {
+        const handleKey = (e) => {
+            if(e.key === 'ArrowLeft') move('left');
+            if(e.key === 'ArrowRight') move('right');
+            if(e.key === 'ArrowUp') move('up');
+            if(e.key === 'ArrowDown') move('down');
+        };
+        window.addEventListener('keydown', handleKey);
+        return () => window.removeEventListener('keydown', handleKey);
+    }, [grid]);
+
+    return (
+        <div className="card p-15 text-center">
+            <div className="flex-between mb-15"><span>Score: {score}</span></div>
+            <div className="grid gap-5 m-auto" style={{gridTemplateColumns: 'repeat(4, 1fr)', width: '240px', background: 'var(--border)', padding: '10px', borderRadius: '12px'}}>
+                {grid.flat().map((v, i) => (
+                    <div key={i} className="flex-center font-bold" style={{
+                        height: '50px', width: '50px',
+                        background: v ? (v <= 4 ? 'var(--nature-moss)' : 'var(--nature-gold)') : 'var(--surface)',
+                        color: v > 4 ? 'white' : 'inherit',
+                        borderRadius: '8px', fontSize: '1.2rem'
+                    }}>
+                        {v || ''}
+                    </div>
+                ))}
+            </div>
+            <div className="grid grid-3 gap-5 mt-15 m-auto" style={{maxWidth: '120px'}}>
+                <div/><button className="icon-btn" onClick={()=>move('up')}><span className="material-icons">expand_less</span></button><div/>
+                <button className="icon-btn" onClick={()=>move('left')}><span className="material-icons">chevron_left</span></button>
+                <button className="icon-btn" onClick={()=>move('down')}><span className="material-icons">expand_more</span></button>
+                <button className="icon-btn" onClick={()=>move('right')}><span className="material-icons">chevron_right</span></button>
+            </div>
+            <button className="btn-primary mt-15" onClick={init}>New Game</button>
+        </div>
+    );
 };
 
 const DiceRoller = ({ onResultChange }) => {
@@ -167,32 +263,6 @@ const SnakeGame = () => {
     );
 };
 
-const Game2048 = () => {
-    const [grid, setGrid] = useState([
-        [0,0,2,0], [0,4,0,0], [0,0,8,0], [2,0,0,0]
-    ]);
-    return (
-        <div className="card p-15 text-center">
-            <div className="grid gap-5 m-auto" style={{gridTemplateColumns: 'repeat(4, 1fr)', width: '240px', background: 'var(--border)', padding: '10px', borderRadius: '12px'}}>
-                {grid.flat().map((v, i) => (
-                    <div key={i} className="flex-center font-bold" style={{
-                        height: '50px', width: '50px',
-                        background: v ? 'var(--nature-gold)' : 'var(--surface)',
-                        color: v > 4 ? 'white' : 'inherit',
-                        borderRadius: '8px',
-                        fontSize: '1.2rem',
-                        boxShadow: v ? '0 4px 0 rgba(0,0,0,0.1)' : 'none'
-                    }}>
-                        {v || ''}
-                    </div>
-                ))}
-            </div>
-            <div className="opacity-6 mt-15 small">Swipe or use arrow keys to merge tiles.</div>
-            <button className="btn-primary mt-15" onClick={() => alert("Logic being optimized for mobile performance...")}>New Game</button>
-        </div>
-    );
-};
-
 const SudokuGame = () => (
     <div className="card p-20 text-center">
         <div className="grid gap-2 m-auto" style={{gridTemplateColumns: 'repeat(9, 1fr)', width: '300px', background: 'var(--on-surface)', border: '2px solid var(--on-surface)'}}>
@@ -275,26 +345,46 @@ const DinoJump = () => {
 
 const TicTacToe = () => {
     const [board, setBoard] = useState(Array(9).fill(null));
+    const [isPvp, setIsPvp] = useState(false);
     const [xIsNext, setXIsNext] = useState(true);
     const winner = calculateWinner(board);
 
     const handleClick = (i) => {
         if (winner || board[i]) return;
         const next = board.slice();
-        next[i] = xIsNext ? 'X' : 'O';
+        next[i] = 'X';
         setBoard(next);
-        setXIsNext(!xIsNext);
+        setXIsNext(false);
+        if (!isPvp && !calculateWinner(next)) {
+            setTimeout(() => {
+                const empty = next.map((v, idx) => v === null ? idx : null).filter(v => v !== null);
+                if (empty.length) {
+                    const move = empty[Math.floor(Math.random() * empty.length)];
+                    next[move] = 'O';
+                    setBoard([...next]);
+                    setXIsNext(true);
+                }
+            }, 500);
+        } else if (isPvp) {
+            next[i] = xIsNext ? 'X' : 'O';
+            setBoard(next);
+            setXIsNext(!xIsNext);
+        }
     };
 
     return (
         <div className="card p-20 text-center">
+            <div className="pill-group mb-15" style={{justifyContent: 'center'}}>
+                <button className={`pill ${!isPvp ? 'active' : ''}`} onClick={()=>setIsPvp(false)}>vs CPU</button>
+                <button className={`pill ${isPvp ? 'active' : ''}`} onClick={()=>setIsPvp(true)}>vs Player</button>
+            </div>
             <div className="mb-10 font-bold">{winner ? `Winner: ${winner}` : `Next: ${xIsNext ? 'X' : 'O'}`}</div>
             <div className="grid grid-3 gap-5 m-auto" style={{width: '180px'}}>
                 {board.map((v, i) => (
                     <button key={i} className="pill flex-center" style={{height: '55px', width: '55px', fontSize: '1.5rem'}} onClick={() => handleClick(i)}>{v}</button>
                 ))}
             </div>
-            {winner && <button className="btn-primary mt-15" onClick={() => setBoard(Array(9).fill(null))}>New Game</button>}
+            {(winner || board.every(b=>b)) && <button className="btn-primary mt-15" onClick={() => setBoard(Array(9).fill(null))}>New Game</button>}
         </div>
     );
 };

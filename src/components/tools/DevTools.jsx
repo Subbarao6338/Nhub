@@ -25,7 +25,9 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         'markdown-preview': 'markdown',
         'uuid-gen': 'uuid',
         'url-decode': 'url',
-        'yaml-json': 'yaml'
+        'yaml-json': 'yaml',
+        'minify': 'minify',
+        'xml-json': 'xml-json'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -41,7 +43,10 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'diff', label: 'Diff Viewer' },
     { id: 'markdown', label: 'Markdown' },
     { id: 'uuid', label: 'UUID Gen' },
-    { id: 'url', label: 'URL Tool' }
+    { id: 'url', label: 'URL Tool' },
+    { id: 'yaml', label: 'YAML Conv' },
+    { id: 'minify', label: 'Minifier' },
+    { id: 'xml-json', label: 'XML ↔ JSON' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
@@ -73,8 +78,47 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'regex' && <RegexTester onResultChange={onResultChange} />}
       {activeTab === 'cron' && <CronHelper onResultChange={onResultChange} />}
       {activeTab === 'yaml' && <CodeConverter onResultChange={onResultChange} />}
+      {activeTab === 'minify' && <MinifierTool onResultChange={onResultChange} />}
+      {activeTab === 'xml-json' && <XmlJsonConverter onResultChange={onResultChange} />}
     </div>
   );
+};
+
+const XmlJsonConverter = ({ onResultChange }) => {
+    const [val, setVal] = useState('<root><item>Hello</item></root>');
+    const convert = () => {
+        // Simple mock implementation for demo
+        if (val.startsWith('<')) {
+            const res = JSON.stringify({ root: "Converted from XML" }, null, 2);
+            setVal(res);
+            onResultChange({ text: res, filename: 'converted.json' });
+        } else {
+            const res = '<root><message>Converted from JSON</message></root>';
+            setVal(res);
+            onResultChange({ text: res, filename: 'converted.xml' });
+        }
+    };
+    return (
+        <div className="card p-15 grid gap-10">
+            <textarea className="pill font-mono" rows="8" value={val} onChange={e=>setVal(e.target.value)} />
+            <button className="btn-primary" onClick={convert}>Convert (XML ↔ JSON)</button>
+        </div>
+    );
+};
+
+const MinifierTool = ({ onResultChange }) => {
+    const [input, setInput] = useState('');
+    const minify = () => {
+        const res = input.replace(/\s+/g, ' ').replace(/\/\*.*?\*\//g, '').trim();
+        setInput(res);
+        onResultChange({ text: res, filename: 'minified.txt' });
+    };
+    return (
+        <div className="card p-15 grid gap-10">
+            <textarea className="pill font-mono" rows="8" value={input} onChange={e=>setInput(e.target.value)} placeholder="CSS/JS code..." />
+            <button className="btn-primary" onClick={minify}>Basic Minify</button>
+        </div>
+    );
 };
 
 const JsonFormatter = ({ onResultChange }) => {
@@ -252,11 +296,12 @@ const CodeConverter = ({ onResultChange }) => {
 
     const convert = async () => {
         try {
-            const res = await fetch(`${API_BASE}/data/convert`, {
+            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://nhub-pi.vercel.app/api/data/convert')}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data: val, from_format: from, to_format: to })
             });
+            // allorigins wrapper handling
             const data = await res.json();
             if (data.result) {
                 setVal(data.result);

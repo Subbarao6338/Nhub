@@ -24,7 +24,8 @@ const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         'omni-hub': 'omni',
         'web-to-md': 'web-md',
         'web-translate': 'translate',
-        'web-mhtml': 'mhtml'
+        'web-mhtml': 'mhtml',
+        'web-meta': 'meta'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -38,7 +39,9 @@ const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'omni', label: 'Search' },
     { id: 'web-md', label: 'Web to MD' },
     { id: 'translate', label: 'Translate' },
-    { id: 'mhtml', label: 'MHTML' }
+    { id: 'mhtml', label: 'MHTML' },
+    { id: 'meta', label: 'Meta Gen' },
+    { id: 'url-parser', label: 'URL Parser' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
@@ -67,6 +70,8 @@ const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'web-md' && <WebToMarkdown onResultChange={onResultChange} />}
       {activeTab === 'translate' && <WebTranslator onResultChange={onResultChange} />}
       {activeTab === 'mhtml' && <WebToMhtml onResultChange={onResultChange} />}
+      {activeTab === 'meta' && <MetaTagGenerator onResultChange={onResultChange} />}
+      {activeTab === 'url-parser' && <UrlParser onResultChange={onResultChange} />}
     </div>
   );
 };
@@ -229,6 +234,52 @@ const WebTranslator = ({ onResultChange }) => {
                 <option value="hi">Hindi</option>
             </select>
             <button className="btn-primary" onClick={translate} disabled={!url}>Translate Page</button>
+        </div>
+    );
+};
+
+const UrlParser = ({ onResultChange }) => {
+    const [url, setUrl] = useState('https://example.com:8080/path/to/page?q=search#hash');
+    const parts = useMemo(() => {
+        try {
+            const u = new URL(url);
+            return {
+                protocol: u.protocol,
+                host: u.host,
+                pathname: u.pathname,
+                search: u.search,
+                hash: u.hash
+            };
+        } catch(e) { return null; }
+    }, [url]);
+
+    useEffect(() => { if(parts) onResultChange({ text: JSON.stringify(parts, null, 2), filename: 'url_parts.json' }); }, [parts]);
+
+    return (
+        <div className="card p-15 grid gap-10">
+            <input className="pill" value={url} onChange={e=>setUrl(e.target.value)} placeholder="Enter URL..." />
+            {parts && (
+                <div className="tool-result font-mono text-xs">
+                    {Object.entries(parts).map(([k,v]) => <div key={k}><b>{k}:</b> {v}</div>)}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const MetaTagGenerator = ({ onResultChange }) => {
+    const [meta, setMeta] = useState({ title: '', description: '', author: '', keywords: '' });
+    const res = useMemo(() => {
+        return `<title>${meta.title}</title>\n<meta name="description" content="${meta.description}">\n<meta name="author" content="${meta.author}">\n<meta name="keywords" content="${meta.keywords}">`;
+    }, [meta]);
+    useEffect(() => { onResultChange({ text: res, filename: 'meta.txt' }); }, [res]);
+    return (
+        <div className="card p-15 grid gap-10">
+            <input className="pill" placeholder="Title" value={meta.title} onChange={e=>setMeta({...meta, title: e.target.value})} />
+            <textarea className="pill" placeholder="Description" rows="2" value={meta.description} onChange={e=>setMeta({...meta, description: e.target.value})} />
+            <input className="pill" placeholder="Author" value={meta.author} onChange={e=>setMeta({...meta, author: e.target.value})} />
+            <input className="pill" placeholder="Keywords (comma separated)" value={meta.keywords} onChange={e=>setMeta({...meta, keywords: e.target.value})} />
+            <pre className="tool-result font-mono text-xs">{res}</pre>
         </div>
     );
 };

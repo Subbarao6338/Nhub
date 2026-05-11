@@ -13,6 +13,8 @@
   --nature-leaf: #1b4332;      /* Deep Forest */
   --nature-mist: #f8f9fa;      /* Mist White */
   --nature-sand: #fefae0;      /* Desert Sand */
+  --nature-bark: #451a03;      /* Bark Brown */
+  --nature-sky: #e0f2fe;       /* Sky Blue */
 
   --primary: var(--nature-primary);
   --primary-rgb: 45, 106, 79;
@@ -584,9 +586,20 @@ body::before {
   flex-direction: column;
   height: 100%;
   box-shadow: var(--shadow-sm);
-  animation: fadeInUp 0.6s ease-out forwards;
+  animation: leaf-entry 0.6s var(--transition-bounce) forwards;
   animation-delay: calc(var(--delay) * 0.05s);
   opacity: 0;
+}
+
+@keyframes leaf-entry {
+  from {
+    opacity: 0;
+    transform: translateY(30px) rotate(5deg) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
 }
 
 .card:hover {

@@ -26,18 +26,16 @@ const OfflineIndicator = () => {
     };
   }, []);
 
-  if (!isOffline) return null;
-
   return (
-    <div className="offline-indicator">
-      <span className="material-icons">cloud_off</span>
-      <span>Offline Mode</span>
+    <div className={`offline-indicator ${isOffline ? 'visible' : ''}`}>
+      <span className="material-icons">{isOffline ? 'cloud_off' : 'cloud_done'}</span>
+      <span>{isOffline ? 'Offline Mode' : 'Online'}</span>
     </div>
   );
 };
 
 function App() {
-  const [appName, setAppName] = useState(storage.get('hub_app_name', 'Nature toolbox'));
+  const [appName, setAppName] = useState(storage.get('hub_app_name', 'Epic Toolbox'));
   const [enableProfiles, setEnableProfiles] = useState(storage.getBoolean('hub_enable_profiles', false));
   const [currentProfileName, setCurrentProfileName] = useState(storage.get('hub_current_profile') || storage.get('hub_startup_profile', 'Default'));
   const [profiles, setProfiles] = useState([]);

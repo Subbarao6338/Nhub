@@ -190,7 +190,7 @@ const SettingsModal = ({
                 }}
               >
                 <span className="material-icons">download_for_offline</span>
-                <span>Install Nature Hub</span>
+                <span>Install Epic Toolbox</span>
               </button>
             </div>
           )}
@@ -200,7 +200,7 @@ const SettingsModal = ({
               type="text"
               value={appName}
               onChange={(e) => setAppName(e.target.value)}
-              placeholder="Nature toolbox"
+              placeholder="Epic Toolbox"
             />
           </div>
           <div className="form-group">
@@ -482,8 +482,8 @@ const AboutTab = () => {
     <div className="about-content-wrapper">
       <div className="about-content" dangerouslySetInnerHTML={{ __html: content }} />
       <div style={{ marginTop: '2rem', textAlign: 'center', opacity: 0.5, fontSize: '0.8rem' }}>
-        <p>Nature toolbox &bull; Version 1.2.0</p>
-        <p>&copy; {new Date().getFullYear()} Nature toolbox Team</p>
+        <p>Epic Toolbox &bull; Version 2.0.0</p>
+        <p>&copy; {new Date().getFullYear()} Epic Toolbox Team</p>
       </div>
     </div>
   );

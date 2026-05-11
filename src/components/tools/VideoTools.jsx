@@ -50,23 +50,47 @@ const VideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
 const MagnifierTool = () => {
     const videoRef = useRef(null);
     const [zoom, setZoom] = useState(1);
+    const [facingMode, setFacingMode] = useState('environment');
+
     useEffect(() => {
         let videoStream;
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(stream => {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode } }).then(stream => {
             videoStream = stream;
             if (videoRef.current) videoRef.current.srcObject = stream;
         }).catch(err => console.error(err));
         return () => {
             if (videoStream) videoStream.getTracks().forEach(track => track.stop());
         };
-    }, []);
+    }, [facingMode]);
+
     return (
         <div className="text-center card p-20">
             <div style={{ width: '100%', height: '300px', borderRadius: '16px', overflow: 'hidden', position: 'relative', background: '#000' }}>
                 <video ref={videoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${zoom})`, transition: 'transform 0.1s ease-out' }} />
             </div>
-            <div className="mt-20">
-                <label style={{ display: 'block', marginBottom: '10px' }} className="opacity-6">Zoom: {zoom}x</label>
+            <div className="mt-20 grid gap-10">
+                <div className="flex-gap">
+                    <button className="pill flex-1" onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}>
+                        <span className="material-icons">flip_camera_ios</span> Flip
+                    </button>
+                    <button className="btn-primary flex-1" onClick={() => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = videoRef.current.videoWidth;
+                        canvas.height = videoRef.current.videoHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(videoRef.current, 0, 0);
+                        canvas.toBlob(blob => {
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'capture.png';
+                            a.click();
+                        });
+                    }}>
+                        <span className="material-icons">photo_camera</span> Capture
+                    </button>
+                </div>
+                <label style={{ display: 'block' }} className="opacity-6">Zoom: {zoom}x</label>
                 <input type="range" min="1" max="5" step="0.1" value={zoom} onChange={e => setZoom(parseFloat(e.target.value))} className="w-full" />
             </div>
         </div>

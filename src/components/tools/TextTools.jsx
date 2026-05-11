@@ -70,6 +70,17 @@ const TextTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       <textarea rows="8" className="pill w-full mb-20 font-mono" placeholder="Enter text here..." value={input} onChange={e=>setInput(e.target.value)} />
 
       {activeTab === 'modify' && (
+          <div className="grid gap-10 mb-20">
+              <button className="btn-primary w-full" onClick={() => {
+                  const utterance = new SpeechSynthesisUtterance(input);
+                  window.speechSynthesis.speak(utterance);
+              }}>
+                  <span className="material-icons">record_voice_over</span> Read Aloud (TTS)
+              </button>
+          </div>
+      )}
+
+      {activeTab === 'modify' && (
           <div className="flex-gap flex-wrap">
               <button className="btn-primary" onClick={()=>handleAction('upper')}>UPPERCASE</button>
               <button className="pill" onClick={()=>handleAction('lower')}>lowercase</button>

@@ -26,38 +26,40 @@ const FinanceTools = lazy(() => import('./tools/FinanceTools'));
 const WeatherTools = lazy(() => import('./tools/WeatherTools'));
 const TravelTools = lazy(() => import('./tools/TravelTools'));
 const UnitConverterTools = lazy(() => import('./tools/UnitConverterTools'));
+const AiTools = lazy(() => import('./tools/AiTools'));
 
 const TOOLS = [
     // Media & Docs
-    { id: 'pdf-main', title: 'PDF Tools', icon: 'picture_as_pdf', category: 'Media', component: PdfTools, subTools: ['pdf-convert', 'pdf-merge', 'pdf-edit', 'pdf-unlock', 'pdf-secure'] },
-    { id: 'doc-main', title: 'Doc Converter', icon: 'description', category: 'Media', component: DocTools, subTools: ['doc-convert', 'markdown-editor', 'pdf-to-word'] },
-    { id: 'img-main', title: 'Image Editor', icon: 'image', category: 'Media', component: ImageTools, subTools: ['img-resize', 'img-filter', 'img-compress', 'aspect-ratio', 'color-extractor'] },
-    { id: 'audio-main', title: 'Audio & Sounds', icon: 'volume_up', category: 'Media', component: AudioVideoTools, subTools: ['sound-meter', 'audio-trimmer', 'frequency-gen'] },
-    { id: 'video-main', title: 'Camera Tools', icon: 'videocam', category: 'Media', component: VideoTools, subTools: ['mirror', 'flashlight', 'video-recorder'] },
-    { id: 'color-main', title: 'Color Hub', icon: 'palette', category: 'Media', component: ColorTools, subTools: ['color-picker', 'palette-gen', 'contrast-checker'] },
+    { id: 'pdf-main', title: 'PDF Tools', icon: 'picture_as_pdf', category: 'Media', component: PdfTools, subTools: ['pdf-merge', 'pdf-split', 'pdf-delete', 'pdf-rearrange', 'pdf-rotate', 'pdf-sign', 'pdf-watermark', 'pdf-numbers', 'pdf-crop', 'pdf-lock', 'pdf-unlock', 'pdf-metadata', 'pdf-compress', 'pdf-grayscale', 'pdf-flatten', 'pdf-img2pdf', 'pdf-translate'] },
+    { id: 'doc-main', title: 'Doc Converter', icon: 'description', category: 'Media', component: DocTools, subTools: ['md-editor', 'img-to-pdf', 'pdf-to-img', 'word-to-pdf', 'excel-to-pdf', 'ppt-to-pdf', 'pdf-to-word', 'pdf-to-text', 'pdf-to-zip', 'pdf-extract', 'pdf-scan'] },
+    { id: 'img-main', title: 'Image Editor', icon: 'image', category: 'Media', component: ImageTools, subTools: ['img-format', 'img-resize', 'img-blur', 'img-meta', 'img-bw', 'img-sepia', 'img-invert', 'img-crop', 'img-filters', 'img-b64'] },
+    { id: 'audio-main', title: 'Audio & Sounds', icon: 'volume_up', category: 'Media', component: AudioVideoTools, subTools: ['frequency-gen', 'metronome', 'tuner', 'nature-sounds', 'audio-recorder'] },
+    { id: 'video-main', title: 'Camera Tools', icon: 'videocam', category: 'Media', component: VideoTools, subTools: ['magnifier', 'mirror'] },
+    { id: 'color-main', title: 'Color Hub', icon: 'palette', category: 'Media', component: ColorTools, subTools: ['color-picker', 'color-conv', 'color-harm', 'color-blend', 'color-contrast'] },
 
     // Communication & Web
-    { id: 'web-main', title: 'Web Utilities', icon: 'public', category: 'Web', component: WebTools, subTools: ['qr-scanner', 'url-shortener', 'cookie-manager', 'browser-info', 'whois-lookup'] },
-    { id: 'network-main', title: 'Network Hub', icon: 'router', category: 'Web', component: NetworkTools, subTools: ['ping-test', 'dns-lookup', 'ip-geo', 'ssl-check', 'speed-test', 'port-scanner'] },
+    { id: 'web-main', title: 'Web Utilities', icon: 'public', category: 'Web', component: WebTools, subTools: ['qr-gen', 'qr-scan', 'social-downloader', 'cookies', 'omni-hub', 'web-to-md', 'web-translate', 'web-mhtml', 'web-meta', 'web-url-parser'] },
+    { id: 'network-main', title: 'Network Hub', icon: 'router', category: 'Web', component: NetworkTools, subTools: ['ip-info', 'ping', 'dns', 'whois', 'speed', 'geo', 'ssl', 'subnet', 'bluetooth'] },
 
     // Developer
-    { id: 'dev-main', title: 'Developer Hub', icon: 'terminal', category: 'Developer', component: DevTools, subTools: ['base64', 'cron-helper', 'diff-viewer', 'json-formatter', 'jwt-decoder', 'regex-tester', 'sql-formatter', 'yaml-json'] },
+    { id: 'dev-main', title: 'Developer Hub', icon: 'terminal', category: 'Developer', component: DevTools, subTools: ['json-formatter', 'jwt-decoder', 'cron-helper', 'sql-formatter', 'regex-tester', 'base64', 'diff-viewer', 'markdown-preview', 'uuid-gen', 'url-decode', 'yaml-json', 'minify', 'xml-json'] },
 
     // Math & Science
-    { id: 'edu-main', title: 'Education Hub', icon: 'school', category: 'Education', component: EducationTools, subTools: ['flashcards', 'periodic-table', 'calculator', 'graphing-calc', 'math-solver'] },
-    { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['csv-viewer', 'data-visualizer', 'anomaly-detect', 'stat-calc'] },
-    { id: 'unit-main', title: 'Unit Converter', icon: 'balance', category: 'Education', component: UnitConverterTools, subTools: ['length-conv', 'weight-conv', 'temp-conv', 'currency-conv'] },
+    { id: 'edu-main', title: 'Education Hub', icon: 'school', category: 'Education', component: EducationTools, subTools: ['periodic-table', 'unit-circle', 'physics-constants', 'scientific-calc'] },
+    { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['csv-viewer', 'data-visualizer', 'anomaly-detect', 'stat-calc', 'data-quality', 'data-profiling', 'data-anonymizer', 'json-csv'] },
+    { id: 'unit-main', title: 'Unit Converter', icon: 'balance', category: 'Education', component: UnitConverterTools, subTools: ['length-conv', 'weight-conv', 'temp-conv', 'currency-conv', 'data-conv'] },
 
     // System & Tools
-    { id: 'device-main', title: 'Device Hub', icon: 'memory', category: 'Sensors', component: DeviceTools, subTools: ['battery-info', 'storage-info', 'sensor-info', 'hardware-test'] },
-    { id: 'travel-main', title: 'Travel & Outdoor', icon: 'explore', category: 'Sensors', component: TravelTools, subTools: ['packing-list', 'compass', 'altimeter', 'world-clock'] },
-    { id: 'time-main', title: 'Date & Time', icon: 'schedule', category: 'Utility', component: DateTimeTools, subTools: ['age-calc', 'stopwatch', 'pomodoro', 'time-diff'] },
-    { id: 'finance-main', title: 'Finance Tools', icon: 'payments', category: 'Utility', component: FinanceTools, subTools: ['loan-calc', 'investment-calc', 'tax-calc', 'tip-calc'] },
-    { id: 'health-main', title: 'Health Hub', icon: 'monitor_heart', category: 'Health', component: HealthTools, subTools: ['bmi-calc', 'water-tracker', 'step-counter', 'calorie-calc'] },
-    { id: 'game-main', title: 'Games Hub', icon: 'casino', category: 'Games', component: GameTools, subTools: ['snake-game', 'sudoku', '2048', 'tic-tac-toe'] },
-    { id: 'security-main', title: 'Privacy & Security', icon: 'security', category: 'Security', component: PrivacySecurityTools, subTools: ['hash-gen', 'password-gen', 'permission-auditor', 'encryption-tool'] },
-    { id: 'weather-main', title: 'Weather', icon: 'filter_drama', category: 'Sensors', component: WeatherTools, subTools: ['current-weather', 'forecast', 'uv-index', 'air-quality'] },
-    { id: 'text-main', title: 'Text Tools', icon: 'notes', category: 'Utility', component: TextTools, subTools: ['case-converter', 'word-counter', 'lorem-ipsum', 'text-cleaner'] },
+    { id: 'device-main', title: 'Device Hub', icon: 'memory', category: 'Sensors', component: DeviceTools, subTools: ['device-info', 'android-sensors', 'luxmeter', 'soundmeter', 'magnetic-tester', 'flashlight', 'vibrometer', 'ruler', 'level-pendulum', 'protractor', 'compass', 'gps-info', 'sos'] },
+    { id: 'travel-main', title: 'Travel & Outdoor', icon: 'explore', category: 'Sensors', component: TravelTools, subTools: ['world-clock', 'timezone-conv', 'packing-list'] },
+    { id: 'time-main', title: 'Date & Time', icon: 'schedule', category: 'Utility', component: DateTimeTools, subTools: ['age-calculator', 'timestamp-conv', 'stopwatch', 'pomodoro-timer', 'world-clock', 'timezone-conv', 'panchangam', 'date-diff', 'countdown'] },
+    { id: 'finance-main', title: 'Finance Tools', icon: 'payments', category: 'Utility', component: FinanceTools, subTools: ['currency-conv', 'vat-calc', 'inflation', 'loan-calc', 'compound-int', 'cagr', 'dcf', 'tip-split', 'investment-calc'] },
+    { id: 'health-main', title: 'Health Hub', icon: 'monitor_heart', category: 'Health', component: HealthTools, subTools: ['bmr-calc', 'bmi-calc', 'calorie-calc', 'water-tracker'] },
+    { id: 'game-main', title: 'Games Hub', icon: 'casino', category: 'Games', component: GameTools, subTools: ['dice-roller', 'heads-tails', 'snake-game', '2048', 'sudoku', 'tictactoe', 'dino-jump'] },
+    { id: 'security-main', title: 'Privacy & Security', icon: 'security', category: 'Security', component: PrivacySecurityTools, subTools: ['password-gen', 'hash-gen', 'rsa-gen', 'hmac-calc', 'security-info', 'privacy-audit', 'password-strength', 'data-anonymizer', 'aes-encrypt'] },
+    { id: 'weather-main', title: 'Weather', icon: 'filter_drama', category: 'Sensors', component: WeatherTools, subTools: ['weather-forecast'] },
+    { id: 'text-main', title: 'Text Tools', icon: 'notes', category: 'Utility', component: TextTools, subTools: ['case-converter', 'word-counter', 'lorem-ipsum', 'text-cleaner', 'word-rank', 'text-to-speech'] },
+    { id: 'ai-main', title: 'AI Hub', icon: 'psychology', category: 'Productivity', component: AiTools, subTools: ['ai-image-gen', 'ai-story-gen', 'ai-chat'] },
 ];
 
 const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRecentTools, hideRecentTools }) => {
@@ -134,7 +136,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
   const handleShare = async (e, tool) => {
     e.stopPropagation();
     const url = window.location.origin + window.location.pathname + `?tab=toolbox&tool=${tool.id}`;
-    if (navigator.share) { try { await navigator.share({ title: `Nature Hub - ${tool.title}`, url }); } catch (err) {} }
+    if (navigator.share) { try { await navigator.share({ title: `Epic Toolbox - ${tool.title}`, url }); } catch (err) {} }
     else { navigator.clipboard.writeText(url); alert("Link copied!"); }
   };
 
@@ -143,7 +145,11 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       if (query.startsWith('cat:')) matchesCat = t.category.toLowerCase().includes(query.replace('cat:', '').trim());
-      else matchesSearch = t.title.toLowerCase().includes(query) || t.category.toLowerCase().includes(query);
+      else {
+          matchesSearch = t.title.toLowerCase().includes(query) ||
+                         t.category.toLowerCase().includes(query) ||
+                         t.subTools?.some(st => st.toLowerCase().includes(query));
+      }
     }
     if (!searchQuery || !searchQuery.toLowerCase().startsWith('cat:')) {
       if (activeCategory === 'Pinned') matchesCat = pinnedTools.includes(t.id);
@@ -154,7 +160,9 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
 
   const toolboxCategories = useMemo(() => {
     const cats = {};
-    [...new Set(TOOLS.map(t => t.category))].forEach(cat => { cats[cat] = getCategoryIcon(cat); });
+    [...new Set(TOOLS.map(t => t.category))].forEach(cat => {
+        if (cat) cats[cat] = getCategoryIcon(cat);
+    });
     return cats;
   }, []);
 
@@ -162,7 +170,8 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     if (!groupToolbox || (activeCategory !== 'All' && !searchQuery)) return null;
     const grouped = {};
     filteredTools.forEach(t => {
-      (grouped[t.category] || (grouped[t.category] = [])).push(t);
+      if (!grouped[t.category]) grouped[t.category] = [];
+      grouped[t.category].push(t);
     });
     return grouped;
   }, [filteredTools, groupToolbox, activeCategory, searchQuery]);
@@ -343,7 +352,20 @@ const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, 
 ));
 
 const getCategoryIcon = (cat) => {
-    const icons = { 'Productivity': 'assignment', 'Creative': 'brush', 'Media': 'perm_media', 'Web': 'public', 'Developer': 'terminal', 'Data': 'insights', 'Security': 'security', 'Sensors': 'sensors', 'Games': 'casino', 'Education': 'school', 'Utility': 'more_horiz' };
+    const icons = {
+        'Productivity': 'assignment',
+        'Creative': 'brush',
+        'Media': 'perm_media',
+        'Web': 'public',
+        'Developer': 'terminal',
+        'Data': 'insights',
+        'Security': 'security',
+        'Sensors': 'sensors',
+        'Games': 'casino',
+        'Education': 'school',
+        'Utility': 'more_horiz',
+        'Health': 'monitor_heart'
+    };
     return icons[cat] || 'folder';
 };
 

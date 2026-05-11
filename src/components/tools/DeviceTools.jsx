@@ -78,6 +78,13 @@ const DeviceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
 };
 
 const DeviceInfo = ({ onResultChange }) => {
+    const [battery, setBattery] = useState(null);
+    useEffect(() => {
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(b => setBattery({ level: b.level * 100, charging: b.charging }));
+        }
+    }, []);
+
     const info = {
         agent: navigator.userAgent,
         platform: navigator.platform,
@@ -90,10 +97,24 @@ const DeviceInfo = ({ onResultChange }) => {
         onResultChange({ text: JSON.stringify(info, null, 2), filename: 'device_info.txt' });
     }, []);
     return (
-        <div className="grid gap-10 card p-15">
-            {Object.entries(info).map(([k, v]) => (
-                <div key={k} className="flex-between"><span className="capitalize opacity-6">{k}:</span> <b className="text-right">{v}</b></div>
-            ))}
+        <div className="grid gap-15">
+            {battery && (
+                <div className="card p-20 text-center">
+                    <div className="sensor-circle" style={{
+                        width: '120px', height: '120px',
+                        border: '10px solid var(--border)',
+                        borderTopColor: 'var(--nature-moss)'
+                    }}>
+                        <div style={{fontSize: '1.5rem', fontWeight: 800}}>{Math.round(battery.level)}%</div>
+                        <div className="smallest opacity-6">{battery.charging ? 'Charging' : 'Discharging'}</div>
+                    </div>
+                </div>
+            )}
+            <div className="grid gap-10 card p-15">
+                {Object.entries(info).map(([k, v]) => (
+                    <div key={k} className="flex-between"><span className="capitalize opacity-6">{k}:</span> <b className="text-right" style={{fontSize: '0.8rem', wordBreak: 'break-all', maxWidth: '60%'}}>{v}</b></div>
+                ))}
+            </div>
         </div>
     );
 };
