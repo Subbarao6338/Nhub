@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import Header from './components/Header';
 import TabBar from './components/TabBar';
 import BookmarksView from './components/BookmarksView';
@@ -560,6 +561,7 @@ function App() {
       )}
 
       <Analytics />
+      <SpeedInsights />
     </div>
   );
 }
