@@ -6,18 +6,38 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const [res, setRes] = useState('');
   const [loading, setLoading] = useState(false);
   const [chat, setChat] = useState([]);
+  const [style, setStyle] = useState('natural');
+  const [localSentiment, setLocalSentiment] = useState(null);
 
   useEffect(() => {
-    const labels = { 'image-gen': 'AI Image Gen', 'text-gen': 'AI Story Gen', 'chat': 'AI Chat Assistant' };
+    const labels = {
+      'image-gen': 'AI Image Gen',
+      'text-gen': 'AI Story Gen',
+      'chat': 'AI Chat Assistant',
+      'local': 'Local AI Utilities'
+    };
     if (onSubtoolChange) onSubtoolChange(labels[activeTab]);
   }, [activeTab]);
+
+  const runLocalAnalysis = () => {
+    const text = input.toLowerCase();
+    const positive = ['good', 'great', 'awesome', 'amazing', 'happy', 'love', 'excellent', 'fantastic', 'wonderful', 'perfect', 'epic'];
+    const negative = ['bad', 'terrible', 'awful', 'sad', 'hate', 'poor', 'worst', 'horrible', 'annoying', 'broken', 'failure'];
+
+    let score = 0;
+    positive.forEach(w => { if(text.includes(w)) score++; });
+    negative.forEach(w => { if(text.includes(w)) score--; });
+
+    setLocalSentiment(score > 0 ? 'Positive' : (score < 0 ? 'Negative' : 'Neutral'));
+  };
 
   const generateImage = async () => {
     setLoading(true);
     try {
-        const url = `https://pollinations.ai/p/${encodeURIComponent(input)}?width=512&height=512&seed=${Math.floor(Math.random()*1000)}`;
+        const prompt = style === 'natural' ? input : `${input} in ${style} style`;
+        const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=512&height=512&seed=${Math.floor(Math.random()*1000)}&model=flux`;
         setRes(url);
-        onResultChange({ text: `AI Image for: ${input}`, filename: 'ai_image.png', url });
+        onResultChange({ text: `AI Image for: ${input} (${style})`, filename: 'ai_image.png', url });
     } catch (e) {
         setRes('AI Image generation failed.');
     } finally {
@@ -69,9 +89,30 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
         <button className={`pill ${activeTab === 'image-gen' ? 'active' : ''}`} onClick={() => {setActiveTab('image-gen'); setRes('');}}>Image Gen</button>
         <button className={`pill ${activeTab === 'text-gen' ? 'active' : ''}`} onClick={() => {setActiveTab('text-gen'); setRes('');}}>Story Gen</button>
         <button className={`pill ${activeTab === 'chat' ? 'active' : ''}`} onClick={() => {setActiveTab('chat'); setRes('');}}>Chat</button>
+        <button className={`pill ${activeTab === 'local' ? 'active' : ''}`} onClick={() => {setActiveTab('local'); setRes('');}}>Local Tools</button>
       </div>
 
-      {activeTab !== 'chat' ? (
+      {activeTab === 'image-gen' && (
+          <div className="flex-gap mb-15 flex-wrap">
+              {['natural', 'anime', 'cyberpunk', 'pixel-art', '3d-render', 'sketch', 'oil-painting', 'cinematic'].map(s => (
+                  <button key={s} className={`pill ${style === s ? 'active' : ''}`} onClick={() => setStyle(s)} style={{fontSize: '0.75rem', padding: '6px 12px'}}>
+                      {s.replace('-', ' ')}
+                  </button>
+              ))}
+          </div>
+      )}
+
+      {activeTab === 'local' ? (
+          <div className="card p-20 grid gap-15">
+              <textarea className="pill w-full" rows="4" placeholder="Enter text for local analysis..." value={input} onChange={e=>setInput(e.target.value)} />
+              <button className="btn-primary w-full" onClick={runLocalAnalysis}>Analyze Sentiment (Local)</button>
+              {localSentiment && (
+                  <div className="tool-result text-center">
+                      Sentiment: <b className={localSentiment.toLowerCase()}>{localSentiment}</b>
+                  </div>
+              )}
+          </div>
+      ) : activeTab !== 'chat' ? (
           <>
             <div className="card p-20 grid gap-15">
                 <textarea className="pill w-full" rows="3" placeholder="Enter prompt..." value={input} onChange={e=>setInput(e.target.value)} />

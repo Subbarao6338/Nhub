@@ -1,9 +1,22 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import API_BASE from '../../api';
 
 const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'qr-gen', label: 'QR Gen' },
+    { id: 'qr-scan', label: 'QR Scanner' },
+    { id: 'social', label: 'Social' },
+    { id: 'cookies', label: 'Cookies' },
+    { id: 'omni', label: 'Search' },
+    { id: 'web-md', label: 'Web to MD' },
+    { id: 'translate', label: 'Translate' },
+    { id: 'mhtml', label: 'MHTML' },
+    { id: 'meta', label: 'Meta Gen' },
+    { id: 'url-parser', label: 'URL Parser' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('qr-gen');
 
   useEffect(() => {
@@ -30,19 +43,6 @@ const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
-
-  const tabs = [
-    { id: 'qr-gen', label: 'QR Gen' },
-    { id: 'qr-scan', label: 'QR Scanner' },
-    { id: 'social', label: 'Social' },
-    { id: 'cookies', label: 'Cookies' },
-    { id: 'omni', label: 'Search' },
-    { id: 'web-md', label: 'Web to MD' },
-    { id: 'translate', label: 'Translate' },
-    { id: 'mhtml', label: 'MHTML' },
-    { id: 'meta', label: 'Meta Gen' },
-    { id: 'url-parser', label: 'URL Parser' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 

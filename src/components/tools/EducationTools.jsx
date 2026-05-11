@@ -300,19 +300,19 @@ const ScientificCalculator = () => {
 };
 
 const EducationTools = ({ toolId, onSubtoolChange }) => {
-  const [activeTab, setActiveTab] = useState('periodic');
-
-  useEffect(() => {
-    const current = tabs.find(t => t.id === activeTab);
-    if (current && onSubtoolChange) onSubtoolChange(current.label);
-  }, [activeTab]);
-
   const tabs = [
     { id: 'periodic', label: 'Periodic Table' },
     { id: 'circle', label: 'Unit Circle' },
     { id: 'constants', label: 'Physics Constants' },
     { id: 'scicalc', label: 'Scientific Calc' }
   ];
+
+  const [activeTab, setActiveTab] = useState('periodic');
+
+  useEffect(() => {
+    const current = tabs.find(t => t.id === activeTab);
+    if (current && onSubtoolChange) onSubtoolChange(current.label);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {

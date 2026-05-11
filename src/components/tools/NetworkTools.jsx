@@ -2,6 +2,18 @@ import React, { useState, useEffect } from 'react';
 import API_BASE from '../../api';
 
 const NetworkTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'ip-info', label: 'IP Info' },
+    { id: 'ping', label: 'Ping' },
+    { id: 'dns', label: 'DNS' },
+    { id: 'whois', label: 'Whois' },
+    { id: 'speed', label: 'Speed' },
+    { id: 'geo', label: 'Geo' },
+    { id: 'ssl', label: 'SSL' },
+    { id: 'subnet', label: 'Subnet' },
+    { id: 'bluetooth', label: 'Bluetooth' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('ip-info');
 
   useEffect(() => {
@@ -26,18 +38,6 @@ const NetworkTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
-
-  const tabs = [
-    { id: 'ip-info', label: 'IP Info' },
-    { id: 'ping', label: 'Ping' },
-    { id: 'dns', label: 'DNS' },
-    { id: 'whois', label: 'Whois' },
-    { id: 'speed', label: 'Speed' },
-    { id: 'geo', label: 'Geo' },
-    { id: 'ssl', label: 'SSL' },
-    { id: 'subnet', label: 'Subnet' },
-    { id: 'bluetooth', label: 'Bluetooth' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   return (
     <div className="tool-form">

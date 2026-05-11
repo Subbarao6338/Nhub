@@ -589,6 +589,7 @@ body::before {
   animation: leaf-entry 0.6s var(--transition-bounce) forwards;
   animation-delay: calc(var(--delay) * 0.05s);
   opacity: 0;
+  will-change: transform, opacity;
 }
 
 @keyframes leaf-entry {
@@ -1209,9 +1210,10 @@ body.no-hover-effects .card:hover { transform: none; }
   background: var(--surface-solid);
 }
 
-body.search-active .main-content > *:not(.top-bar) {
-  pointer-events: none;
+body.search-active .main-content > *:not(.top-bar):not(.search-overlay) {
   transition: all 0.3s ease;
+  filter: blur(4px);
+  opacity: 0.5;
 }
 
 .search-dismiss-overlay {
@@ -1223,6 +1225,7 @@ body.search-active .main-content > *:not(.top-bar) {
 
 body.search-active .search-dismiss-overlay {
   display: block;
+  pointer-events: none;
 }
 
 .search-container input {

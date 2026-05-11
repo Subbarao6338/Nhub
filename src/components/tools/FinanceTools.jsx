@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
 const FinanceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'currency', label: 'Currency' },
+    { id: 'vat', label: 'VAT' },
+    { id: 'inflation', label: 'Inflation' },
+    { id: 'loan', label: 'Loan' },
+    { id: 'compound', label: 'Compound' },
+    { id: 'cagr', label: 'CAGR' },
+    { id: 'dcf', label: 'DCF' },
+    { id: 'tip', label: 'Tip & Split' },
+    { id: 'investment', label: 'Investment' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('currency');
 
   useEffect(() => {
@@ -24,18 +36,6 @@ const FinanceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
-
-  const tabs = [
-    { id: 'currency', label: 'Currency' },
-    { id: 'vat', label: 'VAT' },
-    { id: 'inflation', label: 'Inflation' },
-    { id: 'loan', label: 'Loan' },
-    { id: 'compound', label: 'Compound' },
-    { id: 'cagr', label: 'CAGR' },
-    { id: 'dcf', label: 'DCF' },
-    { id: 'tip', label: 'Tip & Split' },
-    { id: 'investment', label: 'Investment' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 

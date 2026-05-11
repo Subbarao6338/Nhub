@@ -2,6 +2,22 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAmbientLight } from './useAmbientLight';
 
 const DeviceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'info', label: 'Device Info' },
+    { id: 'sensors', label: 'Sensors' },
+    { id: 'lux', label: 'Luxmeter' },
+    { id: 'sound', label: 'Sound Meter' },
+    { id: 'magnetic', label: 'Magnetic' },
+    { id: 'flashlight', label: 'Flashlight' },
+    { id: 'vibration', label: 'Vibrometer' },
+    { id: 'ruler', label: 'Ruler' },
+    { id: 'level', label: 'Level' },
+    { id: 'protractor', label: 'Protractor' },
+    { id: 'compass', label: 'Compass' },
+    { id: 'gps', label: 'GPS' },
+    { id: 'sos', label: 'SOS' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('info');
 
   useEffect(() => {
@@ -29,22 +45,6 @@ const DeviceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
-
-  const tabs = [
-    { id: 'info', label: 'Device Info' },
-    { id: 'sensors', label: 'Sensors' },
-    { id: 'lux', label: 'Luxmeter' },
-    { id: 'sound', label: 'Sound Meter' },
-    { id: 'magnetic', label: 'Magnetic' },
-    { id: 'flashlight', label: 'Flashlight' },
-    { id: 'vibration', label: 'Vibrometer' },
-    { id: 'ruler', label: 'Ruler' },
-    { id: 'level', label: 'Level' },
-    { id: 'protractor', label: 'Protractor' },
-    { id: 'compass', label: 'Compass' },
-    { id: 'gps', label: 'GPS' },
-    { id: 'sos', label: 'SOS' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 

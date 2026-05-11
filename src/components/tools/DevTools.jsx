@@ -4,6 +4,22 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
 const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'json-fmt', label: 'JSON Formatter' },
+    { id: 'jwt', label: 'JWT Decoder' },
+    { id: 'cron', label: 'Cron Helper' },
+    { id: 'sql', label: 'SQL Formatter' },
+    { id: 'regex', label: 'Regex Tester' },
+    { id: 'base64', label: 'Base64' },
+    { id: 'diff', label: 'Diff Viewer' },
+    { id: 'markdown', label: 'Markdown' },
+    { id: 'uuid', label: 'UUID Gen' },
+    { id: 'url', label: 'URL Tool' },
+    { id: 'yaml', label: 'YAML Conv' },
+    { id: 'minify', label: 'Minifier' },
+    { id: 'xml-json', label: 'XML ↔ JSON' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('json-fmt');
 
   useEffect(() => {
@@ -32,22 +48,6 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
-
-  const tabs = [
-    { id: 'json-fmt', label: 'JSON Formatter' },
-    { id: 'jwt', label: 'JWT Decoder' },
-    { id: 'cron', label: 'Cron Helper' },
-    { id: 'sql', label: 'SQL Formatter' },
-    { id: 'regex', label: 'Regex Tester' },
-    { id: 'base64', label: 'Base64' },
-    { id: 'diff', label: 'Diff Viewer' },
-    { id: 'markdown', label: 'Markdown' },
-    { id: 'uuid', label: 'UUID Gen' },
-    { id: 'url', label: 'URL Tool' },
-    { id: 'yaml', label: 'YAML Conv' },
-    { id: 'minify', label: 'Minifier' },
-    { id: 'xml-json', label: 'XML ↔ JSON' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 

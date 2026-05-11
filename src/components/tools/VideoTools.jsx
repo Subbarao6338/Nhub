@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const VideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'magnifier', label: 'Magnifier' },
+    { id: 'mirror', label: 'Mirror' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('magnifier');
 
   useEffect(() => {
@@ -17,11 +22,6 @@ const VideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
-
-  const tabs = [
-    { id: 'magnifier', label: 'Magnifier' },
-    { id: 'mirror', label: 'Mirror' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 

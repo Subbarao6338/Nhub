@@ -1,6 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const GameTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'dice', label: 'Dice Roller' },
+    { id: 'coin', label: 'Heads or Tails' },
+    { id: 'snake', label: 'Snake' },
+    { id: '2048', label: '2048' },
+    { id: 'sudoku', label: 'Sudoku' },
+    { id: 'tictactoe', label: 'Tic-Tac-Toe' },
+    { id: 'dino', label: 'Dino Jump' },
+    { id: 'tetris', label: 'Tetris' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('dice');
 
   useEffect(() => {
@@ -30,17 +41,6 @@ const GameTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
-
-  const tabs = [
-    { id: 'dice', label: 'Dice Roller' },
-    { id: 'coin', label: 'Heads or Tails' },
-    { id: 'snake', label: 'Snake' },
-    { id: '2048', label: '2048' },
-    { id: 'sudoku', label: 'Sudoku' },
-    { id: 'tictactoe', label: 'Tic-Tac-Toe' },
-    { id: 'dino', label: 'Dino Jump' },
-    { id: 'tetris', label: 'Tetris' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 

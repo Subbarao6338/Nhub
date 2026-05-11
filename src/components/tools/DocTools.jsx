@@ -33,6 +33,20 @@ const MarkdownEditor = ({ onResultChange }) => {
 };
 
 const DocTools = ({ onResultChange, toolId, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'md-editor', label: 'Markdown Editor' },
+    { id: 'img-to-pdf', label: 'Img to PDF' },
+    { id: 'pdf-to-img', label: 'PDF to Img' },
+    { id: 'word-to-pdf', label: 'Word to PDF' },
+    { id: 'excel-to-pdf', label: 'Excel to PDF' },
+    { id: 'ppt-to-pdf', label: 'PPT to PDF' },
+    { id: 'pdf-to-word', label: 'PDF to Word' },
+    { id: 'pdf-to-text', label: 'PDF to Text' },
+    { id: 'pdf-to-zip', label: 'PDF to ZIP' },
+    { id: 'pdf-extract', label: 'Extract Assets' },
+    { id: 'pdf-scan', label: 'Scan PDF (OCR)' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('md-editor');
   const [files, setFiles] = useState([]);
 
@@ -77,20 +91,6 @@ const DocTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     const pdfBlob = doc.output('blob');
     onResultChange({ text: 'Images to PDF', blob: pdfBlob, filename: 'converted.pdf' });
   };
-
-  const tabs = [
-    { id: 'md-editor', label: 'Markdown Editor' },
-    { id: 'img-to-pdf', label: 'Img to PDF' },
-    { id: 'pdf-to-img', label: 'PDF to Img' },
-    { id: 'word-to-pdf', label: 'Word to PDF' },
-    { id: 'excel-to-pdf', label: 'Excel to PDF' },
-    { id: 'ppt-to-pdf', label: 'PPT to PDF' },
-    { id: 'pdf-to-word', label: 'PDF to Word' },
-    { id: 'pdf-to-text', label: 'PDF to Text' },
-    { id: 'pdf-to-zip', label: 'PDF to ZIP' },
-    { id: 'pdf-extract', label: 'Extract Assets' },
-    { id: 'pdf-scan', label: 'Scan PDF (OCR)' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 
