@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { diffLines } from 'diff';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import API_BASE from '../../api';
 
 const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const tabs = [
@@ -296,12 +297,11 @@ const CodeConverter = ({ onResultChange }) => {
 
     const convert = async () => {
         try {
-            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://nhub-pi.vercel.app/api/data/convert')}`, {
+            const res = await fetch(`${API_BASE}/data/convert`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data: val, from_format: from, to_format: to })
             });
-            // allorigins wrapper handling
             const data = await res.json();
             if (data.result) {
                 setVal(data.result);

@@ -93,14 +93,12 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
         'pdf-crop': 'crop',
         'pdf-lock': 'lock',
         'pdf-unlock': 'unlock',
-        'pdf-meta': 'metadata',
+        'pdf-metadata': 'metadata',
         'pdf-compress': 'compress',
         'pdf-grayscale': 'grayscale',
         'pdf-flatten': 'flatten',
         'pdf-img2pdf': 'img2pdf',
-        'pdf-translate': 'translate',
-        'pdf-metadata': 'metadata',
-        'pdf-compress': 'compress'
+        'pdf-translate': 'translate'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
