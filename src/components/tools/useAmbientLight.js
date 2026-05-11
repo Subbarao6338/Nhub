@@ -44,17 +44,19 @@ export const useAmbientLight = () => {
       startSimulation();
     }
 
+    let cleanupSim;
     function startSimulation() {
       const interval = setInterval(() => {
         const simulatedValue = Math.floor(Math.random() * 500) + 100;
         setLux(simulatedValue);
         setHistory(prev => [...prev, simulatedValue].slice(-MAX_GRAPH_POINTS));
       }, SENSOR_POLLING_MS);
-      return () => clearInterval(interval);
+      cleanupSim = () => clearInterval(interval);
     }
 
     return () => {
       if (sensor) sensor.stop();
+      if (cleanupSim) cleanupSim();
     };
   }, []);
 

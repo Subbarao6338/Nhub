@@ -294,7 +294,7 @@ def get_links(profile_id: Optional[int] = None):
             # so that toggling the pin state works correctly on the right record.
             links = conn.execute('''
                 SELECT id, profile_id, title, url, urls, icon, optional_icon, category, is_internal, tool_id, is_pinned
-                FROM (SELECT * FROM links ORDER BY is_pinned DESC)
+                FROM (SELECT * FROM links ORDER BY is_pinned DESC, created_at DESC)
                 GROUP BY title, url
                 ORDER BY is_pinned DESC, title COLLATE NOCASE ASC
             ''').fetchall()

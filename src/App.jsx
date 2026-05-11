@@ -347,7 +347,7 @@ function App() {
       if (res.ok) {
         if ('caches' in window) {
           try {
-            const cache = await caches.open('url-hub-v10');
+            const cache = await caches.open('url-hub-v15');
             const keys = await cache.keys();
             for (const request of keys) {
               if (request.url.includes('/api/')) {
@@ -371,7 +371,7 @@ function App() {
           if (res.ok) {
             if ('caches' in window) {
               try {
-                const cache = await caches.open('url-hub-v10');
+                const cache = await caches.open('url-hub-v15');
                 const keys = await cache.keys();
                 for (const request of keys) {
                   if (request.url.includes('/api/')) {
