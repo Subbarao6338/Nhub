@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const UnitConverterTools = ({ onResultChange, toolId }) => {
+const UnitConverterTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const [value, setValue] = useState(1);
   const [fromUnit, setFromUnit] = useState('km');
   const [toUnit, setToUnit] = useState('m');
@@ -11,6 +11,10 @@ const UnitConverterTools = ({ onResultChange, toolId }) => {
     'kg_lb': 2.20462, 'lb_kg': 0.453592,
     'mps_kph': 3.6, 'kph_mps': 1/3.6
   };
+
+  useEffect(() => {
+    if (onSubtoolChange) onSubtoolChange('Unit Converter');
+  }, []);
 
   useEffect(() => {
     const val = parseFloat(value) || 0;

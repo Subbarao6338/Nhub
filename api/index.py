@@ -238,6 +238,10 @@ class ConvertRequest(BaseModel):
 class SentimentRequest(BaseModel):
     text: str
 
+class TranslateRequest(BaseModel):
+    text: str
+    target_lang: str = "en"
+
 @app.middleware("http")
 async def ensure_db_initialized(request, call_next):
     global _db_initialized
@@ -576,6 +580,43 @@ def convert_data(request: ConvertRequest):
             raise HTTPException(status_code=400, detail="Unsupported conversion")
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Conversion error: {str(e)}")
+
+@app.post("/api/text/translate")
+def translate_text(request: TranslateRequest):
+    # Mock translation for offline/limited environments
+    # In production, integrate with Google Translate API or deep-translator
+    return {
+        "translated_text": f"[{request.target_lang}] {request.text}",
+        "detected_lang": "auto"
+    }
+
+@app.get("/api/networking/ssl")
+def check_ssl(host: str = Query(...)):
+    import ssl
+    import socket
+    from datetime import datetime
+
+    context = ssl.create_default_context()
+    try:
+        with socket.create_connection((host, 443), timeout=5) as sock:
+            with context.wrap_socket(sock, server_hostname=host) as ssock:
+                cert = ssock.getpeercert()
+
+                # Expiry info
+                notAfter = cert.get('notAfter')
+                expiry_dt = datetime.strptime(notAfter, '%b %d %H:%M:%S %Y %Z')
+                days_left = (expiry_dt - datetime.now()).days
+
+                issuer = dict(x[0] for x in cert.get('issuer'))
+
+                return {
+                    "valid": True,
+                    "issuer": issuer.get('organizationName', 'Unknown'),
+                    "expiry": notAfter,
+                    "days_left": days_left
+                }
+    except Exception as e:
+        return {"valid": False, "error": str(e)}
 
 @app.post("/api/text/analyze")
 def analyze_text(request: SentimentRequest):

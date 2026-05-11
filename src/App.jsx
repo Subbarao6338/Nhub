@@ -141,6 +141,16 @@ function App() {
   const [editingLink, setEditingLink] = useState(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
 
   const refreshData = async () => {
     setIsRefreshing(true);
@@ -477,6 +487,8 @@ function App() {
 
       {isSettingsOpen && (
         <SettingsModal
+          deferredPrompt={deferredPrompt}
+          setDeferredPrompt={setDeferredPrompt}
           appName={appName}
           setAppName={setAppName}
           enableProfiles={enableProfiles}

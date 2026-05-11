@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-const TextTools = ({ toolId, onResultChange }) => {
+const TextTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('modify');
   const [input, setInput] = useState('');
+
+  useEffect(() => {
+    const current = tabs.find(t => t.id === activeTab);
+    if (current && onSubtoolChange) onSubtoolChange(current.label);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
@@ -44,19 +49,23 @@ const TextTools = ({ toolId, onResultChange }) => {
       onResultChange({ text: res, filename: 'text_processed.txt' });
   };
 
+  const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
+
   return (
     <div className="tool-form">
-      <div className="pill-group mb-20 scrollable-x">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`pill ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {!isDeepLinked && (
+          <div className="pill-group mb-20 scrollable-x">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`pill ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+      )}
 
       <textarea rows="8" className="pill w-full mb-20 font-mono" placeholder="Enter text here..." value={input} onChange={e=>setInput(e.target.value)} />
 

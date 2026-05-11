@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-const HealthTools = ({ onResultChange, toolId }) => {
+const HealthTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('bmr');
+
+  useEffect(() => {
+    const labels = { bmr: 'Basal Metabolic Rate', bmi: 'BMI Calculator', calories: 'Calorie Needs' };
+    if (onSubtoolChange) onSubtoolChange(labels[activeTab]);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
@@ -10,17 +15,47 @@ const HealthTools = ({ onResultChange, toolId }) => {
     }
   }, [toolId]);
 
+  const isDeepLinked = !!toolId;
+
   return (
     <div className="tool-form">
-      <div className="pill-group mb-20">
-        <button className={`pill ${activeTab === 'bmr' ? 'active' : ''}`} onClick={() => setActiveTab('bmr')}>BMR Calculator</button>
-        <button className={`pill ${activeTab === 'calories' ? 'active' : ''}`} onClick={() => setActiveTab('calories')}>Calories</button>
-      </div>
+      {!isDeepLinked && (
+          <div className="pill-group mb-20 scrollable-x">
+            <button className={`pill ${activeTab === 'bmr' ? 'active' : ''}`} onClick={() => setActiveTab('bmr')}>BMR</button>
+            <button className={`pill ${activeTab === 'bmi' ? 'active' : ''}`} onClick={() => setActiveTab('bmi')}>BMI</button>
+            <button className={`pill ${activeTab === 'calories' ? 'active' : ''}`} onClick={() => setActiveTab('calories')}>Calories</button>
+          </div>
+      )}
 
       {activeTab === 'bmr' && <BmrTool onResultChange={onResultChange} />}
+      {activeTab === 'bmi' && <BmiTool onResultChange={onResultChange} />}
       {activeTab === 'calories' && <CalorieTool onResultChange={onResultChange} />}
     </div>
   );
+};
+
+const BmiTool = ({ onResultChange }) => {
+    const [w, setW] = useState('');
+    const [h, setH] = useState('');
+    const [bmi, setBmi] = useState(null);
+    const calc = () => {
+        const res = parseFloat(w) / ((parseFloat(h)/100)**2);
+        setBmi(res.toFixed(1));
+        onResultChange({ text: `BMI: ${res.toFixed(1)}`, filename: 'bmi.txt' });
+    };
+    return (
+        <div className="grid gap-15">
+            <input type="number" placeholder="Weight (kg)" className="pill" value={w} onChange={e=>setW(e.target.value)} />
+            <input type="number" placeholder="Height (cm)" className="pill" value={h} onChange={e=>setH(e.target.value)} />
+            <button className="btn-primary" onClick={calc}>Calculate BMI</button>
+            {bmi && (
+                <div className="tool-result text-center">
+                    <div style={{fontSize: '3rem', fontWeight: 800}}>{bmi}</div>
+                    <div className="opacity-6">{bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese'}</div>
+                </div>
+            )}
+        </div>
+    );
 };
 
 const BmrTool = ({ onResultChange }) => {

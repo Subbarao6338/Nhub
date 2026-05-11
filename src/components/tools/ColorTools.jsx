@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const ColorTools = ({ toolId }) => {
+const ColorTools = ({ toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('picker');
   const [color, setColor] = useState('#3b82f6');
+
+  useEffect(() => {
+    const labels = { 'picker': 'Color Picker', 'converter': 'Converter', 'harmonies': 'Harmonies', 'blender': 'Blender' };
+    if (onSubtoolChange) onSubtoolChange(labels[activeTab]);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
@@ -14,10 +19,12 @@ const ColorTools = ({ toolId }) => {
     }
   }, [toolId]);
 
+  const isDeepLinked = !!toolId;
+
   return (
     <div className="tool-form">
-      {!toolId && (
-        <div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
+      {!isDeepLinked && (
+        <div className="pill-group mb-20 scrollable-x">
           <button className={`pill ${activeTab === 'picker' ? 'active' : ''}`} onClick={() => setActiveTab('picker')}>Picker</button>
           <button className={`pill ${activeTab === 'converter' ? 'active' : ''}`} onClick={() => setActiveTab('converter')}>Converter</button>
           <button className={`pill ${activeTab === 'harmonies' ? 'active' : ''}`} onClick={() => setActiveTab('harmonies')}>Harmonies</button>

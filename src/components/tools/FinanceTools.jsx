@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-const FinanceTools = ({ toolId, onResultChange }) => {
+const FinanceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('currency');
+
+  useEffect(() => {
+    const current = tabs.find(t => t.id === activeTab);
+    if (current && onSubtoolChange) onSubtoolChange(current.label);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
@@ -30,23 +35,29 @@ const FinanceTools = ({ toolId, onResultChange }) => {
     { id: 'tip', label: 'Tip & Split' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
+  const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
+
   return (
     <div className="tool-form">
-      <div className="pill-group mb-20 scrollable-x">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`pill ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {!isDeepLinked && (
+          <div className="pill-group mb-20 scrollable-x">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`pill ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+      )}
 
       {activeTab === 'currency' && <CurrencyTool onResultChange={onResultChange} />}
       {activeTab === 'tip' && <TipTool onResultChange={onResultChange} />}
-      {['vat', 'inflation', 'loan', 'compound', 'cagr', 'dcf'].includes(activeTab) && (
+      {activeTab === 'compound' && <CompoundInterestTool onResultChange={onResultChange} />}
+      {activeTab === 'loan' && <LoanCalculator onResultChange={onResultChange} />}
+      {['vat', 'inflation', 'cagr', 'dcf'].includes(activeTab) && (
           <div className="text-center p-20 card opacity-6">
               <span className="material-icons mb-10" style={{fontSize: '2rem'}}>payments</span>
               <div>This finance tool is being integrated.</div>
@@ -66,6 +77,52 @@ const CurrencyTool = ({ onResultChange }) => {
             <input type="number" className="pill w-full mb-15" value={amt} onChange={e=>setAmt(e.target.value)} />
             <div className="tool-result">{(amt * 0.92).toFixed(2)} EUR</div>
             <div className="opacity-5 mt-10" style={{fontSize: '0.8rem'}}>Using mock exchange rates</div>
+        </div>
+    );
+};
+
+const CompoundInterestTool = ({ onResultChange }) => {
+    const [p, setP] = useState(1000);
+    const [r, setR] = useState(5);
+    const [t, setT] = useState(10);
+    const [res, setRes] = useState(null);
+
+    const calc = () => {
+        const amount = p * Math.pow((1 + (r/100)), t);
+        setRes(amount.toFixed(2));
+        onResultChange({ text: `Principal: ${p}, Rate: ${r}%, Time: ${t}y, Total: ${amount.toFixed(2)}`, filename: 'compound.txt' });
+    };
+
+    return (
+        <div className="grid gap-15 card p-15">
+            <div className="flex-between"><span>Principal</span><input type="number" className="pill w-100" value={p} onChange={e=>setP(e.target.value)} /></div>
+            <div className="flex-between"><span>Rate (%)</span><input type="number" className="pill w-100" value={r} onChange={e=>setR(e.target.value)} /></div>
+            <div className="flex-between"><span>Years</span><input type="number" className="pill w-100" value={t} onChange={e=>setT(e.target.value)} /></div>
+            <button className="btn-primary" onClick={calc}>Calculate</button>
+            {res && <div className="tool-result text-center">Total: <b>{res}</b></div>}
+        </div>
+    );
+};
+
+const LoanCalculator = ({ onResultChange }) => {
+    const [amt, setAmt] = useState(10000);
+    const [rate, setRate] = useState(5);
+    const [term, setTerm] = useState(12);
+    const [emi, setEmi] = useState(null);
+
+    const calc = () => {
+        const r = rate / 12 / 100;
+        const e = (amt * r * Math.pow(1 + r, term)) / (Math.pow(1 + r, term) - 1);
+        setEmi(e.toFixed(2));
+    };
+
+    return (
+        <div className="grid gap-15 card p-15">
+            <input type="number" placeholder="Loan Amount" className="pill" value={amt} onChange={e=>setAmt(e.target.value)} />
+            <input type="number" placeholder="Interest Rate" className="pill" value={rate} onChange={e=>setRate(e.target.value)} />
+            <input type="number" placeholder="Months" className="pill" value={term} onChange={e=>setTerm(e.target.value)} />
+            <button className="btn-primary" onClick={calc}>Calculate EMI</button>
+            {emi && <div className="tool-result text-center">Monthly Payment: <b>{emi}</b></div>}
         </div>
     );
 };

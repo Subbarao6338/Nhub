@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-const PrivacySecurityTools = ({ toolId, onResultChange }) => {
+const PrivacySecurityTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('password-gen');
+
+  useEffect(() => {
+    const current = tabs.find(t => t.id === activeTab);
+    if (current && onSubtoolChange) onSubtoolChange(current.label);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
@@ -30,19 +35,23 @@ const PrivacySecurityTools = ({ toolId, onResultChange }) => {
     { id: 'anonymizer', label: 'Anonymizer' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
+  const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
+
   return (
     <div className="tool-form">
-      <div className="pill-group mb-20 scrollable-x">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`pill ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {!isDeepLinked && (
+          <div className="pill-group mb-20 scrollable-x">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`pill ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+      )}
 
       {activeTab === 'password-gen' && <PasswordGen onResultChange={onResultChange} />}
       {activeTab === 'hash' && <HashGen onResultChange={onResultChange} />}

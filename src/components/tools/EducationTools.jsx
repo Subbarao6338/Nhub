@@ -266,8 +266,13 @@ const UnitCircle = () => {
   );
 };
 
-const EducationTools = ({ toolId }) => {
+const EducationTools = ({ toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('periodic');
+
+  useEffect(() => {
+    const current = tabs.find(t => t.id === activeTab);
+    if (current && onSubtoolChange) onSubtoolChange(current.label);
+  }, [activeTab]);
 
   const tabs = [
     { id: 'periodic', label: 'Periodic Table' },
@@ -286,19 +291,23 @@ const EducationTools = ({ toolId }) => {
     }
   }, [toolId]);
 
+  const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
+
   return (
     <div className="tool-form">
-      <div className="pill-group scrollable-x mb-20">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`pill ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {!isDeepLinked && (
+          <div className="pill-group scrollable-x mb-20">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`pill ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+      )}
 
       {activeTab === 'periodic' && <PeriodicTable />}
       {activeTab === 'circle' && <UnitCircle />}

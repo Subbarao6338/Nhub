@@ -1,19 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const ImageTools = ({ onResultChange, toolId }) => {
+const ImageTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('format');
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const imgRef = useRef(null);
 
   useEffect(() => {
+    const labels = {
+        'format': 'Convert', 'resize': 'Resize', 'blur': 'Privacy Blur',
+        'metadata': 'Clean Meta', 'bw': 'B&W Filter', 'sepia': 'Sepia',
+        'invert': 'Invert', 'crop': 'Image Cropper'
+    };
+    if (onSubtoolChange) onSubtoolChange(labels[activeTab] || activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
     if (toolId) {
-        if (toolId === 'img-format') setActiveTab('format');
-        else if (toolId === 'img-resize') setActiveTab('resize');
-        else if (toolId === 'img-blur') setActiveTab('blur');
-        else if (toolId === 'img-meta') setActiveTab('metadata');
-        else if (toolId === 'img-bw') setActiveTab('bw');
-        else setActiveTab(toolId);
+        const mapping = {
+            'img-format': 'format', 'img-resize': 'resize', 'img-blur': 'blur',
+            'img-meta': 'metadata', 'img-bw': 'bw', 'img-crop': 'crop'
+        };
+        if (mapping[toolId]) setActiveTab(mapping[toolId]);
+        else if (['sepia', 'invert', 'crop'].includes(toolId)) setActiveTab(toolId);
     }
   }, [toolId]);
 
@@ -27,17 +36,22 @@ const ImageTools = ({ onResultChange, toolId }) => {
     }
   };
 
+  const isDeepLinked = !!toolId;
+
   return (
     <div className="tool-form">
-      {!toolId && (<div className="pill-group" style={{ marginBottom: '20px', overflowX: 'auto', whiteSpace: 'nowrap', display: 'flex', flexWrap: 'nowrap' }}>
-        <button className={`pill ${activeTab === 'format' ? 'active' : ''}`} onClick={() => setActiveTab('format')}>Convert</button>
-        <button className={`pill ${activeTab === 'resize' ? 'active' : ''}`} onClick={() => setActiveTab('resize')}>Resize</button>
-        <button className={`pill ${activeTab === 'blur' ? 'active' : ''}`} onClick={() => setActiveTab('blur')}>Privacy Blur</button>
-        <button className={`pill ${activeTab === 'metadata' ? 'active' : ''}`} onClick={() => setActiveTab('metadata')}>Clean Meta</button>
-        <button className={`pill ${activeTab === 'bw' ? 'active' : ''}`} onClick={() => setActiveTab('bw')}>B&W Filter</button>
-        <button className={`pill ${activeTab === 'sepia' ? 'active' : ''}`} onClick={() => setActiveTab('sepia')}>Sepia</button>
-        <button className={`pill ${activeTab === 'invert' ? 'active' : ''}`} onClick={() => setActiveTab('invert')}>Invert</button>
-      </div>)}
+      {!isDeepLinked && (
+          <div className="pill-group mb-20 scrollable-x">
+            <button className={`pill ${activeTab === 'format' ? 'active' : ''}`} onClick={() => setActiveTab('format')}>Convert</button>
+            <button className={`pill ${activeTab === 'resize' ? 'active' : ''}`} onClick={() => setActiveTab('resize')}>Resize</button>
+            <button className={`pill ${activeTab === 'blur' ? 'active' : ''}`} onClick={() => setActiveTab('blur')}>Privacy Blur</button>
+            <button className={`pill ${activeTab === 'metadata' ? 'active' : ''}`} onClick={() => setActiveTab('metadata')}>Clean Meta</button>
+            <button className={`pill ${activeTab === 'bw' ? 'active' : ''}`} onClick={() => setActiveTab('bw')}>B&W Filter</button>
+            <button className={`pill ${activeTab === 'sepia' ? 'active' : ''}`} onClick={() => setActiveTab('sepia')}>Sepia</button>
+            <button className={`pill ${activeTab === 'invert' ? 'active' : ''}`} onClick={() => setActiveTab('invert')}>Invert</button>
+            <button className={`pill ${activeTab === 'crop' ? 'active' : ''}`} onClick={() => setActiveTab('crop')}>Crop</button>
+          </div>
+      )}
 
       <input type="file" onChange={handleUpload} accept="image/*" className="pill" style={{ width: '100%', marginBottom: '20px' }} />
       {preview && (
@@ -53,6 +67,7 @@ const ImageTools = ({ onResultChange, toolId }) => {
       {image && activeTab === 'bw' && <BlackWhiteFilter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
       {image && activeTab === 'sepia' && <SepiaFilter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
       {image && activeTab === 'invert' && <InvertFilter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+      {image && activeTab === 'crop' && <ImageCropper imgRef={imgRef} image={image} onResultChange={onResultChange} />}
     </div>
   );
 };
@@ -175,6 +190,38 @@ const SepiaFilter = ({ imgRef, image, onResultChange }) => {
         });
     };
     return <button className="btn-primary" onClick={apply} style={{ width: '100%' }}>Apply Sepia Filter</button>;
+};
+
+const ImageCropper = ({ imgRef, onResultChange }) => {
+    const [crop, setCrop] = useState({ x: 10, y: 10, w: 80, h: 80 });
+    const apply = () => {
+        const canvas = document.createElement('canvas');
+        const img = imgRef.current;
+        if (!img) return;
+        const x = (crop.x / 100) * img.naturalWidth;
+        const y = (crop.y / 100) * img.naturalHeight;
+        const w = (crop.w / 100) * img.naturalWidth;
+        const h = (crop.h / 100) * img.naturalHeight;
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
+        canvas.toBlob(blob => {
+            onResultChange({ text: 'Cropped Image', blob, filename: 'cropped.png' });
+        });
+    };
+    return (
+        <div className="grid gap-10">
+            <div className="grid grid-2-cols gap-5">
+                {['x','y','w','h'].map(k => (
+                    <div key={k} className="flex-between card p-5">
+                        <span className="small uppercase">{k}</span>
+                        <input type="number" className="pill" style={{width: '60px', padding: '5px'}} value={crop[k]} onChange={e=>setCrop({...crop, [k]: parseInt(e.target.value)})} />
+                    </div>
+                ))}
+            </div>
+            <button className="btn-primary w-full" onClick={apply}>Apply Crop</button>
+        </div>
+    );
 };
 
 const InvertFilter = ({ imgRef, image, onResultChange }) => {

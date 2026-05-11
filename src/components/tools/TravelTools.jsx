@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const TravelTools = ({ onResultChange, toolId }) => {
+const TravelTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('world-clock');
+
+  useEffect(() => {
+    const labels = { 'world-clock': 'World Clock', 'timezone': 'Timezone Conv', 'packing': 'Packing List' };
+    if (onSubtoolChange) onSubtoolChange(labels[activeTab]);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
@@ -12,9 +17,11 @@ const TravelTools = ({ onResultChange, toolId }) => {
     }
   }, [toolId]);
 
+  const isDeepLinked = !!toolId;
+
   return (
     <div className="tool-form">
-      {!toolId && (
+      {!isDeepLinked && (
         <div className="pill-group mb-20 scrollable-x">
           <button className={`pill ${activeTab === 'world-clock' ? 'active' : ''}`} onClick={() => setActiveTab('world-clock')}>World Clock</button>
           <button className={`pill ${activeTab === 'timezone' ? 'active' : ''}`} onClick={() => setActiveTab('timezone')}>Timezone Conv</button>

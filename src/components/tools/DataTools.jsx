@@ -3,9 +3,14 @@ import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { parquetRead } from 'hyparquet';
 
-const DataTools = ({ toolId, onResultChange }) => {
+const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('viewer');
   const [uploadedData, setUploadedData] = useState(null);
+
+  useEffect(() => {
+    const current = tabs.find(t => t.id === activeTab);
+    if (current && onSubtoolChange) onSubtoolChange(current.label);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
@@ -30,19 +35,23 @@ const DataTools = ({ toolId, onResultChange }) => {
     { id: 'anonymizer', label: 'Anonymizer' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
+  const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
+
   return (
     <div className="tool-form">
-      <div className="pill-group mb-20 scrollable-x">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`pill ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {!isDeepLinked && (
+          <div className="pill-group mb-20 scrollable-x">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`pill ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+      )}
 
       {activeTab === 'viewer' && <DataViewer onResultChange={onResultChange} setGlobalData={setUploadedData} />}
       {activeTab === 'science' && <DataScienceTool onResultChange={onResultChange} />}

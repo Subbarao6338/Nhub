@@ -92,6 +92,7 @@ const THEME_COLORS = [
 ];
 
 const SettingsModal = ({
+  deferredPrompt, setDeferredPrompt,
   appName, setAppName,
   enableProfiles, setEnableProfiles,
   showProjectsTab, setShowProjectsTab,
@@ -175,6 +176,24 @@ const SettingsModal = ({
           isOpen={openSections.includes('global')}
           onToggle={toggleSection}
         >
+          {deferredPrompt && (
+            <div className="form-group">
+              <label>PWA Installation</label>
+              <button
+                className="btn-primary w-full"
+                onClick={async () => {
+                  deferredPrompt.prompt();
+                  const { outcome } = await deferredPrompt.userChoice;
+                  if (outcome === 'accepted') {
+                    setDeferredPrompt(null);
+                  }
+                }}
+              >
+                <span className="material-icons">download_for_offline</span>
+                <span>Install Nature Hub</span>
+              </button>
+            </div>
+          )}
           <div className="form-group">
             <label>App Name</label>
             <input

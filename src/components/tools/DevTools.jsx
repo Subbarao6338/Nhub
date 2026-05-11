@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { diffLines } from 'diff';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 
-const DevTools = ({ toolId, onResultChange }) => {
+const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('json-fmt');
+
+  useEffect(() => {
+    const current = tabs.find(t => t.id === activeTab);
+    if (current && onSubtoolChange) onSubtoolChange(current.label);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
@@ -39,19 +44,23 @@ const DevTools = ({ toolId, onResultChange }) => {
     { id: 'url', label: 'URL Tool' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
+  const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
+
   return (
     <div className="tool-form">
-      <div className="pill-group mb-20 scrollable-x">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`pill ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {!isDeepLinked && (
+          <div className="pill-group mb-20 scrollable-x">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`pill ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+      )}
 
       {activeTab === 'json-fmt' && <JsonFormatter onResultChange={onResultChange} />}
       {activeTab === 'jwt' && <JwtDecoder onResultChange={onResultChange} />}
@@ -60,12 +69,10 @@ const DevTools = ({ toolId, onResultChange }) => {
       {activeTab === 'markdown' && <MarkdownPreview onResultChange={onResultChange} />}
       {activeTab === 'uuid' && <UuidGenerator onResultChange={onResultChange} />}
       {activeTab === 'url' && <UrlTool onResultChange={onResultChange} />}
-      {['cron', 'sql', 'regex'].includes(activeTab) && (
-          <div className="text-center p-20 card opacity-6">
-              <span className="material-icons mb-10" style={{fontSize: '2rem'}}>terminal</span>
-              <div>This developer tool is being refined.</div>
-          </div>
-      )}
+      {activeTab === 'sql' && <SqlFormatter onResultChange={onResultChange} />}
+      {activeTab === 'regex' && <RegexTester onResultChange={onResultChange} />}
+      {activeTab === 'cron' && <CronHelper onResultChange={onResultChange} />}
+      {activeTab === 'yaml' && <CodeConverter onResultChange={onResultChange} />}
     </div>
   );
 };
@@ -183,6 +190,121 @@ const Base64Tool = ({ onResultChange }) => {
             <div className="flex-gap">
                 <button className="btn-primary flex-1" onClick={()=>{try{const res=btoa(val); setVal(res); onResultChange({text:res});}catch(e){}}}>Encode</button>
                 <button className="pill flex-1" onClick={()=>{try{const res=atob(val); setVal(res); onResultChange({text:res});}catch(e){}}}>Decode</button>
+            </div>
+        </div>
+    );
+};
+
+const SqlFormatter = ({ onResultChange }) => {
+    const [sql, setSql] = useState("SELECT * FROM users WHERE id = 1 AND status = 'active' ORDER BY created_at DESC");
+    const format = () => {
+        let res = sql.replace(/\s+/g, ' ');
+        const keywords = ['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'ORDER BY', 'GROUP BY', 'LIMIT', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'HAVING', 'VALUES', 'UPDATE', 'SET', 'INSERT INTO', 'DELETE FROM'];
+        keywords.forEach(key => {
+            const regex = new RegExp(`\\s${key}\\s`, 'gi');
+            res = res.replace(regex, `\n${key} `);
+        });
+        setSql(res.trim());
+        onResultChange({ text: res.trim(), filename: 'formatted.sql' });
+    };
+    return (
+        <div className="grid gap-15 card p-15">
+            <textarea className="pill font-mono" rows="8" value={sql} onChange={e=>setSql(e.target.value)} />
+            <button className="btn-primary" onClick={format}>Format SQL</button>
+        </div>
+    );
+};
+
+const RegexTester = () => {
+    const [regex, setRegex] = useState('\\d+');
+    const [flags, setFlags] = useState('g');
+    const [text, setText] = useState('There are 123 apples and 456 oranges.');
+    const matches = useMemo(() => {
+        try {
+            const re = new RegExp(regex, flags);
+            return [...text.matchAll(re)];
+        } catch(e) { return []; }
+    }, [regex, flags, text]);
+
+    return (
+        <div className="grid gap-15 card p-15">
+            <div className="flex-gap">
+                <input className="pill font-mono flex-1" value={regex} onChange={e=>setRegex(e.target.value)} placeholder="Regex pattern" />
+                <input className="pill font-mono" style={{width: '60px'}} value={flags} onChange={e=>setFlags(e.target.value)} placeholder="flags" />
+            </div>
+            <textarea className="pill font-mono" rows="4" value={text} onChange={e=>setText(e.target.value)} placeholder="Test text" />
+            <div className="tool-result">
+                <div className="font-bold mb-5">Matches ({matches.length}):</div>
+                <div className="flex-gap flex-wrap">
+                    {matches.map((m, i) => (
+                        <span key={i} className="pill" style={{fontSize: '0.8rem', background: 'var(--primary-glow)'}}>{m[0]}</span>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const CodeConverter = ({ onResultChange }) => {
+    const [val, setVal] = useState('{"name": "Nature", "active": true}');
+    const [from, setFrom] = useState('json');
+    const [to, setTo] = useState('yaml');
+
+    const convert = async () => {
+        try {
+            const res = await fetch(`${API_BASE}/data/convert`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: val, from_format: from, to_format: to })
+            });
+            const data = await res.json();
+            if (data.result) {
+                setVal(data.result);
+                onResultChange({ text: data.result, filename: `converted.${to}` });
+            }
+        } catch(e) { alert("Conversion failed"); }
+    };
+
+    return (
+        <div className="grid gap-15 card p-15">
+            <div className="flex-gap">
+                <select className="pill flex-1" value={from} onChange={e=>setFrom(e.target.value)}>
+                    <option value="json">JSON</option>
+                    <option value="yaml">YAML</option>
+                </select>
+                <span className="material-icons flex-center">arrow_forward</span>
+                <select className="pill flex-1" value={to} onChange={e=>setTo(e.target.value)}>
+                    <option value="yaml">YAML</option>
+                    <option value="json">JSON</option>
+                </select>
+            </div>
+            <textarea className="pill font-mono" rows="8" value={val} onChange={e=>setVal(e.target.value)} />
+            <button className="btn-primary" onClick={convert}>Convert</button>
+        </div>
+    );
+};
+
+const CronHelper = () => {
+    const [cron, setCron] = useState('0 0 * * *');
+    const explain = useMemo(() => {
+        const parts = cron.split(' ');
+        if (parts.length !== 5) return 'Invalid cron expression (requires 5 parts)';
+        const [m, h, dom, mon, dow] = parts;
+        let res = 'At ';
+        res += m === '*' ? 'every minute' : `minute ${m}`;
+        res += h === '*' ? ' of every hour' : ` of hour ${h}`;
+        res += dom === '*' ? '' : ` on day of month ${dom}`;
+        res += mon === '*' ? '' : ` in month ${mon}`;
+        res += dow === '*' ? '' : ` on day of week ${dow}`;
+        return res;
+    }, [cron]);
+
+    return (
+        <div className="grid gap-15 card p-15">
+            <input className="pill font-mono" value={cron} onChange={e=>setCron(e.target.value)} placeholder="* * * * *" />
+            <div className="tool-result text-center">
+                <div className="opacity-6 small mb-5">Human Readable:</div>
+                <div className="font-bold">{explain}</div>
             </div>
         </div>
     );
