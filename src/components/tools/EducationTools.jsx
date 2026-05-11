@@ -269,6 +269,12 @@ const UnitCircle = () => {
 const EducationTools = ({ toolId }) => {
   const [activeTab, setActiveTab] = useState('periodic');
 
+  const tabs = [
+    { id: 'periodic', label: 'Periodic Table' },
+    { id: 'circle', label: 'Unit Circle' },
+    { id: 'constants', label: 'Physics Constants' }
+  ];
+
   useEffect(() => {
     if (toolId) {
       const mapping = {
@@ -283,9 +289,15 @@ const EducationTools = ({ toolId }) => {
   return (
     <div className="tool-form">
       <div className="pill-group scrollable-x mb-20">
-        <button className={`pill ${activeTab === 'periodic' ? 'active' : ''}`} onClick={() => setActiveTab('periodic')}>Periodic Table</button>
-        <button className={`pill ${activeTab === 'circle' ? 'active' : ''}`} onClick={() => setActiveTab('circle')}>Unit Circle</button>
-        <button className={`pill ${activeTab === 'constants' ? 'active' : ''}`} onClick={() => setActiveTab('constants')}>Physics Constants</button>
+        {tabs.map(tab => (
+          <button
+            key={tab.id}
+            className={`pill ${activeTab === tab.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {activeTab === 'periodic' && <PeriodicTable />}

@@ -315,7 +315,7 @@ const AnomalyTool = ({ onResultChange }) => {
     return (
         <div className="grid gap-15 card p-15">
             <input className="pill" value={input} onChange={e=>setInput(e.target.value)} />
-            <button className="btn-primary" onClick={detect}>Detect Outliers (Z-Score > 2)</button>
+            <button className="btn-primary" onClick={detect}>Detect Outliers (Z-Score &gt; 2)</button>
             {out && <div className="tool-result">Found {out.length} outliers: {out.join(', ')}</div>}
         </div>
     );
