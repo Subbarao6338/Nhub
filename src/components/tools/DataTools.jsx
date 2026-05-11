@@ -4,6 +4,16 @@ import * as XLSX from 'xlsx';
 import { parquetRead } from 'hyparquet';
 
 const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'viewer', label: 'Data Viewer' },
+    { id: 'science', label: 'Statistics' },
+    { id: 'anomaly', label: 'Anomaly Detect' },
+    { id: 'quality', label: 'Data Quality' },
+    { id: 'profiling', label: 'Data Profiling' },
+    { id: 'anonymizer', label: 'Anonymizer' },
+    { id: 'json-csv', label: 'JSON ↔ CSV' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('viewer');
   const [uploadedData, setUploadedData] = useState(null);
 
@@ -27,16 +37,6 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
-
-  const tabs = [
-    { id: 'viewer', label: 'Data Viewer' },
-    { id: 'science', label: 'Statistics' },
-    { id: 'anomaly', label: 'Anomaly Detect' },
-    { id: 'quality', label: 'Data Quality' },
-    { id: 'profiling', label: 'Data Profiling' },
-    { id: 'anonymizer', label: 'Anonymizer' },
-    { id: 'json-csv', label: 'JSON ↔ CSV' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 

@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
 const UnitConverterTools = ({ onResultChange, toolId, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'length-conv', label: 'Length' },
+    { id: 'weight-conv', label: 'Weight' },
+    { id: 'data-conv', label: 'Data' }
+  ];
+
   const [value, setValue] = useState(1);
   const [fromUnit, setFromUnit] = useState('km');
   const [toUnit, setToUnit] = useState('m');
@@ -33,12 +39,6 @@ const UnitConverterTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     setResult(res.toFixed(4));
     onResultChange({ text: `${value} ${fromUnit} = ${res.toFixed(4)} ${toUnit}` });
   }, [value, fromUnit, toUnit]);
-
-  const tabs = [
-    { id: 'length-conv', label: 'Length' },
-    { id: 'weight-conv', label: 'Weight' },
-    { id: 'data-conv', label: 'Data' }
-  ];
 
   return (
     <div className="tool-form card p-20">

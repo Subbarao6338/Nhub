@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
 const TextTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'modify', label: 'Modify & Clean' },
+    { id: 'stats', label: 'Statistics' },
+    { id: 'lorem', label: 'Lorem Ipsum' },
+    { id: 'rank', label: 'Word Rank' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('modify');
   const [input, setInput] = useState('');
 
@@ -22,13 +29,6 @@ const TextTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
-
-  const tabs = [
-    { id: 'modify', label: 'Modify & Clean' },
-    { id: 'stats', label: 'Statistics' },
-    { id: 'lorem', label: 'Lorem Ipsum' },
-    { id: 'rank', label: 'Word Rank' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const stats = useMemo(() => ({
       chars: input.length,

@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 
 const PrivacySecurityTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'password-gen', label: 'Password Gen' },
+    { id: 'hash', label: 'Hash Gen' },
+    { id: 'rsa', label: 'RSA Key Gen' },
+    { id: 'hmac', label: 'HMAC Calc' },
+    { id: 'info', label: 'Security Info' },
+    { id: 'audit', label: 'Privacy Audit' },
+    { id: 'strength', label: 'Strength' },
+    { id: 'anonymizer', label: 'Anonymizer' },
+    { id: 'aes', label: 'AES Encrypt' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('password-gen');
 
   useEffect(() => {
@@ -24,18 +36,6 @@ const PrivacySecurityTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
-
-  const tabs = [
-    { id: 'password-gen', label: 'Password Gen' },
-    { id: 'hash', label: 'Hash Gen' },
-    { id: 'rsa', label: 'RSA Key Gen' },
-    { id: 'hmac', label: 'HMAC Calc' },
-    { id: 'info', label: 'Security Info' },
-    { id: 'audit', label: 'Privacy Audit' },
-    { id: 'strength', label: 'Strength' },
-    { id: 'anonymizer', label: 'Anonymizer' },
-    { id: 'aes', label: 'AES Encrypt' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 

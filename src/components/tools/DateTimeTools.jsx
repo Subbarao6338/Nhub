@@ -1,6 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
 const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'age', label: 'Age' },
+    { id: 'timestamp', label: 'Timestamp' },
+    { id: 'stopwatch', label: 'Stopwatch' },
+    { id: 'pomodoro', label: 'Pomodoro' },
+    { id: 'worldclock', label: 'World Clock' },
+    { id: 'timezone', label: 'Timezone' },
+    { id: 'panchangam', label: 'Panchangam' },
+    { id: 'datediff', label: 'Date Diff' },
+    { id: 'countdown', label: 'Countdown' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('stopwatch');
 
   useEffect(() => {
@@ -25,18 +37,6 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
-
-  const tabs = [
-    { id: 'age', label: 'Age' },
-    { id: 'timestamp', label: 'Timestamp' },
-    { id: 'stopwatch', label: 'Stopwatch' },
-    { id: 'pomodoro', label: 'Pomodoro' },
-    { id: 'worldclock', label: 'World Clock' },
-    { id: 'timezone', label: 'Timezone' },
-    { id: 'panchangam', label: 'Panchangam' },
-    { id: 'datediff', label: 'Date Diff' },
-    { id: 'countdown', label: 'Countdown' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 

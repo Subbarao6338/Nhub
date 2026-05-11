@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const AudioVideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'frequency', label: 'Frequency Gen' },
+    { id: 'metronome', label: 'Metronome' },
+    { id: 'tuner', label: 'Tuner' },
+    { id: 'nature-sounds', label: 'Nature Sounds' },
+    { id: 'recorder', label: 'Voice Recorder' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('frequency');
 
   useEffect(() => {
@@ -20,14 +28,6 @@ const AudioVideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
-
-  const tabs = [
-    { id: 'frequency', label: 'Frequency Gen' },
-    { id: 'metronome', label: 'Metronome' },
-    { id: 'tuner', label: 'Tuner' },
-    { id: 'nature-sounds', label: 'Nature Sounds' },
-    { id: 'recorder', label: 'Voice Recorder' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 

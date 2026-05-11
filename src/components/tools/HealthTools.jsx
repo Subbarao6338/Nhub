@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
 const HealthTools = ({ onResultChange, toolId, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'bmr', label: 'BMR' },
+    { id: 'bmi', label: 'BMI' },
+    { id: 'calories', label: 'Calories' },
+    { id: 'water', label: 'Water' }
+  ];
+
   const [activeTab, setActiveTab] = useState('bmr');
 
   useEffect(() => {
@@ -17,13 +24,6 @@ const HealthTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   }, [toolId]);
 
   const isDeepLinked = !!toolId;
-
-  const tabs = [
-    { id: 'bmr', label: 'BMR' },
-    { id: 'bmi', label: 'BMI' },
-    { id: 'calories', label: 'Calories' },
-    { id: 'water', label: 'Water' }
-  ];
 
   return (
     <div className="tool-form">

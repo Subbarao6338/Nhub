@@ -43,6 +43,26 @@ const PdfTranslator = ({ files }) => {
 };
 
 const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
+  const tabs = [
+    { id: 'merge', label: 'Merge' },
+    { id: 'split', label: 'Split' },
+    { id: 'delete', label: 'Delete' },
+    { id: 'rearrange', label: 'Rearrange' },
+    { id: 'rotate', label: 'Rotate' },
+    { id: 'sign', label: 'Sign' },
+    { id: 'watermark', label: 'Watermark' },
+    { id: 'numbers', label: 'Numbers' },
+    { id: 'crop', label: 'Crop' },
+    { id: 'lock', label: 'Lock' },
+    { id: 'unlock', label: 'Unlock' },
+    { id: 'metadata', label: 'Metadata' },
+    { id: 'compress', label: 'Compress' },
+    { id: 'grayscale', label: 'Grayscale' },
+    { id: 'flatten', label: 'Flatten' },
+    { id: 'img2pdf', label: 'Img to PDF' },
+    { id: 'translate', label: 'Translate' }
+  ].sort((a, b) => a.label.localeCompare(b.label));
+
   const [activeTab, setActiveTab] = useState('merge');
   const [files, setFiles] = useState([]);
   const [password, setPassword] = useState('');
@@ -306,26 +326,6 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
       onResultChange({ text: 'Compressed PDF (Metadata Stripped)', blob: new Blob([compressedBytes], { type: 'application/pdf' }), filename: 'compressed.pdf' });
     } catch (e) { alert("Error compressing PDF"); }
   };
-
-  const tabs = [
-    { id: 'merge', label: 'Merge' },
-    { id: 'split', label: 'Split' },
-    { id: 'delete', label: 'Delete' },
-    { id: 'rearrange', label: 'Rearrange' },
-    { id: 'rotate', label: 'Rotate' },
-    { id: 'sign', label: 'Sign' },
-    { id: 'watermark', label: 'Watermark' },
-    { id: 'numbers', label: 'Numbers' },
-    { id: 'crop', label: 'Crop' },
-    { id: 'lock', label: 'Lock' },
-    { id: 'unlock', label: 'Unlock' },
-    { id: 'metadata', label: 'Metadata' },
-    { id: 'compress', label: 'Compress' },
-    { id: 'grayscale', label: 'Grayscale' },
-    { id: 'flatten', label: 'Flatten' },
-    { id: 'img2pdf', label: 'Img to PDF' },
-    { id: 'translate', label: 'Translate' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 
