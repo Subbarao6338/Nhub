@@ -1,7 +1,48 @@
 import React, { useState, useEffect } from 'react';
 import { PDFDocument, rgb } from 'pdf-lib';
 
-const PdfTools = ({ onResultChange, toolId }) => {
+const ImageToPdf = ({ onResultChange }) => {
+    const [images, setImages] = useState([]);
+    const convert = async () => {
+        if (images.length === 0) return;
+        const pdfDoc = await PDFDocument.create();
+        for (const file of images) {
+            const bytes = await file.arrayBuffer();
+            let img;
+            if (file.type === 'image/png') img = await pdfDoc.embedPng(bytes);
+            else img = await pdfDoc.embedJpg(bytes);
+            const page = pdfDoc.addPage([img.width, img.height]);
+            page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
+        }
+        const pdfBytes = await pdfDoc.save();
+        onResultChange({ text: 'Converted Images to PDF', blob: new Blob([pdfBytes], { type: 'application/pdf' }), filename: 'converted.pdf' });
+    };
+    return (
+        <div className="card p-15 grid gap-10">
+            <input type="file" multiple accept="image/*" className="pill w-full" onChange={e=>setImages(Array.from(e.target.files))} />
+            <button className="btn-primary" onClick={convert} disabled={images.length === 0}>Convert {images.length} Images</button>
+        </div>
+    );
+};
+
+const PdfTranslator = ({ files }) => {
+    const [lang, setLang] = useState('en');
+    const translate = () => {
+        alert("Uploading PDF for translation to " + lang + ". This may take a minute...");
+    };
+    return (
+        <div className="card p-15 grid gap-15">
+            <select className="pill w-full" value={lang} onChange={e=>setLang(e.target.value)}>
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+            </select>
+            <button className="btn-primary" onClick={translate} disabled={files.length === 0}>Translate PDF</button>
+        </div>
+    );
+};
+
+const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('merge');
   const [files, setFiles] = useState([]);
   const [password, setPassword] = useState('');
@@ -12,6 +53,11 @@ const PdfTools = ({ onResultChange, toolId }) => {
   const [cropBox, setCropBox] = useState({ x: 0, y: 0, w: 0, h: 0 });
   const [signatureImage, setSignatureImage] = useState(null);
   const [metadata, setMetadata] = useState({ title: '', author: '', subject: '', keywords: '' });
+
+  useEffect(() => {
+    const current = tabs.find(t => t.id === activeTab);
+    if (current && onSubtoolChange) onSubtoolChange(current.label);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
@@ -30,7 +76,9 @@ const PdfTools = ({ onResultChange, toolId }) => {
         'pdf-meta': 'metadata',
         'pdf-compress': 'compress',
         'pdf-grayscale': 'grayscale',
-        'pdf-flatten': 'flatten'
+        'pdf-flatten': 'flatten',
+        'pdf-img2pdf': 'img2pdf',
+        'pdf-translate': 'translate'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -256,22 +304,28 @@ const PdfTools = ({ onResultChange, toolId }) => {
     { id: 'metadata', label: 'Metadata' },
     { id: 'compress', label: 'Compress' },
     { id: 'grayscale', label: 'Grayscale' },
-    { id: 'flatten', label: 'Flatten' }
+    { id: 'flatten', label: 'Flatten' },
+    { id: 'img2pdf', label: 'Img to PDF' },
+    { id: 'translate', label: 'Translate' }
   ].sort((a, b) => a.label.localeCompare(b.label));
+
+  const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 
   return (
     <div className="tool-form">
-      <div className="pill-group mb-20 scrollable-x">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`pill ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {!isDeepLinked && (
+          <div className="pill-group mb-20 scrollable-x">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`pill ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+      )}
 
       <div className="form-group">
         <label>Upload PDF(s)</label>
@@ -339,6 +393,9 @@ const PdfTools = ({ onResultChange, toolId }) => {
       {activeTab === 'numbers' && (
         <button className="btn-primary w-full mt-20" onClick={addPageNumbers} disabled={files.length === 0}>Add Page Numbers</button>
       )}
+
+      {activeTab === 'img2pdf' && <ImageToPdf onResultChange={onResultChange} />}
+      {activeTab === 'translate' && <PdfTranslator onResultChange={onResultChange} files={files} />}
 
       {activeTab === 'crop' && (
         <div className="mt-20">

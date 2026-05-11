@@ -1,4 +1,4 @@
-const CACHE_NAME = 'url-hub-v14';
+const CACHE_NAME = 'url-hub-v15';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -83,6 +83,7 @@ self.addEventListener('fetch', (event) => {
             }
             return networkResponse;
           }).catch((err) => {
+            console.log("Fetch failed, returning cached response if available", err);
             if (event.request.destination === 'image') {
               return cachedResponse || caches.match('./assets/favicon.svg');
             }

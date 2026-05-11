@@ -8,6 +8,18 @@
   "theme_color": "#2d6a4f",
   "shortcuts": [
     {
+      "name": "Developer Hub",
+      "short_name": "Dev",
+      "url": "/?tab=toolbox&tool=dev-main",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Media Tools",
+      "short_name": "Media",
+      "url": "/?tab=toolbox&tool=pdf-main",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
+    {
       "name": "Toolbox",
       "short_name": "Tools",
       "url": "/?tab=toolbox",

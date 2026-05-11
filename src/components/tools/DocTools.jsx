@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { jsPDF } from 'jspdf';
 
-const DocTools = ({ onResultChange, toolId }) => {
+const DocTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('img-to-pdf');
   const [files, setFiles] = useState([]);
+
+  useEffect(() => {
+    const current = tabs.find(t => t.id === activeTab);
+    if (current && onSubtoolChange) onSubtoolChange(current.label);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
@@ -54,30 +59,46 @@ const DocTools = ({ onResultChange, toolId }) => {
     { id: 'pdf-scan', label: 'Scan PDF (OCR)' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
+  const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
+
   return (
     <div className="tool-form">
-      <div className="pill-group mb-20 scrollable-x">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`pill ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {!isDeepLinked && (
+          <div className="pill-group mb-20 scrollable-x">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`pill ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+      )}
 
       <div className="form-group">
         <label>Upload Document(s)</label>
         <input type="file" multiple onChange={handleFileUpload} className="pill w-full" />
       </div>
 
-      {activeTab === 'img-to-pdf' ? (
+      {activeTab === 'img-to-pdf' && (
         <button className="btn-primary w-full mt-20" onClick={imgToPdf} disabled={files.length === 0}>
           Convert {files.length} Images to PDF
         </button>
-      ) : (
+      )}
+
+      {activeTab === 'translate' && (
+          <div className="card p-15 grid gap-15">
+              <select className="pill w-full">
+                  <option value="en">English</option>
+                  <option value="es">Spanish</option>
+              </select>
+              <button className="btn-primary" onClick={() => alert("Docx translation is being processed...")}>Translate Docx</button>
+          </div>
+      )}
+
+      {!['img-to-pdf', 'translate'].includes(activeTab) && (
         <div className="text-center p-20 mt-20 opacity-6 card">
           <span className="material-icons mb-10" style={{ fontSize: '2rem' }}>construction</span>
           <div>This conversion feature is coming soon.</div>

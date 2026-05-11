@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-const VideoTools = ({ toolId, onResultChange }) => {
+const VideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('magnifier');
+
+  useEffect(() => {
+    const current = tabs.find(t => t.id === activeTab);
+    if (current && onSubtoolChange) onSubtoolChange(current.label);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
@@ -18,19 +23,23 @@ const VideoTools = ({ toolId, onResultChange }) => {
     { id: 'mirror', label: 'Mirror' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
+  const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
+
   return (
     <div className="tool-form">
-      <div className="pill-group mb-20 scrollable-x">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`pill ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {!isDeepLinked && (
+          <div className="pill-group mb-20 scrollable-x">
+            {tabs.map(tab => (
+              <button
+                key={tab.id}
+                className={`pill ${activeTab === tab.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+      )}
 
       {activeTab === 'magnifier' && <MagnifierTool />}
       {activeTab === 'mirror' && <MirrorTool />}

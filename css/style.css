@@ -594,6 +594,13 @@ body::before {
   background: var(--surface-hover);
   box-shadow: var(--shadow-lg);
   border-color: var(--primary);
+  animation: leaf-sway 2s ease-in-out infinite;
+}
+
+@keyframes leaf-sway {
+  0%, 100% { transform: translateY(-8px) scale(1.02) rotate(0deg); }
+  25% { transform: translateY(-8px) scale(1.02) rotate(0.5deg); }
+  75% { transform: translateY(-8px) scale(1.02) rotate(-0.5deg); }
 }
 
 .card-header {
@@ -1019,6 +1026,10 @@ input.pill:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--pri
 .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 20px var(--primary-glow); }
 
 /* Tool Specifics */
+.tool-form {
+  padding-bottom: 130px;
+}
+
 .tool-result {
   margin-top: 2rem;
   padding: 2rem;
@@ -1322,6 +1333,48 @@ body.search-active .search-dismiss-overlay {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/* Breadcrumb Navigation */
+.breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--nature-mist);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  width: fit-content;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.breadcrumb-item:hover {
+  color: var(--primary);
+}
+
+.breadcrumb-item.active {
+  color: var(--on-surface);
+  cursor: default;
+}
+
+.breadcrumb-item.active:hover {
+  color: var(--on-surface);
+}
+
+.breadcrumb-separator {
+  opacity: 0.3;
+  font-size: 1.1rem;
+  user-select: none;
 }
 
 /* Tool Nav Pills */

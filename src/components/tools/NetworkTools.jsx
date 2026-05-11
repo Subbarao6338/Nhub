@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import API_BASE from '../../api';
 
-const NetworkTools = ({ toolId, onResultChange }) => {
+const NetworkTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('ip-info');
+
+  useEffect(() => {
+    const current = tabs.find(t => t.id === activeTab);
+    if (current && onSubtoolChange) onSubtoolChange(current.label);
+  }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
@@ -209,12 +214,46 @@ const GeoTool = () => {
     );
 };
 
-const SslTool = () => (
-    <div className="text-center p-20 card opacity-6">
-        <span className="material-icons mb-10" style={{fontSize: '2rem'}}>verified_user</span>
-        <div>SSL Analysis is coming soon.</div>
-    </div>
-);
+const SslTool = () => {
+    const [host, setHost] = useState('google.com');
+    const [info, setInfo] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    const check = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/networking/ssl?host=${host}`);
+            const data = await res.json();
+            setInfo(data);
+        } catch(e) { alert("SSL Check failed"); }
+        finally { setLoading(false); }
+    };
+
+    return (
+        <div className="grid gap-15">
+            <div className="flex-gap">
+                <input className="pill flex-1" value={host} onChange={e=>setHost(e.target.value)} />
+                <button className="btn-primary" onClick={check} disabled={loading}>{loading ? '...' : 'Check'}</button>
+            </div>
+            {info && (
+                <div className={`tool-result ${info.valid ? '' : 'danger-box'}`}>
+                    {info.valid ? (
+                        <>
+                            <div className="font-bold text-lg mb-5">SSL is VALID</div>
+                            <div>Issuer: {info.issuer}</div>
+                            <div>Expires: {info.expiry}</div>
+                            <div className="mt-10" style={{color: info.days_left < 30 ? 'var(--danger)' : 'var(--nature-moss)'}}>
+                                {info.days_left} days remaining
+                            </div>
+                        </>
+                    ) : (
+                        <div>Error: {info.error}</div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
 
 const SubnetCalculator = () => {
   const [ip, setIp] = useState('192.168.1.1');

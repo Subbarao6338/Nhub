@@ -62,6 +62,7 @@ const TOOLS = [
 
 const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRecentTools, hideRecentTools }) => {
   const [activeToolId, setActiveToolId] = useState(null);
+  const [activeSubtoolLabel, setActiveSubtoolLabel] = useState(null);
   const [currentResult, setCurrentResult] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -101,6 +102,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
   const openTool = (id, skipHistory = false) => {
     if (activeToolId === id) return;
     setActiveToolId(id);
+    setActiveSubtoolLabel(null);
     setCurrentResult(null);
     if (TOOLS.find(t => t.id === id)) {
       const newRecents = [id, ...recentTools.filter(t => t !== id)].slice(0, 4);
@@ -210,12 +212,24 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     return (
       <div className="tool-view">
         <div className="tool-view-header">
-          <div className="flex-center" style={{ gap: '12px' }}>
-            <button className="icon-btn" onClick={() => { setActiveToolId(null); window.history.back(); }}><span className="material-icons">arrow_back</span></button>
-            <div className="flex-center" style={{ gap: '12px' }}>
-              <span className="material-icons" style={{fontSize: '2rem', color: 'var(--primary)'}}>{tool.icon}</span>
-              <h2 className="m-0">{tool.title}</h2>
-            </div>
+          <div className="breadcrumb-nav">
+              <div className="breadcrumb-item cursor-pointer" onClick={() => { setActiveToolId(null); window.history.back(); }}>
+                  <span className="material-icons">home</span>
+                  <span>Toolbox</span>
+              </div>
+              <span className="breadcrumb-separator material-icons">chevron_right</span>
+              <div className={`breadcrumb-item ${!activeSubtoolLabel ? 'active' : ''}`} onClick={() => { if(activeSubtoolLabel) { setActiveSubtoolLabel(null); setActiveToolId(tool.id); } }}>
+                  <span className="material-icons" style={{fontSize: '1.2rem'}}>{tool.icon}</span>
+                  <span>{tool.title}</span>
+              </div>
+              {activeSubtoolLabel && (
+                  <>
+                      <span className="breadcrumb-separator material-icons">chevron_right</span>
+                      <div className="breadcrumb-item active">
+                          <span>{activeSubtoolLabel}</span>
+                      </div>
+                  </>
+              )}
           </div>
           <div className="flex-center" style={{ gap: '10px' }}>
             {currentResult?.text && (
@@ -237,7 +251,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
         </div>
         <div className="tool-container-inner">
           <Suspense fallback={<div className="text-center p-20 rotating">refresh</div>}>
-            <tool.component onResultChange={setCurrentResult} toolId={effectiveToolId} />
+            <tool.component onResultChange={setCurrentResult} toolId={effectiveToolId} onSubtoolChange={setActiveSubtoolLabel} />
           </Suspense>
         </div>
       </div>
