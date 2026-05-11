@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 
 const ELEMENTS = [
   { number: 1, symbol: 'H', name: 'Hydrogen', mass: '1.008', category: 'nonmetal', period: 1, group: 1 },
@@ -267,22 +267,30 @@ const UnitCircle = () => {
 };
 
 const EducationTools = ({ toolId }) => {
-  const initialTab = toolId === 'unit-circle' ? 'circle' : (toolId === 'physics-constants' ? 'constants' : 'periodic');
-  const [activeTab, setActiveTab] = useState(initialTab);
+  const [activeTab, setActiveTab] = useState('periodic');
+
+  useEffect(() => {
+    if (toolId) {
+      const mapping = {
+        'periodic-table': 'periodic',
+        'unit-circle': 'circle',
+        'physics-constants': 'constants'
+      };
+      if (mapping[toolId]) setActiveTab(mapping[toolId]);
+    }
+  }, [toolId]);
 
   return (
-    <div className="education-tools">
-      {!toolId && (
-        <div className="pill-group scrollable-x mb-20">
-          <button className={`pill ${activeTab === 'periodic' ? 'active' : ''}`} onClick={() => setActiveTab('periodic')}>Periodic Table</button>
-          <button className={`pill ${activeTab === 'circle' ? 'active' : ''}`} onClick={() => setActiveTab('circle')}>Unit Circle</button>
-          <button className={`pill ${activeTab === 'constants' ? 'active' : ''}`} onClick={() => setActiveTab('constants')}>Physics Constants</button>
-        </div>
-      )}
+    <div className="tool-form">
+      <div className="pill-group scrollable-x mb-20">
+        <button className={`pill ${activeTab === 'periodic' ? 'active' : ''}`} onClick={() => setActiveTab('periodic')}>Periodic Table</button>
+        <button className={`pill ${activeTab === 'circle' ? 'active' : ''}`} onClick={() => setActiveTab('circle')}>Unit Circle</button>
+        <button className={`pill ${activeTab === 'constants' ? 'active' : ''}`} onClick={() => setActiveTab('constants')}>Physics Constants</button>
+      </div>
 
-      {activeTab === 'periodic' || toolId === 'periodic-table' ? <PeriodicTable /> : null}
-      {activeTab === 'circle' || toolId === 'unit-circle' ? <UnitCircle /> : null}
-      {activeTab === 'constants' || toolId === 'physics-constants' ? <PhysicsConstants /> : null}
+      {activeTab === 'periodic' && <PeriodicTable />}
+      {activeTab === 'circle' && <UnitCircle />}
+      {activeTab === 'constants' && <PhysicsConstants />}
     </div>
   );
 };
