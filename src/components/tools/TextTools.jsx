@@ -5,7 +5,10 @@ const TextTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'modify', label: 'Modify & Clean' },
     { id: 'stats', label: 'Statistics' },
     { id: 'lorem', label: 'Lorem Ipsum' },
-    { id: 'rank', label: 'Word Rank' }
+    { id: 'rank', label: 'Word Rank' },
+    { id: 'find', label: 'Find & Replace' },
+    { id: 'extract', label: 'Extract PII' },
+    { id: 'entities', label: 'HTML Entities' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('modify');
@@ -111,6 +114,9 @@ const TextTools = ({ toolId, onResultChange, onSubtoolChange }) => {
 
       {activeTab === 'lorem' && <LoremGenerator onResultChange={onResultChange} setInput={setInput} />}
       {activeTab === 'rank' && <WordRankCalculator onResultChange={onResultChange} />}
+      {activeTab === 'find' && <FindReplace onResultChange={onResultChange} input={input} setInput={setInput} />}
+      {activeTab === 'extract' && <ExtractTool onResultChange={onResultChange} input={input} />}
+      {activeTab === 'entities' && <HtmlEntities onResultChange={onResultChange} input={input} setInput={setInput} />}
     </div>
   );
 };
@@ -187,6 +193,73 @@ const WordRankCalculator = ({ onResultChange }) => {
                     <div className="font-bold" style={{fontSize: '1.8rem', wordBreak: 'break-all'}}>{rank}</div>
                 </div>
             )}
+        </div>
+    );
+};
+
+const FindReplace = ({ onResultChange, input, setInput }) => {
+    const [find, setFind] = useState('');
+    const [replace, setReplace] = useState('');
+    const handleAction = () => {
+        const res = input.replaceAll(find, replace);
+        setInput(res);
+        onResultChange({ text: res, filename: 'find_replace.txt' });
+    };
+    return (
+        <div className="card p-15 grid gap-10">
+            <div className="flex-gap">
+                <input className="pill flex-1" placeholder="Find..." value={find} onChange={e=>setFind(e.target.value)} />
+                <input className="pill flex-1" placeholder="Replace..." value={replace} onChange={e=>setReplace(e.target.value)} />
+            </div>
+            <button className="btn-primary" onClick={handleAction}>Replace All</button>
+        </div>
+    );
+};
+
+const ExtractTool = ({ onResultChange, input }) => {
+    const [results, setResults] = useState([]);
+    const extract = (type) => {
+        let regex;
+        if (type === 'email') regex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
+        else if (type === 'url') regex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
+        const found = input.match(regex) || [];
+        setResults(found);
+        onResultChange({ text: found.join('\n'), filename: `extracted_${type}s.txt` });
+    };
+    return (
+        <div className="card p-15 grid gap-10">
+            <div className="flex-gap">
+                <button className="pill flex-1" onClick={()=>extract('email')}>Extract Emails</button>
+                <button className="pill flex-1" onClick={()=>extract('url')}>Extract URLs</button>
+            </div>
+            {results.length > 0 && (
+                <div className="tool-result font-mono" style={{maxHeight: '150px', overflow: 'auto'}}>
+                    {results.map((r, i) => <div key={i}>{r}</div>)}
+                </div>
+            )}
+        </div>
+    );
+};
+
+const HtmlEntities = ({ onResultChange, input, setInput }) => {
+    const encode = () => {
+        const el = document.createElement('div');
+        el.textContent = input;
+        const res = el.innerHTML;
+        setInput(res);
+        onResultChange({ text: res });
+    };
+    const decode = () => {
+        const el = document.createElement('div');
+        el.innerHTML = input;
+        const res = el.textContent;
+        setInput(res);
+        onResultChange({ text: res });
+    };
+    return (
+        <div className="flex-gap">
+            <button className="btn-primary flex-1" onClick={encode}>Encode HTML</button>
+            <button className="pill flex-1" onClick={decode}>Decode HTML</button>
         </div>
     );
 };

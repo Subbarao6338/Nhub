@@ -67,7 +67,13 @@ const DeviceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'info' && <DeviceInfo onResultChange={onResultChange} />}
       {activeTab === 'lux' && <Luxmeter onResultChange={onResultChange} />}
       {activeTab === 'sos' && <SosTool />}
-      {['sensors', 'sound', 'magnetic', 'flashlight', 'vibration', 'ruler', 'level', 'protractor', 'compass', 'gps'].includes(activeTab) && (
+      {activeTab === 'flashlight' && <FlashlightTool />}
+      {activeTab === 'vibration' && <VibrometerTool />}
+      {activeTab === 'compass' && <CompassTool />}
+      {activeTab === 'level' && <LevelTool />}
+      {activeTab === 'gps' && <GpsTool onResultChange={onResultChange} />}
+      {activeTab === 'sound' && <SoundMeter onResultChange={onResultChange} />}
+      {['sensors', 'magnetic', 'ruler', 'protractor'].includes(activeTab) && (
           <div className="text-center p-20 card opacity-6">
               <span className="material-icons mb-10" style={{fontSize: '2rem'}}>sensors</span>
               <div>This hardware tool is being integrated.</div>
@@ -129,6 +135,166 @@ const Luxmeter = ({ onResultChange }) => {
             <span className="material-icons" style={{fontSize: '3rem', color: 'var(--nature-gold)'}}>wb_sunny</span>
             <div style={{fontSize: '3rem', fontWeight: 800}} className="mv-10">{lux !== null ? Math.round(lux) : '---'}</div>
             <div className="opacity-6">Lux</div>
+        </div>
+    );
+};
+
+const SoundMeter = ({ onResultChange }) => {
+    const [db, setDb] = useState(0);
+    const [active, setActive] = useState(false);
+    const audioCtxRef = useRef(null);
+    const streamRef = useRef(null);
+
+    const start = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            streamRef.current = stream;
+            audioCtxRef.current = new AudioContext();
+            const source = audioCtxRef.current.createMediaStreamSource(stream);
+            const processor = audioCtxRef.current.createAnalyser();
+            source.connect(processor);
+            processor.fftSize = 256;
+            const data = new Uint8Array(processor.frequencyBinCount);
+            setActive(true);
+            const update = () => {
+                if(!streamRef.current) return;
+                processor.getByteFrequencyData(data);
+                const avg = data.reduce((a,b)=>a+b)/data.length;
+                setDb(Math.round(avg));
+                requestAnimationFrame(update);
+            };
+            update();
+        } catch(e) { alert("Mic required"); }
+    };
+
+    const stop = async () => {
+        if(streamRef.current) streamRef.current.getTracks().forEach(t=>t.stop());
+        streamRef.current = null;
+        if(audioCtxRef.current) {
+            await audioCtxRef.current.close();
+            audioCtxRef.current = null;
+        }
+        setActive(false);
+    };
+
+    useEffect(()=>()=>stop(), []);
+
+    return (
+        <div className="card p-20 text-center">
+            <div className="sensor-circle" style={{
+                width: '150px', height: '150px',
+                border: '10px solid var(--border)',
+                borderTopColor: db > 60 ? 'var(--danger)' : 'var(--nature-moss)'
+            }}>
+                <div style={{fontSize: '3rem', fontWeight: 800}}>{db}</div>
+                <div className="smallest opacity-6">Avg Level</div>
+            </div>
+            <button className="btn-primary w-full mt-20" onClick={active?stop:start}>{active?'Stop':'Start'}</button>
+        </div>
+    );
+};
+
+const FlashlightTool = () => {
+    const [on, setOn] = useState(false);
+    const streamRef = useRef(null);
+    const toggle = async () => {
+        try {
+            if (on) {
+                streamRef.current.getTracks().forEach(t=>t.stop());
+                setOn(false);
+            } else {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                streamRef.current = stream;
+                const track = stream.getVideoTracks()[0];
+                await track.applyConstraints({ advanced: [{ torch: true }] });
+                setOn(true);
+            }
+        } catch(e) { alert("Flashlight not supported or denied."); }
+    };
+    useEffect(()=>()=>streamRef.current?.getTracks().forEach(t=>t.stop()), []);
+    return (
+        <div className="card p-20 text-center">
+            <span className="material-icons mb-15" style={{fontSize: '5rem', color: on?'var(--nature-gold)':'inherit'}}>flashlight_{on?'on':'off'}</span>
+            <button className="btn-primary w-full" onClick={toggle}>{on?'Turn OFF':'Turn ON'}</button>
+        </div>
+    );
+};
+
+const VibrometerTool = () => {
+    const [vibrating, setVibrating] = useState(false);
+    const toggle = () => {
+        if (vibrating) { navigator.vibrate(0); setVibrating(false); }
+        else { navigator.vibrate([200, 100, 200, 100, 500]); setVibrating(true); setTimeout(()=>setVibrating(false), 1100); }
+    };
+    return (
+        <div className="card p-20 text-center">
+            <span className="material-icons mb-15" style={{fontSize: '5rem'}}>vibration</span>
+            <button className="btn-primary w-full" onClick={toggle}>{vibrating?'Vibrating...':'Test Vibration'}</button>
+        </div>
+    );
+};
+
+const CompassTool = () => {
+    const [heading, setHeading] = useState(0);
+    useEffect(() => {
+        const handle = (e) => {
+            if (e.webkitCompassHeading) setHeading(e.webkitCompassHeading);
+            else if (e.alpha) setHeading(360 - e.alpha);
+        };
+        window.addEventListener('deviceorientation', handle, true);
+        return () => window.removeEventListener('deviceorientation', handle);
+    }, []);
+    return (
+        <div className="card p-20 text-center">
+            <div className="m-auto" style={{ width: '200px', height: '200px', border: '4px solid var(--border)', borderRadius: '50%', position: 'relative', transform: `rotate(${-heading}deg)`, transition: 'transform 0.1s' }}>
+                <span className="material-icons" style={{ position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)', color: 'var(--danger)' }}>navigation</span>
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%) rotate(${heading}deg)', fontWeight: 800 }}>{Math.round(heading)}°</div>
+            </div>
+            <p className="mt-15 opacity-6">Compass heading (Device Orientation)</p>
+        </div>
+    );
+};
+
+const LevelTool = () => {
+    const [tilt, setTilt] = useState({ x: 0, y: 0 });
+    useEffect(() => {
+        const handle = (e) => setTilt({ x: e.beta, y: e.gamma });
+        window.addEventListener('deviceorientation', handle);
+        return () => window.removeEventListener('deviceorientation', handle);
+    }, []);
+    return (
+        <div className="card p-20 text-center">
+            <div className="m-auto" style={{ width: '200px', height: '100px', border: '2px solid var(--border)', borderRadius: '50px', position: 'relative', background: 'var(--nature-mist)' }}>
+                <div style={{
+                    position: 'absolute', top: '50%', left: `${50 + (tilt.y/45)*50}%`,
+                    width: '30px', height: '30px', background: 'var(--nature-moss)', borderRadius: '50%',
+                    transform: 'translate(-50%, -50%)', transition: 'left 0.1s'
+                }} />
+            </div>
+            <div className="mt-15 font-mono">X: {Math.round(tilt.x)}° | Y: {Math.round(tilt.y)}°</div>
+        </div>
+    );
+};
+
+const GpsTool = ({ onResultChange }) => {
+    const [pos, setPos] = useState(null);
+    const get = () => {
+        navigator.geolocation.getCurrentPosition(p => {
+            const data = { lat: p.coords.latitude, lng: p.coords.longitude, alt: p.coords.altitude, speed: p.coords.speed };
+            setPos(data);
+            onResultChange({ text: `GPS: Lat ${data.lat}, Lng ${data.lng}`, filename: 'gps.txt' });
+        });
+    };
+    return (
+        <div className="card p-20 text-center">
+            {pos ? (
+                <div className="grid gap-10">
+                    <div>Latitude: <b>{pos.lat.toFixed(6)}</b></div>
+                    <div>Longitude: <b>{pos.lng.toFixed(6)}</b></div>
+                    <div className="opacity-6">Accuracy: {pos.acc}m</div>
+                </div>
+            ) : <span className="material-icons opacity-3" style={{fontSize: '4rem'}}>location_on</span>}
+            <button className="btn-primary w-full mt-20" onClick={get}>Get Current Location</button>
         </div>
     );
 };

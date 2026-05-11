@@ -18,7 +18,8 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'url', label: 'URL Tool' },
     { id: 'yaml', label: 'YAML Conv' },
     { id: 'minify', label: 'Minifier' },
-    { id: 'xml-json', label: 'XML ↔ JSON' }
+    { id: 'xml-json', label: 'XML ↔ JSON' },
+    { id: 'xml-fmt', label: 'XML Formatter' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('json-fmt');
@@ -81,8 +82,41 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'yaml' && <CodeConverter onResultChange={onResultChange} />}
       {activeTab === 'minify' && <MinifierTool onResultChange={onResultChange} />}
       {activeTab === 'xml-json' && <XmlJsonConverter onResultChange={onResultChange} />}
+      {activeTab === 'xml-fmt' && <XmlFormatter onResultChange={onResultChange} />}
     </div>
   );
+};
+
+const XmlFormatter = ({ onResultChange }) => {
+    const [xml, setXml] = useState('<root><item id="1">Hello</item><item id="2">World</item></root>');
+    const format = () => {
+        let formatted = '';
+        let indent = 0;
+        const tab = '  ';
+        const parts = xml.split(/(<[^>]+>)/g).filter(p => p.trim());
+
+        parts.forEach(part => {
+            if (part.startsWith('</')) {
+                indent--;
+                formatted += tab.repeat(indent) + part + '\n';
+            } else if (part.startsWith('<') && !part.endsWith('/>') && !part.startsWith('<?')) {
+                formatted += tab.repeat(indent) + part + '\n';
+                indent++;
+            } else {
+                formatted += tab.repeat(indent) + part + '\n';
+            }
+        });
+
+        const res = formatted.trim();
+        setXml(res);
+        onResultChange({ text: res, filename: 'formatted.xml' });
+    };
+    return (
+        <div className="card p-15 grid gap-10">
+            <textarea className="pill font-mono" rows="8" value={xml} onChange={e=>setXml(e.target.value)} />
+            <button className="btn-primary" onClick={format}>Format XML</button>
+        </div>
+    );
 };
 
 const XmlJsonConverter = ({ onResultChange }) => {
@@ -110,7 +144,12 @@ const XmlJsonConverter = ({ onResultChange }) => {
 const MinifierTool = ({ onResultChange }) => {
     const [input, setInput] = useState('');
     const minify = () => {
-        const res = input.replace(/\s+/g, ' ').replace(/\/\*.*?\*\//g, '').trim();
+        let res = input;
+        // Basic CSS/JS minification
+        res = res.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1'); // Remove comments
+        res = res.replace(/\s+([{}|:;,])\s+/g, '$1'); // Remove spaces around delimiters
+        res = res.replace(/\s+/g, ' '); // Collapse multiple spaces
+        res = res.trim();
         setInput(res);
         onResultChange({ text: res, filename: 'minified.txt' });
     };

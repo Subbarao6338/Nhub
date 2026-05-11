@@ -49,6 +49,7 @@ function App() {
 
   const setTab = (tab, skipHistory = false) => {
     setCurrentTab(tab);
+    if ('vibrate' in navigator) navigator.vibrate(5);
     if (!skipHistory) {
       window.history.pushState({ tab }, '', `?tab=${tab}`);
     }
