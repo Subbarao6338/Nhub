@@ -18,7 +18,8 @@ const PrivacySecurityTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         'security-info': 'info',
         'privacy-audit': 'audit',
         'password-strength': 'strength',
-        'data-anonymizer': 'anonymizer'
+        'data-anonymizer': 'anonymizer',
+        'aes-encrypt': 'aes'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -32,7 +33,8 @@ const PrivacySecurityTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'info', label: 'Security Info' },
     { id: 'audit', label: 'Privacy Audit' },
     { id: 'strength', label: 'Strength' },
-    { id: 'anonymizer', label: 'Anonymizer' }
+    { id: 'anonymizer', label: 'Anonymizer' },
+    { id: 'aes', label: 'AES Encrypt' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
@@ -57,6 +59,7 @@ const PrivacySecurityTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'hash' && <HashGen onResultChange={onResultChange} />}
       {activeTab === 'rsa' && <RsaGen />}
       {activeTab === 'hmac' && <HmacCalc />}
+      {activeTab === 'aes' && <AesTool onResultChange={onResultChange} />}
       {['info', 'audit', 'strength', 'anonymizer'].includes(activeTab) && (
           <div className="text-center p-20 card opacity-6">
               <span className="material-icons mb-10" style={{fontSize: '2rem'}}>security</span>
@@ -111,6 +114,33 @@ const HashGen = ({ onResultChange }) => {
 const RsaGen = () => (
     <div className="text-center p-20 opacity-6">RSA generation requires complex async logic. Use the dedicated RSA tool.</div>
 );
+
+const AesTool = ({ onResultChange }) => {
+    const [text, setText] = useState('Secret message');
+    const [key, setKey] = useState('secret-key');
+    const [res, setRes] = useState('');
+
+    const encrypt = async () => {
+        const enc = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(key.padEnd(32).slice(0,32)), "AES-GCM", false, ["encrypt"]);
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, keyMaterial, enc.encode(text));
+        const combined = new Uint8Array(iv.length + encrypted.byteLength);
+        combined.set(iv); combined.set(new Uint8Array(encrypted), iv.length);
+        const b64 = btoa(String.fromCharCode(...combined));
+        setRes(b64);
+        onResultChange({ text: b64, filename: 'encrypted.txt' });
+    };
+
+    return (
+        <div className="card p-15 grid gap-10">
+            <input className="pill" placeholder="Key" value={key} onChange={e=>setKey(e.target.value)} />
+            <textarea className="pill font-mono" rows="3" value={text} onChange={e=>setText(e.target.value)} />
+            <button className="btn-primary" onClick={encrypt}>AES-GCM Encrypt</button>
+            {res && <div className="tool-result font-mono text-xs break-all">{res}</div>}
+        </div>
+    );
+};
 
 const HmacCalc = () => (
     <div className="text-center p-20 opacity-6">HMAC calculation is being integrated.</div>

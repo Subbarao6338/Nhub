@@ -39,11 +39,9 @@ const TravelTools = ({ onResultChange, toolId, onSubtoolChange }) => {
 const WorldClockTool = () => {
   const [time, setTime] = useState(new Date());
   const zones = [
-    { name: 'Local', zone: undefined },
     { name: 'London', zone: 'Europe/London' },
     { name: 'New York', zone: 'America/New_York' },
     { name: 'Tokyo', zone: 'Asia/Tokyo' },
-    { name: 'Sydney', zone: 'Australia/Sydney' },
     { name: 'Dubai', zone: 'Asia/Dubai' }
   ];
 
@@ -54,14 +52,22 @@ const WorldClockTool = () => {
 
   return (
     <div className="grid gap-12">
-      {zones.map(z => (
-        <div key={z.name} className="card p-15 flex-between no-animation">
-          <div className="font-bold">{z.name}</div>
-          <div className="font-mono" style={{ fontSize: '1.25rem', color: 'var(--primary)' }}>
-            {time.toLocaleTimeString('en-US', { timeZone: z.zone, hour12: false })}
+      <div className="card p-20 text-center mb-10">
+          <div className="opacity-6 uppercase font-bold smallest mb-5">Local Time</div>
+          <div style={{fontSize: '3rem', fontWeight: 800}} className="color-primary">
+              {time.toLocaleTimeString([], { hour12: false })}
           </div>
-        </div>
-      ))}
+      </div>
+      <div className="grid grid-2 gap-12">
+        {zones.map(z => (
+          <div key={z.name} className="card p-15 text-center no-animation">
+            <div className="font-bold opacity-6 smallest uppercase">{z.name}</div>
+            <div className="font-mono" style={{ fontSize: '1.25rem' }}>
+              {time.toLocaleTimeString('en-US', { timeZone: z.zone, hour12: false })}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

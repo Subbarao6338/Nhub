@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('stopwatch');
@@ -18,7 +18,9 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         'world-clock': 'worldclock',
         'timezone-conv': 'timezone',
         'panchangam': 'panchangam',
-        'date-diff': 'datediff'
+        'date-diff': 'datediff',
+        'countdown': 'countdown',
+        'time-main': 'stopwatch'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -32,7 +34,8 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'worldclock', label: 'World Clock' },
     { id: 'timezone', label: 'Timezone' },
     { id: 'panchangam', label: 'Panchangam' },
-    { id: 'datediff', label: 'Date Diff' }
+    { id: 'datediff', label: 'Date Diff' },
+    { id: 'countdown', label: 'Countdown' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
@@ -59,6 +62,7 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'pomodoro' && <PomodoroTool onResultChange={onResultChange} />}
       {activeTab === 'datediff' && <DateDiffTool onResultChange={onResultChange} />}
       {activeTab === 'timezone' && <TimezoneConverter onResultChange={onResultChange} />}
+      {activeTab === 'countdown' && <CountdownTimer onResultChange={onResultChange} />}
       {['timestamp', 'panchangam'].includes(activeTab) && (
           <div className="text-center p-20 card opacity-6">
               <span className="material-icons mb-10" style={{fontSize: '2rem'}}>schedule</span>
@@ -67,6 +71,37 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       )}
     </div>
   );
+};
+
+const CountdownTimer = ({ onResultChange }) => {
+    const [target, setTarget] = useState('');
+    const [timeLeft, setTimeLeft] = useState(null);
+
+    useEffect(() => {
+        if (!target) return;
+        const it = setInterval(() => {
+            const diff = new Date(target) - new Date();
+            if (diff <= 0) { setTimeLeft('Done!'); clearInterval(it); return; }
+            const d = Math.floor(diff / 86400000);
+            const h = Math.floor((diff % 86400000) / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            setTimeLeft(`${d}d ${h}h ${m}m ${s}s`);
+        }, 1000);
+        return () => clearInterval(it);
+    }, [target]);
+
+    return (
+        <div className="card p-20 text-center">
+            <div className="mb-10 opacity-6 uppercase smallest font-bold">Target Date</div>
+            <input type="datetime-local" className="pill w-full mb-20" value={target} onChange={e=>setTarget(e.target.value)} />
+            {timeLeft && (
+                <div style={{fontSize: '2rem', fontWeight: 800}} className="color-primary animate-pulse">
+                    {timeLeft}
+                </div>
+            )}
+        </div>
+    );
 };
 
 const AgeTool = ({ onResultChange }) => {
@@ -181,7 +216,6 @@ const DateDiffTool = () => {
 
 const TimezoneConverter = () => {
     const [time, setTime] = useState('12:00');
-    const [zone, setZone] = useState('UTC');
     const [targetZone, setTargetZone] = useState('America/New_York');
 
     const convert = () => {

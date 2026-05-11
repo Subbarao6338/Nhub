@@ -19,7 +19,8 @@ const ImageTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (toolId) {
         const mapping = {
             'img-format': 'format', 'img-resize': 'resize', 'img-blur': 'blur',
-            'img-meta': 'metadata', 'img-bw': 'bw', 'img-crop': 'crop'
+            'img-meta': 'metadata', 'img-bw': 'bw', 'img-crop': 'crop',
+            'img-sepia': 'sepia', 'img-invert': 'invert', 'img-filters': 'filters'
         };
         if (mapping[toolId]) setActiveTab(mapping[toolId]);
         else if (['sepia', 'invert', 'crop'].includes(toolId)) setActiveTab(toolId);
@@ -50,6 +51,8 @@ const ImageTools = ({ onResultChange, toolId, onSubtoolChange }) => {
             <button className={`pill ${activeTab === 'sepia' ? 'active' : ''}`} onClick={() => setActiveTab('sepia')}>Sepia</button>
             <button className={`pill ${activeTab === 'invert' ? 'active' : ''}`} onClick={() => setActiveTab('invert')}>Invert</button>
             <button className={`pill ${activeTab === 'crop' ? 'active' : ''}`} onClick={() => setActiveTab('crop')}>Crop</button>
+            <button className={`pill ${activeTab === 'filters' ? 'active' : ''}`} onClick={() => setActiveTab('filters')}>SVG Filters</button>
+            <button className={`pill ${activeTab === 'b64' ? 'active' : ''}`} onClick={() => setActiveTab('b64')}>Base64</button>
           </div>
       )}
 
@@ -68,6 +71,8 @@ const ImageTools = ({ onResultChange, toolId, onSubtoolChange }) => {
       {image && activeTab === 'sepia' && <SepiaFilter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
       {image && activeTab === 'invert' && <InvertFilter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
       {image && activeTab === 'crop' && <ImageCropper imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+      {image && activeTab === 'filters' && <SvgFilters imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+      {image && activeTab === 'b64' && <ImageToBase64 image={image} onResultChange={onResultChange} />}
     </div>
   );
 };
@@ -220,6 +225,45 @@ const ImageCropper = ({ imgRef, onResultChange }) => {
                 ))}
             </div>
             <button className="btn-primary w-full" onClick={apply}>Apply Crop</button>
+        </div>
+    );
+};
+
+const ImageToBase64 = ({ image, onResultChange }) => {
+    const convert = () => {
+        const reader = new FileReader();
+        reader.onload = (e) => onResultChange({ text: e.target.result, filename: 'image_b64.txt' });
+        reader.readAsDataURL(image);
+    };
+    return <button className="btn-primary w-full" onClick={convert}>Convert Image to Base64</button>;
+};
+
+const SvgFilters = ({ imgRef, onResultChange }) => {
+    const [filter, setFilter] = useState('none');
+    const apply = () => {
+        const canvas = document.createElement('canvas');
+        const img = imgRef.current;
+        if (!img) return;
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (filter === 'posterize') ctx.filter = 'contrast(200%) brightness(150%) saturate(200%)';
+        else if (filter === 'vintage') ctx.filter = 'sepia(50%) hue-rotate(-30deg) saturate(120%)';
+        else if (filter === 'cold') ctx.filter = 'hue-rotate(180deg) saturate(80%)';
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(blob => {
+            onResultChange({ text: `Applied ${filter} filter`, blob, filename: `${filter}.png` });
+        });
+    };
+    return (
+        <div className="grid gap-10">
+            <select className="pill" value={filter} onChange={e=>setFilter(e.target.value)}>
+                <option value="none">Normal</option>
+                <option value="posterize">Posterize</option>
+                <option value="vintage">Vintage</option>
+                <option value="cold">Cold</option>
+            </select>
+            <button className="btn-primary w-full" onClick={apply}>Apply SVG Filter</button>
         </div>
     );
 };

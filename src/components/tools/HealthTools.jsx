@@ -4,7 +4,7 @@ const HealthTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('bmr');
 
   useEffect(() => {
-    const labels = { bmr: 'Basal Metabolic Rate', bmi: 'BMI Calculator', calories: 'Calorie Needs' };
+    const labels = { bmr: 'Basal Metabolic Rate', bmi: 'BMI Calculator', calories: 'Calorie Needs', water: 'Water Tracker' };
     if (onSubtoolChange) onSubtoolChange(labels[activeTab]);
   }, [activeTab]);
 
@@ -12,26 +12,62 @@ const HealthTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (toolId) {
       if (toolId === 'bmr-calc') setActiveTab('bmr');
       else if (toolId === 'calorie-calc') setActiveTab('calories');
+      else if (toolId === 'water-tracker') setActiveTab('water');
     }
   }, [toolId]);
 
   const isDeepLinked = !!toolId;
 
+  const tabs = [
+    { id: 'bmr', label: 'BMR' },
+    { id: 'bmi', label: 'BMI' },
+    { id: 'calories', label: 'Calories' },
+    { id: 'water', label: 'Water' }
+  ];
+
   return (
     <div className="tool-form">
       {!isDeepLinked && (
           <div className="pill-group mb-20 scrollable-x">
-            <button className={`pill ${activeTab === 'bmr' ? 'active' : ''}`} onClick={() => setActiveTab('bmr')}>BMR</button>
-            <button className={`pill ${activeTab === 'bmi' ? 'active' : ''}`} onClick={() => setActiveTab('bmi')}>BMI</button>
-            <button className={`pill ${activeTab === 'calories' ? 'active' : ''}`} onClick={() => setActiveTab('calories')}>Calories</button>
+            {tabs.map(t => (
+                <button key={t.id} className={`pill ${activeTab === t.id ? 'active' : ''}`} onClick={() => setActiveTab(t.id)}>{t.label}</button>
+            ))}
           </div>
       )}
 
       {activeTab === 'bmr' && <BmrTool onResultChange={onResultChange} />}
       {activeTab === 'bmi' && <BmiTool onResultChange={onResultChange} />}
       {activeTab === 'calories' && <CalorieTool onResultChange={onResultChange} />}
+      {activeTab === 'water' && <WaterTracker onResultChange={onResultChange} />}
     </div>
   );
+};
+
+const WaterTracker = ({ onResultChange }) => {
+    const [glasses, setGlasses] = useState(() => parseInt(localStorage.getItem('hub_water_glasses') || '0'));
+    const goal = 8;
+
+    useEffect(() => {
+        localStorage.setItem('hub_water_glasses', glasses.toString());
+        onResultChange({ text: `Water intake: ${glasses}/${goal} glasses` });
+    }, [glasses]);
+
+    return (
+        <div className="card p-20 text-center">
+            <div className="flex-center gap-10 mb-20">
+                {Array(goal).fill(0).map((_, i) => (
+                    <span key={i} className="material-icons" style={{ color: i < glasses ? 'var(--blue)' : 'var(--border)', fontSize: '2rem' }}>
+                        local_drink
+                    </span>
+                ))}
+            </div>
+            <div style={{ fontSize: '2.5rem', fontWeight: 800 }} className="mb-10">{glasses} / {goal}</div>
+            <div className="flex-gap">
+                <button className="btn-primary flex-1" onClick={() => setGlasses(g => Math.min(goal, g + 1))}>Add Glass</button>
+                <button className="pill" onClick={() => setGlasses(0)}>Reset</button>
+            </div>
+        </div>
+    );
 };
 
 const BmiTool = ({ onResultChange }) => {

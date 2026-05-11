@@ -18,7 +18,8 @@ const FinanceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         'compound-int': 'compound',
         'cagr': 'cagr',
         'dcf': 'dcf',
-        'tip-split': 'tip'
+        'tip-split': 'tip',
+        'investment-calc': 'investment'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -32,7 +33,8 @@ const FinanceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'compound', label: 'Compound' },
     { id: 'cagr', label: 'CAGR' },
     { id: 'dcf', label: 'DCF' },
-    { id: 'tip', label: 'Tip & Split' }
+    { id: 'tip', label: 'Tip & Split' },
+    { id: 'investment', label: 'Investment' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
@@ -57,6 +59,7 @@ const FinanceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'tip' && <TipTool onResultChange={onResultChange} />}
       {activeTab === 'compound' && <CompoundInterestTool onResultChange={onResultChange} />}
       {activeTab === 'loan' && <LoanCalculator onResultChange={onResultChange} />}
+      {activeTab === 'investment' && <InvestmentCalculator onResultChange={onResultChange} />}
       {['vat', 'inflation', 'cagr', 'dcf'].includes(activeTab) && (
           <div className="text-center p-20 card opacity-6">
               <span className="material-icons mb-10" style={{fontSize: '2rem'}}>payments</span>
@@ -123,6 +126,30 @@ const LoanCalculator = ({ onResultChange }) => {
             <input type="number" placeholder="Months" className="pill" value={term} onChange={e=>setTerm(e.target.value)} />
             <button className="btn-primary" onClick={calc}>Calculate EMI</button>
             {emi && <div className="tool-result text-center">Monthly Payment: <b>{emi}</b></div>}
+        </div>
+    );
+};
+
+const InvestmentCalculator = ({ onResultChange }) => {
+    const [sip, setSip] = useState(5000);
+    const [rate, setRate] = useState(12);
+    const [years, setYears] = useState(10);
+    const [res, setRes] = useState(null);
+
+    const calc = () => {
+        const i = rate / 100 / 12;
+        const n = years * 12;
+        const total = sip * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+        setRes(total.toFixed(0));
+    };
+
+    return (
+        <div className="grid gap-15 card p-15">
+            <div className="flex-between"><span>Monthly SIP</span><input type="number" className="pill w-100" value={sip} onChange={e=>setSip(e.target.value)} /></div>
+            <div className="flex-between"><span>Rate (%)</span><input type="number" className="pill w-100" value={rate} onChange={e=>setRate(e.target.value)} /></div>
+            <div className="flex-between"><span>Years</span><input type="number" className="pill w-100" value={years} onChange={e=>setYears(e.target.value)} /></div>
+            <button className="btn-primary" onClick={calc}>Calculate Wealth</button>
+            {res && <div className="tool-result text-center">Maturity Value: <b>₹{res}</b></div>}
         </div>
     );
 };

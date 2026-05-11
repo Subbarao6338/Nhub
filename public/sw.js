@@ -71,7 +71,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stale-while-revalidate for cachable assets
+  // Cache-First strategy for Fonts and Icons
+  if (isFont) {
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        return cachedResponse || fetch(event.request).then((networkResponse) => {
+          if (networkResponse.ok) {
+            const cacheCopy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
+          }
+          return networkResponse;
+        });
+      })
+    );
+    return;
+  }
+
+  // Stale-while-revalidate for other cachable assets
   if (isCachable) {
     event.respondWith(
       caches.open(CACHE_NAME).then((cache) => {

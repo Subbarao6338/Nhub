@@ -9,10 +9,12 @@ const Header = ({ appName, currentProfile, profiles, setView, onSettingsClick, h
         className="logo-container"
         onClick={() => setView(hideBookmarks ? 'toolbox' : 'bookmarks')}
       >
-        <span className="material-icons app-logo">
-          {currentProfile === 'Default' ? 'inbox' : (profile.icon || 'person')}
-        </span>
-        <h1 className="page-title">{appName || 'Nature toolbox'}</h1>
+        <div className="flex-center" style={{ background: 'var(--primary-glow)', padding: '8px', borderRadius: 'var(--radius-md)' }}>
+            <span className="material-icons app-logo" style={{ fontSize: '28px' }}>
+              {currentProfile === 'Default' ? 'eco' : (profile.icon || 'person')}
+            </span>
+        </div>
+        <h1 className="page-title" style={{ fontSize: '1.25rem' }}>{appName || 'Epic Toolbox'}</h1>
       </div>
       <div className="top-actions">
         {children}

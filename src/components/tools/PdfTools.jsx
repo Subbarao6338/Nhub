@@ -78,7 +78,9 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
         'pdf-grayscale': 'grayscale',
         'pdf-flatten': 'flatten',
         'pdf-img2pdf': 'img2pdf',
-        'pdf-translate': 'translate'
+        'pdf-translate': 'translate',
+        'pdf-metadata': 'metadata',
+        'pdf-compress': 'compress'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -289,6 +291,22 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     } catch (e) { alert("Error updating metadata: " + e.message); }
   };
 
+  const compressPdf = async () => {
+    if (files.length === 0) return;
+    try {
+      const pdfBytes = await files[0].arrayBuffer();
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+      // Stripping metadata and using more efficient save options
+      pdfDoc.setTitle('');
+      pdfDoc.setAuthor('');
+      const compressedBytes = await pdfDoc.save({
+        useObjectStreams: true,
+        addDefaultPage: false
+      });
+      onResultChange({ text: 'Compressed PDF (Metadata Stripped)', blob: new Blob([compressedBytes], { type: 'application/pdf' }), filename: 'compressed.pdf' });
+    } catch (e) { alert("Error compressing PDF"); }
+  };
+
   const tabs = [
     { id: 'merge', label: 'Merge' },
     { id: 'split', label: 'Split' },
@@ -443,7 +461,11 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
         </div>
       )}
 
-      {['compress', 'grayscale', 'flatten'].includes(activeTab) && (
+      {activeTab === 'compress' && (
+        <button className="btn-primary w-full mt-20" onClick={compressPdf} disabled={files.length === 0}>Compress PDF</button>
+      )}
+
+      {['grayscale', 'flatten'].includes(activeTab) && (
         <div className="text-center p-20 opacity-6">This advanced PDF feature is coming soon.</div>
       )}
     </div>

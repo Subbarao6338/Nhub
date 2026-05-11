@@ -20,7 +20,9 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         'anomaly-detect': 'anomaly',
         'stat-calc': 'science',
         'data-quality': 'quality',
-        'data-anonymizer': 'anonymizer'
+        'data-anonymizer': 'anonymizer',
+        'data-profiling': 'profiling',
+        'json-csv': 'json-csv'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -32,7 +34,8 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'anomaly', label: 'Anomaly Detect' },
     { id: 'quality', label: 'Data Quality' },
     { id: 'profiling', label: 'Data Profiling' },
-    { id: 'anonymizer', label: 'Anonymizer' }
+    { id: 'anonymizer', label: 'Anonymizer' },
+    { id: 'json-csv', label: 'JSON ↔ CSV' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
@@ -59,6 +62,7 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'quality' && <DataQualityTool onResultChange={onResultChange} data={uploadedData} />}
       {activeTab === 'profiling' && <DataProfilingTool onResultChange={onResultChange} data={uploadedData} />}
       {activeTab === 'anonymizer' && <DataAnonymizer onResultChange={onResultChange} />}
+      {activeTab === 'json-csv' && <JsonCsvConverter onResultChange={onResultChange} />}
     </div>
   );
 };
@@ -252,6 +256,33 @@ const DataQualityTool = ({ onResultChange, data }) => {
                     </ul>
                 </div>
             )}
+        </div>
+    );
+};
+
+const JsonCsvConverter = ({ onResultChange }) => {
+    const [val, setVal] = useState('{"name": "Nature", "type": "Toolbox"}');
+    const toCsv = () => {
+        try {
+            const json = JSON.parse(val);
+            const csv = Papa.unparse(Array.isArray(json) ? json : [json]);
+            setVal(csv);
+            onResultChange({ text: csv, filename: 'converted.csv' });
+        } catch(e) { alert("Invalid JSON"); }
+    };
+    const toJson = () => {
+        const results = Papa.parse(val, { header: true });
+        const json = JSON.stringify(results.data, null, 2);
+        setVal(json);
+        onResultChange({ text: json, filename: 'converted.json' });
+    };
+    return (
+        <div className="card p-15 grid gap-10">
+            <textarea className="pill font-mono" rows="8" value={val} onChange={e=>setVal(e.target.value)} />
+            <div className="flex-gap">
+                <button className="btn-primary flex-1" onClick={toCsv}>TO CSV</button>
+                <button className="pill flex-1" onClick={toJson}>TO JSON</button>
+            </div>
         </div>
     );
 };

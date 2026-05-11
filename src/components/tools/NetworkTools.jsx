@@ -70,6 +70,7 @@ const IpInfoTool = ({ onResultChange }) => {
   const [publicIp, setPublicIp] = useState('Loading...');
   const [localIp, setLocalIp] = useState('Detecting...');
   const [geoInfo, setGeoInfo] = useState(null);
+  const [battery, setBattery] = useState(null);
   const isOnline = navigator.onLine;
 
   useEffect(() => {
@@ -77,6 +78,12 @@ const IpInfoTool = ({ onResultChange }) => {
       setPublicIp(data.ip);
       setGeoInfo(data);
     }).catch(() => setPublicIp('Failed to fetch'));
+
+    if ('getBattery' in navigator) {
+        navigator.getBattery().then(batt => {
+            setBattery({ level: batt.level * 100, charging: batt.charging });
+        });
+    }
     const pc = new RTCPeerConnection({ iceServers: [] });
     pc.createDataChannel('');
     pc.createOffer().then(offer => pc.setLocalDescription(offer));
@@ -97,9 +104,17 @@ const IpInfoTool = ({ onResultChange }) => {
 
   return (
     <div className="grid gap-15">
-      <div className="card p-20 text-center">
-         <div style={{ opacity: 0.5, marginBottom: '10px' }}>Connection Status</div>
-         <div style={{ fontSize: '2rem', fontWeight: 'bold', color: isOnline ? 'var(--nature-moss)' : 'var(--danger)' }}>{isOnline ? 'ONLINE' : 'OFFLINE'}</div>
+      <div className="grid grid-2 gap-15">
+          <div className="card p-20 text-center">
+             <div style={{ opacity: 0.5, marginBottom: '10px' }}>Connection</div>
+             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: isOnline ? 'var(--nature-moss)' : 'var(--danger)' }}>{isOnline ? 'ONLINE' : 'OFFLINE'}</div>
+          </div>
+          {battery && (
+              <div className="card p-20 text-center">
+                  <div style={{ opacity: 0.5, marginBottom: '10px' }}>Battery</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{Math.round(battery.level)}% {battery.charging ? '⚡' : ''}</div>
+              </div>
+          )}
       </div>
       <div className="grid grid-2 gap-15">
         <div className="card p-15"><h3>Public IP</h3><div className="font-mono text-center color-primary">{publicIp}</div></div>

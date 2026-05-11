@@ -14,7 +14,8 @@ const AudioVideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         'frequency-gen': 'frequency',
         'metronome': 'metronome',
         'tuner': 'tuner',
-        'nature-sounds': 'nature-sounds'
+        'nature-sounds': 'nature-sounds',
+        'audio-recorder': 'recorder'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -24,7 +25,8 @@ const AudioVideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'frequency', label: 'Frequency Gen' },
     { id: 'metronome', label: 'Metronome' },
     { id: 'tuner', label: 'Tuner' },
-    { id: 'nature-sounds', label: 'Nature Sounds' }
+    { id: 'nature-sounds', label: 'Nature Sounds' },
+    { id: 'recorder', label: 'Voice Recorder' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
@@ -49,6 +51,7 @@ const AudioVideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'metronome' && <MetronomeTool />}
       {activeTab === 'tuner' && <InstrumentTuner />}
       {activeTab === 'nature-sounds' && <NatureSoundsTool />}
+      {activeTab === 'recorder' && <VoiceRecorder onResultChange={onResultChange} />}
     </div>
   );
 };
@@ -267,6 +270,51 @@ const InstrumentTuner = () => {
             <button className="btn-primary w-full mt-20" onClick={active ? stop : start} style={{background: active ? 'var(--danger)' : ''}}>
                 <span className="material-icons mr-10">{active ? 'mic_off' : 'mic'}</span>
                 {active ? 'Stop Tuner' : 'Start Tuner'}
+            </button>
+        </div>
+    );
+};
+
+const VoiceRecorder = ({ onResultChange }) => {
+    const [recording, setRecording] = useState(false);
+    const [audioUrl, setAudioUrl] = useState(null);
+    const mediaRecorderRef = useRef(null);
+    const chunksRef = useRef([]);
+
+    const start = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorderRef.current = new MediaRecorder(stream);
+            mediaRecorderRef.current.ondataavailable = (e) => chunksRef.current.push(e.data);
+        mediaRecorderRef.current.onstop = () => {
+            const blob = new Blob(chunksRef.current, { type: 'audio/ogg; codecs=opus' });
+            const url = URL.createObjectURL(blob);
+            setAudioUrl(url);
+            onResultChange({ text: 'Voice Recording', blob, filename: 'recording.ogg' });
+            chunksRef.current = [];
+        };
+            mediaRecorderRef.current.start();
+            setRecording(true);
+        } catch (err) {
+            alert("Microphone access denied or not available.");
+        }
+    };
+
+    const stop = () => {
+        mediaRecorderRef.current.stop();
+        setRecording(false);
+    };
+
+    return (
+        <div className="card p-20 text-center">
+            <div className="mb-20">
+                <span className="material-icons" style={{ fontSize: '4rem', color: recording ? 'var(--danger)' : 'var(--primary)' }}>
+                    {recording ? 'mic' : 'mic_none'}
+                </span>
+            </div>
+            {audioUrl && <audio src={audioUrl} controls className="w-full mb-20" />}
+            <button className={`btn-primary w-full ${recording ? 'danger' : ''}`} onClick={recording ? stop : start}>
+                {recording ? 'Stop Recording' : 'Start Recording'}
             </button>
         </div>
     );

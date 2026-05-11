@@ -11,10 +11,11 @@ const ColorTools = ({ toolId, onSubtoolChange }) => {
 
   useEffect(() => {
     if (toolId) {
-        if (toolId === 'img-color' || toolId === 'cam-color') setActiveTab('picker');
+        if (toolId === 'img-color' || toolId === 'cam-color' || toolId === 'color-picker') setActiveTab('picker');
         else if (toolId === 'color-conv') setActiveTab('converter');
         else if (toolId === 'color-harm' || toolId === 'tints-shades') setActiveTab('harmonies');
         else if (toolId === 'color-blend') setActiveTab('blender');
+        else if (toolId === 'color-contrast') setActiveTab('contrast');
         else setActiveTab(toolId);
     }
   }, [toolId]);
@@ -29,6 +30,7 @@ const ColorTools = ({ toolId, onSubtoolChange }) => {
           <button className={`pill ${activeTab === 'converter' ? 'active' : ''}`} onClick={() => setActiveTab('converter')}>Converter</button>
           <button className={`pill ${activeTab === 'harmonies' ? 'active' : ''}`} onClick={() => setActiveTab('harmonies')}>Harmonies</button>
           <button className={`pill ${activeTab === 'blender' ? 'active' : ''}`} onClick={() => setActiveTab('blender')}>Blender</button>
+          <button className={`pill ${activeTab === 'contrast' ? 'active' : ''}`} onClick={() => setActiveTab('contrast')}>Contrast</button>
         </div>
       )}
 
@@ -41,6 +43,7 @@ const ColorTools = ({ toolId, onSubtoolChange }) => {
       {activeTab === 'converter' && <ColorConverter color={color} />}
       {activeTab === 'harmonies' && <ColorHarmonies color={color} />}
       {activeTab === 'blender' && <ColorBlender colorA={color} />}
+      {activeTab === 'contrast' && <ContrastChecker color={color} />}
     </div>
   );
 };
@@ -117,6 +120,32 @@ const ColorHarmonies = ({ color }) => {
             <div style={{ textAlign: 'center' }}>
                 <div style={{ width: '60px', height: '60px', background: comp, borderRadius: '8px' }} />
                 <div style={{ fontSize: '0.7rem' }}>Comp</div>
+            </div>
+        </div>
+    );
+};
+
+const ContrastChecker = ({ color }) => {
+    const [bg, setBg] = useState('#ffffff');
+    const getContrast = (hex1, hex2) => {
+        const lum = (h) => {
+            const r = parseInt(h.slice(1,3),16)/255, g = parseInt(h.slice(3,5),16)/255, b = parseInt(h.slice(5,7),16)/255;
+            const a = [r,g,b].map(v => v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4));
+            return a[0]*0.2126 + a[1]*0.7152 + a[2]*0.0722;
+        };
+        const l1 = lum(hex1), l2 = lum(hex2);
+        return (Math.max(l1,l2)+0.05) / (Math.min(l1,l2)+0.05);
+    };
+    const ratio = getContrast(color, bg).toFixed(2);
+    return (
+        <div className="card p-15 text-center">
+            <input type="color" value={bg} onChange={e=>setBg(e.target.value)} className="pill mb-15" />
+            <div style={{ background: bg, color: color, padding: '20px', borderRadius: '12px', fontSize: '1.2rem', fontWeight: 800 }}>
+                Sample Text
+            </div>
+            <div className="mt-15">Ratio: <b>{ratio}:1</b></div>
+            <div className={`smallest font-bold ${ratio >= 4.5 ? 'color-primary' : 'text-danger'}`}>
+                {ratio >= 4.5 ? 'WCAG AA Passed' : 'WCAG AA Failed'}
             </div>
         </div>
     );

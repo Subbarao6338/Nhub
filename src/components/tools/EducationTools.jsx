@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { evaluate } from 'mathjs';
 
 const ELEMENTS = [
   { number: 1, symbol: 'H', name: 'Hydrogen', mass: '1.008', category: 'nonmetal', period: 1, group: 1 },
@@ -266,6 +267,38 @@ const UnitCircle = () => {
   );
 };
 
+const ScientificCalculator = () => {
+    const [expr, setExpr] = useState('');
+    const [res, setRes] = useState('');
+    const calc = () => {
+        try { setRes(evaluate(expr).toString()); } catch(e) { setRes('Error'); }
+    };
+    const btns = [
+        'sin(', 'cos(', 'tan(', 'log(',
+        'sqrt(', 'pow(', 'pi', 'e',
+        '7', '8', '9', '/',
+        '4', '5', '6', '*',
+        '1', '2', '3', '-',
+        '0', '.', '(', ')',
+        'C', '='
+    ];
+    return (
+        <div className="card p-20">
+            <input className="pill text-right mb-10 font-mono" style={{fontSize: '1.5rem'}} value={expr} onChange={e=>setExpr(e.target.value)} />
+            <div className="text-right color-primary font-bold mb-20" style={{fontSize: '2rem', height: '2.5rem'}}>{res}</div>
+            <div className="grid grid-4 gap-10">
+                {btns.map(b => (
+                    <button key={b} className={`pill ${['C','='].includes(b) ? 'active' : ''}`} onClick={()=>{
+                        if(b === '=') calc();
+                        else if(b === 'C') { setExpr(''); setRes(''); }
+                        else setExpr(prev => prev + b);
+                    }} style={{ padding: '10px' }}>{b}</button>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 const EducationTools = ({ toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('periodic');
 
@@ -277,7 +310,8 @@ const EducationTools = ({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'periodic', label: 'Periodic Table' },
     { id: 'circle', label: 'Unit Circle' },
-    { id: 'constants', label: 'Physics Constants' }
+    { id: 'constants', label: 'Physics Constants' },
+    { id: 'scicalc', label: 'Scientific Calc' }
   ];
 
   useEffect(() => {
@@ -285,7 +319,8 @@ const EducationTools = ({ toolId, onSubtoolChange }) => {
       const mapping = {
         'periodic-table': 'periodic',
         'unit-circle': 'circle',
-        'physics-constants': 'constants'
+        'physics-constants': 'constants',
+        'scientific-calc': 'scicalc'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -312,6 +347,7 @@ const EducationTools = ({ toolId, onSubtoolChange }) => {
       {activeTab === 'periodic' && <PeriodicTable />}
       {activeTab === 'circle' && <UnitCircle />}
       {activeTab === 'constants' && <PhysicsConstants />}
+      {activeTab === 'scicalc' && <ScientificCalculator />}
     </div>
   );
 };
