@@ -26,7 +26,6 @@ const PomodoroTimer = lazy(() => import('./tools/PomodoroTimer'));
 const MarkdownPreview = lazy(() => import('./tools/MarkdownPreview'));
 const TeluguPanchangam = lazy(() => import('./tools/TeluguPanchangam'));
 const AiSummary = lazy(() => import('./tools/AiSummary'));
-const PerchanceAi = lazy(() => import('./tools/PerchanceAi'));
 const OmniHub = lazy(() => import('./tools/OmniHub'));
 const Cookies = lazy(() => import('./tools/Cookies'));
 const Inspect = lazy(() => import('./tools/Inspect'));
@@ -225,7 +224,6 @@ const TOOLS = [
     { id: 'tictactoe', title: 'Tic-Tac-Toe', icon: 'grid_view', category: 'Games', component: Games },
     { id: 'heads-tails', title: 'Heads or Tails', icon: 'monetization_on', category: 'Games', component: CoinFlipper },
     { id: 'magic-8ball', title: 'Magic 8-Ball', icon: 'filter_8', category: 'Games', component: Generators },
-    { id: 'perchance-ai', title: 'Perchance Gen', icon: 'casino', category: 'Games', component: PerchanceAi },
 
     // Education & Math
     { id: 'periodic-table', title: 'Periodic Table', icon: 'grid_view', category: 'Education & Math', component: EducationTools },
