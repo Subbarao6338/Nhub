@@ -9,7 +9,7 @@ const VideoTools = ({ toolId, onResultChange }) => {
         'magnifier': 'magnifier',
         'mirror': 'mirror'
       };
-      if (mapping[toolId]) setActiveTab(mapping[toolId]);
+      if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
 

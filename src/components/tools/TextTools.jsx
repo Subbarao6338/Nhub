@@ -7,34 +7,42 @@ const TextTools = ({ toolId, onResultChange }) => {
   useEffect(() => {
     if (toolId) {
       const mapping = {
-        'character-counter': 'stats',
+        'case-converter': 'modify',
+        'word-counter': 'stats',
         'lorem-ipsum': 'lorem',
-        'html-entities': 'html',
-        'word-rank': 'rank',
-        'translate': 'translate',
-        'morse': 'morse',
-        'ai-summary': 'ai',
-        'web-to-md': 'web-md'
+        'text-cleaner': 'modify',
+        'remove-duplicates': 'modify',
+        'list-sorter': 'modify'
       };
-      if (mapping[toolId]) setActiveTab(mapping[toolId]);
+      if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
 
-  useEffect(() => {
-    if (input) onResultChange({ text: input, filename: 'text.txt' });
-  }, [input, onResultChange]);
-
   const tabs = [
-    { id: 'modify', label: 'Modify' },
-    { id: 'stats', label: 'Stats' },
+    { id: 'modify', label: 'Modify & Clean' },
+    { id: 'stats', label: 'Statistics' },
     { id: 'lorem', label: 'Lorem Ipsum' },
-    { id: 'html', label: 'HTML Entities' },
-    { id: 'rank', label: 'Word Rank' },
-    { id: 'translate', label: 'Translate' },
-    { id: 'morse', label: 'Morse' },
-    { id: 'ai', label: 'AI Summary' },
-    { id: 'web-md', label: 'Web to MD' }
+    { id: 'rank', label: 'Word Rank' }
   ].sort((a, b) => a.label.localeCompare(b.label));
+
+  const stats = useMemo(() => ({
+      chars: input.length,
+      words: input.trim() ? input.trim().split(/\s+/).length : 0,
+      lines: input.split('\n').filter(l => l.trim()).length
+  }), [input]);
+
+  const handleAction = (type) => {
+      let res = input;
+      if (type === 'upper') res = input.toUpperCase();
+      else if (type === 'lower') res = input.toLowerCase();
+      else if (type === 'title') res = input.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ');
+      else if (type === 'reverse') res = input.split('').reverse().join('');
+      else if (type === 'whitespace') res = input.replace(/\s+/g, ' ').trim();
+      else if (type === 'dedupe') res = [...new Set(input.split('\n').filter(l => l.trim()))].join('\n');
+      else if (type === 'sort') res = input.split('\n').filter(l => l.trim()).sort().join('\n');
+      setInput(res);
+      onResultChange({ text: res, filename: 'text_processed.txt' });
+  };
 
   return (
     <div className="tool-form">
@@ -50,31 +58,132 @@ const TextTools = ({ toolId, onResultChange }) => {
         ))}
       </div>
 
-      <textarea rows="6" className="pill w-full mb-20" placeholder="Enter text here..." value={input} onChange={e=>setInput(e.target.value)} />
+      <textarea rows="8" className="pill w-full mb-20 font-mono" placeholder="Enter text here..." value={input} onChange={e=>setInput(e.target.value)} />
 
       {activeTab === 'modify' && (
-          <div className="grid grid-3 gap-10">
-              <button className="pill" onClick={()=>setInput(input.toUpperCase())}>UPPERCASE</button>
-              <button className="pill" onClick={()=>setInput(input.toLowerCase())}>lowercase</button>
-              <button className="pill" onClick={()=>setInput(input.split('').reverse().join(''))}>Reverse</button>
+          <div className="flex-gap flex-wrap">
+              <button className="btn-primary" onClick={()=>handleAction('upper')}>UPPERCASE</button>
+              <button className="pill" onClick={()=>handleAction('lower')}>lowercase</button>
+              <button className="pill" onClick={()=>handleAction('title')}>Title Case</button>
+              <button className="pill" onClick={()=>handleAction('reverse')}>Reverse</button>
+              <button className="pill" onClick={()=>handleAction('whitespace')}>Clean Whitespace</button>
+              <button className="pill" onClick={()=>handleAction('dedupe')}>Dedupe Lines</button>
+              <button className="pill" onClick={()=>handleAction('sort')}>Sort Lines</button>
           </div>
       )}
 
       {activeTab === 'stats' && (
-          <div className="grid grid-2 gap-15">
-              <div className="tool-result">Chars: <b>{input.length}</b></div>
-              <div className="tool-result">Words: <b>{input.trim() ? input.trim().split(/\s+/).length : 0}</b></div>
+          <div className="grid grid-2-cols gap-15">
+              <div className="card p-20 text-center">
+                  <div className="font-bold" style={{fontSize: '2rem'}}>{stats.chars}</div>
+                  <div className="opacity-6">Characters</div>
+              </div>
+              <div className="card p-20 text-center">
+                  <div className="font-bold" style={{fontSize: '2rem'}}>{stats.words}</div>
+                  <div className="opacity-6">Words</div>
+              </div>
+              <div className="card p-20 text-center">
+                  <div className="font-bold" style={{fontSize: '2rem'}}>{stats.lines}</div>
+                  <div className="opacity-6">Lines</div>
+              </div>
           </div>
       )}
 
-      {['lorem', 'html', 'rank', 'translate', 'morse', 'ai', 'web-md'].includes(activeTab) && (
-          <div className="text-center p-20 card opacity-6">
-              <span className="material-icons mb-10" style={{fontSize: '2rem'}}>description</span>
-              <div>This text tool is being integrated.</div>
-          </div>
-      )}
+      {activeTab === 'lorem' && <LoremGenerator onResultChange={onResultChange} setInput={setInput} />}
+      {activeTab === 'rank' && <WordRankCalculator onResultChange={onResultChange} />}
     </div>
   );
+};
+
+const WordRankCalculator = ({ onResultChange }) => {
+    const [word, setWord] = useState('NATURE');
+    const [rank, setRank] = useState(null);
+
+    const calculate = () => {
+        const input = word.toUpperCase().replace(/[^A-Z]/g, '');
+        if (!input) return;
+
+        const factorial = (n) => {
+            let res = BigInt(1);
+            for (let i = 2n; i <= BigInt(n); i++) res *= i;
+            return res;
+        };
+
+        const getFactorialDivisor = (counts) => {
+            let divisor = BigInt(1);
+            for (let key in counts) divisor *= factorial(counts[key]);
+            return divisor;
+        };
+
+        const len = input.length;
+        let currentRank = BigInt(1);
+        let charCount = {};
+        for (let ch of input) charCount[ch] = (charCount[ch] || 0) + 1;
+
+        for (let i = 0; i < len; i++) {
+            let countSmaller = 0;
+            for (let key in charCount) {
+                if (key < input[i]) countSmaller += charCount[key];
+            }
+
+            if (countSmaller > 0) {
+                let permutations = factorial(len - 1 - i);
+                let divisor = getFactorialDivisor(charCount);
+                // The formula for permutations with repetitions: n! / (n1! * n2! * ...)
+                // Here we want (countSmaller * (len-1-i)! / (n1! * n2! * ...))
+                // But we must adjust the divisor for the character we are currently "using" at this position
+                // Wait, it's easier: for each unique char 'c' smaller than input[i]:
+                // rank += (len-1-i)! / (n1! * n2! * (nc-1)! * ...)
+
+                let waysAtThisPosition = BigInt(0);
+                const uniqueChars = Object.keys(charCount).sort();
+                for (let char of uniqueChars) {
+                    if (char < input[i]) {
+                        charCount[char]--;
+                        waysAtThisPosition += factorial(len - 1 - i) / getFactorialDivisor(charCount);
+                        charCount[char]++;
+                    }
+                }
+                currentRank += waysAtThisPosition;
+            }
+            charCount[input[i]]--;
+            if (charCount[input[i]] === 0) delete charCount[input[i]];
+        }
+
+        setRank(currentRank.toString());
+        onResultChange({ text: `Rank of "${input}": ${currentRank}`, filename: 'word_rank.txt' });
+    };
+
+    return (
+        <div className="card p-20 grid gap-15">
+            <div className="form-group">
+                <label>Word (with or without duplicate letters)</label>
+                <input className="pill" value={word} onChange={e => setWord(e.target.value.toUpperCase())} />
+            </div>
+            <button className="btn-primary" onClick={calculate}>Calculate Dictionary Rank</button>
+            {rank && (
+                <div className="tool-result text-center">
+                    <div className="opacity-6 small">The rank of "{word}" is</div>
+                    <div className="font-bold" style={{fontSize: '1.8rem', wordBreak: 'break-all'}}>{rank}</div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const LoremGenerator = ({ onResultChange, setInput }) => {
+    const [count, setCount] = useState(3);
+    const gen = () => {
+        const text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ".repeat(10 * count);
+        setInput(text);
+        onResultChange({ text, filename: 'lorem.txt' });
+    };
+    return (
+        <div className="card p-20 flex-gap">
+            <input type="number" className="pill flex-1" value={count} onChange={e=>setCount(e.target.value)} min="1" max="50" />
+            <button className="btn-primary flex-1" onClick={gen}>Generate</button>
+        </div>
+    );
 };
 
 export default TextTools;

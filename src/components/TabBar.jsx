@@ -30,7 +30,7 @@ const TabBar = ({ currentTab, setTab, onAddClick, onBookmarksLongPress, onSettin
 
   return (
     <nav className="tab-bar">
-      <div className="tab-group" id="group-toolbox">
+      <div className="tab-group">
         <div
           id="tab-toolbox"
           className={`tab-item ${currentTab === 'toolbox' ? 'active' : ''}`}
@@ -40,9 +40,8 @@ const TabBar = ({ currentTab, setTab, onAddClick, onBookmarksLongPress, onSettin
           <span className="material-icons">handyman</span>
           <span className="tab-name">Toolbox</span>
         </div>
-      </div>
-      {!hideBookmarks && (
-        <div className="tab-group" id="group-bookmarks">
+
+        {!hideBookmarks && (
           <div
             id="tab-bookmarks"
             className={`tab-item ${currentTab === 'bookmarks' ? 'active' : ''}`}
@@ -58,10 +57,9 @@ const TabBar = ({ currentTab, setTab, onAddClick, onBookmarksLongPress, onSettin
             <span className="material-icons">bookmarks</span>
             <span className="tab-name">Bookmarks</span>
           </div>
-        </div>
-      )}
-      {showProjectsTab && (
-        <div className="tab-group" id="group-projects">
+        )}
+
+        {showProjectsTab && (
           <div
             id="tab-projects"
             className={`tab-item ${currentTab === 'projects' ? 'active' : ''}`}
@@ -71,22 +69,20 @@ const TabBar = ({ currentTab, setTab, onAddClick, onBookmarksLongPress, onSettin
             <span className="material-icons">architecture</span>
             <span className="tab-name">Projects</span>
           </div>
-        </div>
-      )}
-      <div className="tab-group mobile-only" id="group-search">
+        )}
+
         <div
           id="tab-search"
-          className={`tab-item ${searchActive ? 'active' : ''}`}
+          className={`tab-item mobile-only ${searchActive ? 'active' : ''}`}
           onClick={onSearchClick}
           title="Search"
         >
           <span className="material-icons">search</span>
           <span className="tab-name">Search</span>
         </div>
-      </div>
-      <div className="tab-group mobile-only" id="group-settings">
+
         <div
-          className="tab-item"
+          className="tab-item mobile-only"
           onClick={onSettingsClick}
           title="Settings"
         >

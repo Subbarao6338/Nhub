@@ -19,7 +19,7 @@ const WebTools = ({ toolId, onResultChange }) => {
         'omni-hub': 'omni',
         'web-to-md': 'web-md'
       };
-      if (mapping[toolId]) setActiveTab(mapping[toolId]);
+      if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
 
