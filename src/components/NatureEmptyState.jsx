@@ -24,11 +24,11 @@ const NatureEmptyState = ({
       }}>
         {/* Hand-drawn style forest SVG */}
         <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-          <path d="M40,120 Q60,80 80,120 Z" fill="#2D6A4F" opacity="0.8" />
-          <path d="M70,130 Q90,70 110,130 Z" fill="#52B788" opacity="0.6" />
-          <path d="M120,125 Q140,90 160,125 Z" fill="#1B4332" opacity="0.7" />
-          <circle cx="150" cy="40" r="15" fill="#F4A261" opacity="0.3" />
-          <path d="M20,135 L180,135" stroke="#6B4226" strokeWidth="2" strokeLinecap="round" />
+          <path d="M40,120 Q60,80 80,120 Z" fill="var(--nature-primary)" opacity="0.8" />
+          <path d="M70,130 Q90,70 110,130 Z" fill="var(--nature-moss)" opacity="0.6" />
+          <path d="M120,125 Q140,90 160,125 Z" fill="var(--nature-leaf)" opacity="0.7" />
+          <circle cx="150" cy="40" r="15" fill="var(--nature-gold)" opacity="0.3" />
+          <path d="M20,135 L180,135" stroke="var(--nature-earth)" strokeWidth="2" strokeLinecap="round" />
         </svg>
       </div>
 

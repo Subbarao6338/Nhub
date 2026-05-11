@@ -86,7 +86,7 @@ const CollapsibleSection = ({ id, title, icon, isOpen, onToggle, children }) => 
 };
 
 const THEME_COLORS = [
-  'indigo', 'blue', 'cyan', 'green', 'yellow', 'orange', 'red', 'pink', 'purple', 'violet', 'lime', 'sky', 'rose', 'slate', 'black',
+  'indigo', 'blue', 'sky', 'cyan', 'teal', 'green', 'lime', 'yellow', 'amber', 'orange', 'deep-orange', 'red', 'pink', 'rose', 'purple', 'violet', 'slate', 'grey', 'brown', 'black', 'white',
   'nature', 'forest', 'ocean', 'earth', 'mountain', 'desert', 'sunset', 'winter', 'autumn', 'lavender', 'spring', 'galaxy', 'blackhole',
   'midnight', 'aurora', 'blossom', 'canyon', 'glacier', 'meadow', 'sunlight', 'breeze', 'seedling', 'mist'
 ];
@@ -468,10 +468,10 @@ const AboutTab = () => {
 
 const getHex = (color) => {
     const map = {
-        indigo: '#6366f1', blue: '#3b82f6', cyan: '#06b6d4', green: '#10b981',
-        yellow: '#eab308', orange: '#f59e0b', red: '#ef4444', pink: '#ec4899',
-        purple: '#8b5cf6', violet: '#7c3aed', lime: '#84cc16', sky: '#0ea5e9',
-        rose: '#f43f5e', slate: '#475569', black: '#000000',
+        indigo: '#6366f1', blue: '#3b82f6', sky: '#0ea5e9', cyan: '#06b6d4', teal: '#14b8a6', green: '#10b981',
+        lime: '#84cc16', yellow: '#eab308', amber: '#f59e0b', orange: '#f97316', 'deep-orange': '#ff5722',
+        red: '#ef4444', pink: '#ec4899', rose: '#f43f5e', purple: '#8b5cf6', violet: '#7c3aed',
+        slate: '#475569', grey: '#9e9e9e', brown: '#795548', black: '#000000', white: '#ffffff',
         nature: '#2d6a4f', forest: '#1b4332', ocean: '#0077b6', earth: '#78350f',
         mountain: '#475569', desert: '#dda15e', sunset: '#fb8500', winter: '#0369a1',
         autumn: '#bc4749', lavender: '#7c3aed', spring: '#166534', galaxy: '#c084fc',
