@@ -362,6 +362,10 @@ const SettingsModal = ({
               <span className="material-icons">{hideRecentTools ? 'visibility_off' : 'visibility'}</span>
               <span>Hide Recents</span>
             </button>
+            <button className={`pill ${showStats ? 'active' : ''}`} onClick={() => setShowStats(!showStats)}>
+              <span className="material-icons">analytics</span>
+              <span>Show Counts</span>
+            </button>
             <button className="pill" onClick={() => { if(window.confirm("Clear recent tools history?")) clearRecentTools(); }}>
               <span className="material-icons">history</span>
               <span>Clear Recents</span>

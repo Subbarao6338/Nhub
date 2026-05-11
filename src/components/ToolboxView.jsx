@@ -66,8 +66,31 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
   const [copySuccess, setCopySuccess] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
   const [pinnedTools, setPinnedTools] = useState(storage.getJSON('hub_pinned_tools', []));
+  const [collapsedCategories, setCollapsedCategories] = useState({});
+
+  const stats = useMemo(() => {
+    const s = {};
+    TOOLS.forEach(t => {
+      s[t.category] = (s[t.category] || 0) + 1;
+    });
+    return s;
+  }, []);
 
   useEffect(() => { storage.setJSON('hub_pinned_tools', pinnedTools); }, [pinnedTools]);
+
+  const toggleCategoryCollapse = (cat) => {
+    setCollapsedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
+  };
+
+  const collapseAll = (cats) => {
+    const newCollapsed = {};
+    cats.forEach(cat => newCollapsed[cat] = true);
+    setCollapsedCategories(newCollapsed);
+  };
+
+  const expandAll = () => {
+    setCollapsedCategories({});
+  };
 
   const togglePin = (e, id) => {
     e.stopPropagation();
@@ -125,7 +148,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
       else if (activeCategory !== 'All') matchesCat = t.category === activeCategory;
     }
     return matchesSearch && matchesCat;
-  }), [searchQuery, activeCategory, pinnedTools]);
+  }).sort((a, b) => a.title.localeCompare(b.title)), [searchQuery, activeCategory, pinnedTools]);
 
   const toolboxCategories = useMemo(() => {
     const cats = {};
@@ -133,12 +156,43 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     return cats;
   }, []);
 
+  const groupedTools = useMemo(() => {
+    if (!groupToolbox || (activeCategory !== 'All' && !searchQuery)) return null;
+    const grouped = {};
+    filteredTools.forEach(t => {
+      (grouped[t.category] || (grouped[t.category] = [])).push(t);
+    });
+    return grouped;
+  }, [filteredTools, groupToolbox, activeCategory, searchQuery]);
+
   const handleCopyResult = () => {
     if (!currentResult?.text) return;
     navigator.clipboard.writeText(currentResult.text).then(() => {
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
     });
+  };
+
+  const downloadResult = async (format) => {
+    if (!currentResult?.text) return;
+    const { text, filename = 'result' } = currentResult;
+    const baseName = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
+
+    if (format === 'txt') {
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `${baseName}.txt`; a.click();
+    } else if (format === 'md') {
+        const blob = new Blob([`# ${baseName}\n\n${text}`], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `${baseName}.md`; a.click();
+    } else if (format === 'pdf') {
+        const { jsPDF } = await import('jspdf');
+        const doc = new jsPDF();
+        const splitText = doc.splitTextToSize(text, 180);
+        doc.text(splitText, 10, 10);
+        doc.save(`${baseName}.pdf`);
+    }
   };
 
   if (activeToolId) {
@@ -164,7 +218,21 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
             </div>
           </div>
           <div className="flex-center" style={{ gap: '10px' }}>
-            {currentResult?.text && <button className={`icon-btn ${copySuccess ? 'copy-success' : ''}`} onClick={handleCopyResult}><span className="material-icons">{copySuccess ? 'check' : 'content_copy'}</span></button>}
+            {currentResult?.text && (
+                <>
+                    <button className={`icon-btn ${copySuccess ? 'copy-success' : ''}`} onClick={handleCopyResult} title="Copy Result">
+                        <span className="material-icons">{copySuccess ? 'check' : 'content_copy'}</span>
+                    </button>
+                    <div className="dropdown-container">
+                        <button className="icon-btn" title="Download Result"><span className="material-icons">download</span></button>
+                        <div className="dropdown-menu">
+                            <button onClick={() => downloadResult('txt')}>.TXT</button>
+                            <button onClick={() => downloadResult('md')}>.MD</button>
+                            <button onClick={() => downloadResult('pdf')}>.PDF</button>
+                        </div>
+                    </div>
+                </>
+            )}
           </div>
         </div>
         <div className="tool-container-inner">
@@ -176,15 +244,73 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     );
   }
 
+  const cats = groupedTools ? Object.keys(groupedTools).sort() : [];
+
   return (
     <>
-      <CategoryNav categories={toolboxCategories} activeCategory={activeCategory} setActiveCategory={setActiveCategory} totalCount={TOOLS.length} extraCategories={[{ name: 'Pinned', icon: 'push_pin', count: pinnedTools.length }]} />
-      <div className="toolbox-page-header"><h2>Toolbox Hubs</h2><p>All tools consolidated into unified categories.</p></div>
-      <div className="category-grid p-0-10">
-        {filteredTools.map((tool, idx) => (
-          <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} />
-        ))}
+      <CategoryNav
+        categories={toolboxCategories}
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+        showStats={showStats}
+        stats={stats}
+        totalCount={TOOLS.length}
+        extraCategories={[{ name: 'Pinned', icon: 'push_pin', count: pinnedTools.length }]}
+      />
+      <div className="toolbox-page-header">
+        <h2>Toolbox Hubs</h2>
+        <p>All tools consolidated into unified categories.</p>
+
+        {activeCategory === 'All' && !searchQuery && pinnedTools.length > 0 && (
+          <div className="p-0-10 mb-20 text-left">
+            <h3 className="uppercase tracking-wider opacity-6 mb-10 flex-center gap-10" style={{ fontSize: '0.9rem', justifyContent: 'flex-start' }}>
+              <span className="material-icons" style={{ fontSize: '1.2rem' }}>push_pin</span> Pinned Hubs
+            </h3>
+            <div className="category-grid">
+              {TOOLS.filter(t => pinnedTools.includes(t.id)).map((tool, idx) => (
+                <ToolCard key={`pinned-${tool.id}`} tool={tool} idx={idx} isPinned={true} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {groupedTools && cats.length > 0 && (
+          <div className="pill-group" style={{justifyContent: 'center', marginTop: '1rem'}}>
+            <button className="pill" onClick={() => collapseAll(cats)} style={{padding: '8px 16px', fontSize: '0.8rem'}}>
+              <span className="material-icons" style={{fontSize: '1.1rem'}}>unfold_less</span> Collapse All
+            </button>
+            <button className="pill" onClick={expandAll} style={{padding: '8px 16px', fontSize: '0.8rem'}}>
+              <span className="material-icons" style={{fontSize: '1.1rem'}}>unfold_more</span> Expand All
+            </button>
+          </div>
+        )}
       </div>
+
+      {!groupedTools ? (
+        <div className="category-grid p-0-10">
+          {filteredTools.map((tool, idx) => (
+            <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} />
+          ))}
+        </div>
+      ) : (
+        cats.map(cat => (
+          <div key={cat} className={`category-section ${collapsedCategories[cat] ? 'collapsed' : ''}`}>
+            <div className="category-header" onClick={() => toggleCategoryCollapse(cat)}>
+              <div className="category-title">
+                <span className="material-icons">{toolboxCategories[cat] || 'folder'}</span>
+                {cat}
+                {showStats && <span className="count">{groupedTools[cat].length}</span>}
+              </div>
+              <span className="material-icons expand-icon">expand_more</span>
+            </div>
+            <div className="category-grid">
+              {groupedTools[cat].map((tool, idx) => (
+                <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} />
+              ))}
+            </div>
+          </div>
+        ))
+      )}
     </>
   );
 };

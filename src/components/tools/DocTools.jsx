@@ -19,7 +19,7 @@ const DocTools = ({ onResultChange, toolId }) => {
         'pdf-to-word': 'pdf-to-word',
         'pdf-scan': 'pdf-scan'
       };
-      if (mapping[toolId]) setActiveTab(mapping[toolId]);
+      if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
 

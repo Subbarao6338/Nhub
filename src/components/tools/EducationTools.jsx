@@ -276,7 +276,7 @@ const EducationTools = ({ toolId }) => {
         'unit-circle': 'circle',
         'physics-constants': 'constants'
       };
-      if (mapping[toolId]) setActiveTab(mapping[toolId]);
+      if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
   }, [toolId]);
 
