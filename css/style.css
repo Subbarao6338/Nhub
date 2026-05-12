@@ -392,6 +392,7 @@ body {
   transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
   padding: 1.5rem;
   position: relative;
+  overscroll-behavior-y: none; /* Prevent pull-to-refresh / content hiding on touch */
 }
 
 body::before {
@@ -519,6 +520,7 @@ body::before {
 .tools-container {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior-y: contain;
   padding: 2.5rem;
   background: var(--surface);
   backdrop-filter: blur(var(--glass-blur));

@@ -71,7 +71,6 @@ const IpInfoTool = ({ onResultChange }) => {
   const [localIp, setLocalIp] = useState('Detecting...');
   const [geoInfo, setGeoInfo] = useState(null);
   const [battery, setBattery] = useState(null);
-  const isOnline = navigator.onLine;
 
   useEffect(() => {
     fetch('https://ipapi.co/json/').then(res => res.json()).then(data => {
@@ -97,17 +96,17 @@ const IpInfoTool = ({ onResultChange }) => {
 
   useEffect(() => {
     onResultChange({
-      text: `Status: ${isOnline ? 'ONLINE' : 'OFFLINE'}\nPublic IP: ${publicIp}\nLocal IP: ${localIp}\nCity: ${geoInfo?.city || 'N/A'}\nISP: ${geoInfo?.org || 'N/A'}`,
+      text: `Public IP: ${publicIp}\nLocal IP: ${localIp}\nCity: ${geoInfo?.city || 'N/A'}\nISP: ${geoInfo?.org || 'N/A'}`,
       filename: 'ip_info.txt'
     });
-  }, [publicIp, localIp, geoInfo, isOnline, onResultChange]);
+  }, [publicIp, localIp, geoInfo, onResultChange]);
 
   return (
     <div className="grid gap-15">
       <div className="grid grid-2 gap-15">
           <div className="card p-20 text-center">
              <div style={{ opacity: 0.5, marginBottom: '10px' }}>Connection</div>
-             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: isOnline ? 'var(--nature-moss)' : 'var(--danger)' }}>{isOnline ? 'ONLINE' : 'OFFLINE'}</div>
+             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--nature-moss)' }}>ESTABLISHED</div>
           </div>
           {battery && (
               <div className="card p-20 text-center">

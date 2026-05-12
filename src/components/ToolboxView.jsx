@@ -30,8 +30,8 @@ const AiTools = lazy(() => import('./tools/AiTools'));
 
 const TOOLS = [
     // Media & Docs
-    { id: 'pdf-main', title: 'PDF Tools', icon: 'picture_as_pdf', category: 'Media', component: PdfTools, subTools: ['pdf-merge', 'pdf-split', 'pdf-delete', 'pdf-rearrange', 'pdf-rotate', 'pdf-sign', 'pdf-watermark', 'pdf-numbers', 'pdf-crop', 'pdf-lock', 'pdf-unlock', 'pdf-metadata', 'pdf-compress', 'pdf-grayscale', 'pdf-flatten', 'pdf-img2pdf', 'pdf-translate'] },
-    { id: 'doc-main', title: 'Doc Converter', icon: 'description', category: 'Media', component: DocTools, subTools: ['md-editor', 'img-to-pdf', 'pdf-to-img', 'word-to-pdf', 'excel-to-pdf', 'ppt-to-pdf', 'pdf-to-word', 'pdf-to-text', 'pdf-to-zip', 'pdf-extract', 'pdf-scan'] },
+    { id: 'pdf-main', title: 'PDF Tools', icon: 'picture_as_pdf', category: 'Media', component: PdfTools, subTools: ['pdf-merge', 'pdf-split', 'pdf-delete', 'pdf-rearrange', 'pdf-rotate', 'pdf-sign', 'pdf-watermark', 'pdf-numbers', 'pdf-crop', 'pdf-lock', 'pdf-unlock', 'pdf-metadata', 'pdf-compress', 'pdf-grayscale', 'pdf-flatten', 'pdf-img2pdf', 'pdf-translate', 'img-to-pdf', 'pdf-to-img', 'word-to-pdf', 'excel-to-pdf', 'pdf-to-word', 'pdf-to-text', 'pdf-to-zip', 'pdf-extract', 'pdf-scan', 'ppt-to-pdf'] },
+    { id: 'doc-main', title: 'Doc Tools', icon: 'description', category: 'Media', component: DocTools, subTools: ['md-editor'] },
     { id: 'img-main', title: 'Image Editor', icon: 'image', category: 'Media', component: ImageTools, subTools: ['img-format', 'img-resize', 'img-blur', 'img-meta', 'img-bw', 'img-sepia', 'img-invert', 'img-crop', 'img-filters', 'img-b64'] },
     { id: 'audio-main', title: 'Audio & Sounds', icon: 'volume_up', category: 'Media', component: AudioVideoTools, subTools: ['frequency-gen', 'metronome', 'tuner', 'nature-sounds', 'audio-recorder'] },
     { id: 'video-main', title: 'Camera Tools', icon: 'videocam', category: 'Media', component: VideoTools, subTools: ['magnifier', 'mirror'] },
