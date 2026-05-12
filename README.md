@@ -1,117 +1,90 @@
-# Nature toolbox
+# Epic Toolbox 🌿
 
-![Nature toolbox Screenshot](assets/urlhub.png)
+![Epic Toolbox Screenshot](toolbox_hubs.png)
 
-A modern, full-stack personal dashboard to organize and access your favorite websites, projects, and tools. Built with a focus on a "Nature Design Mandate" featuring organic shapes, earthy colors, and a peaceful user experience.
+Epic Toolbox is a modern, full-stack personal dashboard designed to organize your digital life. Built with a focus on a **"Nature Design Mandate"**, it features organic shapes, earthy colors, and a peaceful user experience, all while packing a massive suite of over 100+ utility tools.
 
-## Features
+## ✨ About the Project
 
-- **Multi-Profile Support**: Switch between **Default**, **Private**, and **Personal** (combined) profiles.
-- **Categorized Bookmarks**: Organize links into categories with custom icons and offline support.
-- **Projects View**: Showcase and manage your personal or professional projects.
-- **Toolbox**: A massive collection of utility tools (Scientific Calculator, PDF editors, Dev utilities, etc.) with a searchable grid.
-- **Advanced Search**: Real-time filtering with support for category prefixes (e.g., `cat:util`) and keyboard shortcuts (`[/]` to focus).
-- **Pinned Links & Tools**: Pin your most used bookmarks and tools to the top for quick access.
-- **Responsive Design**: Optimized for desktop, tablet, and mobile with a bottom TabBar for easy navigation.
-- **Persistence**: Data is stored in a SQLite database with automatic migration from legacy JSON files.
-- **Customizable UI**: Settings for themes (System/Light/Dark), accent colors, glassmorphism, and layout density.
+In an era of cluttered interfaces and fragmented tools, **Epic Toolbox** provides a unified, serene environment for your daily digital tasks. Whether you're a developer needing a quick Regex test, a student looking for a scientific calculator, or just someone who wants a beautiful place to organize their bookmarks, Epic Toolbox is built for you.
+
+The "Nature Design Mandate" isn't just about aesthetics; it's about a **calm workflow**. We use pebble-shaped UI elements, staggered leaf-entry animations, and a palette inspired by the natural world (Forest, Earth, Ocean, and Sunset) to reduce "interface fatigue."
 
 ---
 
-## 📖 User Guide
+## 🚀 Key Features
 
-### Navigation
-- **TabBar (Mobile & Desktop)**: Quickly switch between **Toolbox**, **Bookmarks**, and **Projects**.
-- **Search Overlay**: Triggered by the search icon or the `/` key. It filters the current view in real-time.
-- **Settings**: Accessible via the gear icon in the Header (Desktop) or TabBar (Mobile).
+### 🛠 The Toolbox Hub
+A massive collection of consolidated tools organized into 21 category Hubs:
+- **AI Hub**: Multi-turn Chat Assistant, Image Generation (Anime, Cyberpunk, etc.), and Story Generation.
+- **Data Tools**: High-performance viewers for CSV, JSON, Excel, and Parquet. Includes quality analysis and anonymization.
+- **Developer Utilities**: JSON/SQL Formatters, Diff Viewer, UUID Generator, Regex Tester, and Code Converters.
+- **Media & Graphics**: PDF Editor, Image Compressor, QR/Barcode Scanner, and Color Palette Hub.
+- **Networking**: Real-time Ping, DNS Lookup, SSL Certificate Checker, and IP Info.
+- **Games & Fun**: Classic games like Snake, 2048, Sudoku, and Tic-Tac-Toe (Minimax AI).
+- **System & Hardware**: Battery status, Sensors (Vibrometer, Sound Meter), and Storage Estimator.
 
-### Profiles
-The dashboard supports multiple profiles to keep your links organized:
-- **Default**: Your primary workspace.
-- **Private**: A secondary profile for sensitive or work-related links.
-- **Personal**: A virtual profile that aggregates links from all profiles, de-duplicating by URL.
-- *Tip: Long-press the Bookmarks tab on mobile to quickly switch profiles.*
+### 🔖 Bookmark Management
+- **Multi-Profile Support**: Keep your life organized with **Default**, **Private**, and **Personal** (combined) profiles.
+- **Dynamic Categories**: Group links with custom icons and real-time filtering.
+- **Smart Search**: Navigate thousands of links and tools instantly using category prefixes (e.g., `cat:dev`).
 
-### Managing Bookmarks
-- **Adding**: Click the `+` button in the TabBar.
-- **Pinning**: Click the pin icon on any bookmark card to keep it at the top.
-- **Editing/Deleting**: Use the action buttons visible on each bookmark card. Deletion can be protected with a confirmation prompt in Settings.
-
-### Using the Toolbox
-- **Search**: Type in the search bar. Use `cat:Math` to filter specifically by the Math category.
-- **Pinning Tools**: Click the pin icon on a tool card to add it to your "Pinned" section at the top of the Toolbox.
-- **Recent Tools**: The Toolbox automatically tracks your last used tools for quick reentry.
-- **Tool Results**: Many tools support one-click copying or downloading of results (e.g., Hash Generator, JSON Formatter).
-
-### Settings & Customization
-- **Global**: Change the App Name, toggle Profiles, or switch the Startup Tab.
-- **Appearance**: Toggle between Light, Dark, or System themes. Choose an accent color and toggle effects like "Aurora" backgrounds or Glassmorphism.
-- **Data Management**: Export/Import data (future feature) or Reset Local Data to clear all browser-stored preferences.
+### 🎨 Personalization & UX
+- **Epic Theme 2.0**: 40+ accent colors and true black dark mode support.
+- **Visual Effects**: Toggle Glassmorphism, Aurora animated backgrounds, and reduced motion.
+- **Offline First**: Full PWA support with Service Worker caching and offline bookmark access.
+- **Cross-Platform**: Designed for desktop precision and mobile-first thumb-friendly navigation.
 
 ---
 
-## 🛠 Tech Guide
+## 🛠 Technical Architecture
 
-### Architecture
-The application follows a decoupled Frontend/Backend architecture:
-- **Frontend**: A Single Page Application (SPA) built with **React 18** and **Vite**.
-- **Backend**: A **FastAPI** server providing a RESTful API and handling database operations.
-- **Database**: **SQLite** for local and production data storage.
+### Frontend (The SPA)
+- **Framework**: React 18 with Vite for lightning-fast builds.
+- **Styling**: Pure CSS following a strict token-based system for themes and animations.
+- **Optimization**: All 21 tool hubs are **lazy-loaded** to keep the initial bundle small (~200KB gzipped).
+- **Security**: Strict Sanitization with `DOMPurify` for all user-generated and searched content.
 
-### Frontend Details
-- **State Management**: Uses React's `useState` and `useEffect` with a custom `storage` utility for `localStorage` persistence.
-- **Performance**: Tools are **lazy-loaded** using `React.lazy` and `Suspense` to minimize the initial bundle size.
-- **Styling**: Centralized CSS in the `css/` directory. No inline styles are used, adhering to the "Nature Design Mandate".
-- **PWA**: Includes a Service Worker (`public/sw.js`) and manifest for offline support and installability.
+### Backend (The API)
+- **Framework**: FastAPI (Python 3.9+) providing a robust RESTful interface.
+- **Database**: SQLite for local persistence, with automatic JSON-to-SQL migration logic.
+- **Edge-Ready**: Optimized for Vercel Serverless Functions with ephemeral filesystem handling.
 
-### Backend Details
-- **Framework**: FastAPI (Python 3.9+) with Pydantic for data validation.
-- **Database Logic**: Interacts with `data/hub.db`. On Vercel, the database is copied to `/tmp/hub.db` at runtime to allow write operations on an ephemeral filesystem.
-- **Media Processing**: Uses `yt-dlp` for social media downloading capabilities and `pdf-lib` (client-side) for PDF manipulations.
-
-### Database Schema
-- `profiles`: Stores profile names and icons.
-- `links`: Core table for bookmarks, including metadata like `is_pinned`, `category`, and `profile_id`.
-- `categories`: Stores profile-specific icons for categories.
-- `projects`: Stores project showcase data.
-
-### Deployment on Vercel
-- **Configuration**: Managed via `vercel.json`.
-- **API Entry**: `api/index.py` serves as the entry point for Vercel's Serverless Functions.
-- **Statics**: Vite builds the frontend into the `dist` folder (configured in Vercel) for static hosting.
+### Core Libraries
+- **Mathematics**: `mathjs` for the advanced calculator.
+- **Documents**: `pdf-lib`, `jspdf`, and `marked`.
+- **Data**: `papaparse` (CSV), `xlsx` (Excel), and `hyparquet`.
+- **UI**: `canvas-confetti` and `html2canvas`.
 
 ---
 
-## 🚀 Getting Started
+## 📖 Getting Started
 
 ### Prerequisites
-- Node.js (v16+)
-- Python 3.9+
+- **Node.js** (v18+)
+- **Python** (3.9+)
 
 ### Installation
-1. **Clone the repository**:
+1. **Clone the repo**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/your-repo/nature-toolbox.git
    cd nature-toolbox
    ```
-2. **Install Frontend Dependencies**:
+2. **Setup Backend**:
+   ```bash
+   pip install -r requirements.txt
+   python3 scripts/setup_db.py
+   ```
+3. **Setup Frontend**:
    ```bash
    npm install
    ```
-3. **Install Backend Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. **Initialize the Database**:
-   ```bash
-   python3 scripts/setup_db.py
-   ```
 
 ### Running Locally
-1. **Backend**: `uvicorn api.index:app --reload` (Port 8000)
-2. **Frontend**: `npm run dev` (Port 5173)
+- **Backend**: `uvicorn api.index:app --port 8000`
+- **Frontend**: `npm run dev -- --port 3001`
 
 ---
 
 ## 📜 License
-MIT
+MIT © 2024 Epic Toolbox Team
