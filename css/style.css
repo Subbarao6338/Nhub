@@ -1402,10 +1402,15 @@ body.search-active .search-dismiss-overlay {
     padding-bottom: 5px;
     margin-bottom: 20px;
     flex-wrap: wrap;
+    scrollbar-width: none;
 }
 
-.pill-group::-webkit-scrollbar { height: 4px; }
-.pill-group::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+.pill-group::-webkit-scrollbar { display: none; }
+
+.pill-group.scrollable-x {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+}
 
 /* Expanded Design Tokens for New Tools */
 .glass-card {
