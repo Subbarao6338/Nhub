@@ -1,102 +1,90 @@
-# URL Hub React
+# Epic Toolbox 🌿
 
-![URL Hub Screenshot](assets/urlhub.png)
+![Epic Toolbox Screenshot](toolbox_hubs.png)
 
-A modern, full-stack personal dashboard to organize and access your favorite websites, projects, and tools. Built with **React**, **FastAPI**, and **SQLite**.
+Epic Toolbox is a modern, full-stack personal dashboard designed to organize your digital life. Built with a focus on a **"Nature Design Mandate"**, it features organic shapes, earthy colors, and a peaceful user experience, all while packing a massive suite of over 100+ utility tools.
 
-## Features
+## ✨ About the Project
 
-- **Multi-Profile Support**: Switch between **Default**, **Private**, and **Personal** (combined) profiles.
-- **Categorized Bookmarks**: Organize links into categories with custom icons.
-- **Projects View**: Showcase and manage your personal or professional projects.
-- **Toolbox**: A collection of utility tools (Calculator, QR Code Generator, etc.) with a searchable grid.
-- **Advanced Search**: Real-time filtering with support for category prefixes (e.g., `cat:util`) and keyboard shortcuts (`[/]` to focus).
-- **Pinned Links**: Pin your most used bookmarks to the top.
-- **Responsive Design**: Optimized for both desktop and mobile devices with a bottom TabBar on small screens.
-- **Persistence**: Data is stored in a SQLite database with automatic migration from legacy JSON files.
-- **Customizable UI**: Settings for dark/light mode, reduced motion, search auto-focus, and more.
+In an era of cluttered interfaces and fragmented tools, **Epic Toolbox** provides a unified, serene environment for your daily digital tasks. Whether you're a developer needing a quick Regex test, a student looking for a scientific calculator, or just someone who wants a beautiful place to organize their bookmarks, Epic Toolbox is built for you.
 
-## Technology Stack
+The "Nature Design Mandate" isn't just about aesthetics; it's about a **calm workflow**. We use pebble-shaped UI elements, staggered leaf-entry animations, and a palette inspired by the natural world (Forest, Earth, Ocean, and Sunset) to reduce "interface fatigue."
 
-- **Frontend**: React 18, Vite, Bootstrap 5, Material Icons.
-- **Backend**: FastAPI (Python), SQLite.
-- **Deployment**: Vercel (Serverless Functions for Python, Vite for static assets).
+---
 
-## Getting Started
+## 🚀 Key Features
+
+### 🛠 The Toolbox Hub
+A massive collection of consolidated tools organized into 21 category Hubs:
+- **AI Hub**: Multi-turn Chat Assistant, Image Generation (Anime, Cyberpunk, etc.), and Story Generation.
+- **Data Tools**: High-performance viewers for CSV, JSON, Excel, and Parquet. Includes quality analysis and anonymization.
+- **Developer Utilities**: JSON/SQL Formatters, Diff Viewer, UUID Generator, Regex Tester, and Code Converters.
+- **Media & Graphics**: PDF Editor, Image Compressor, QR/Barcode Scanner, and Color Palette Hub.
+- **Networking**: Real-time Ping, DNS Lookup, SSL Certificate Checker, and IP Info.
+- **Games & Fun**: Classic games like Snake, 2048, Sudoku, and Tic-Tac-Toe (Minimax AI).
+- **System & Hardware**: Battery status, Sensors (Vibrometer, Sound Meter), and Storage Estimator.
+
+### 🔖 Bookmark Management
+- **Multi-Profile Support**: Keep your life organized with **Default**, **Private**, and **Personal** (combined) profiles.
+- **Dynamic Categories**: Group links with custom icons and real-time filtering.
+- **Smart Search**: Navigate thousands of links and tools instantly using category prefixes (e.g., `cat:dev`).
+
+### 🎨 Personalization & UX
+- **Epic Theme 2.0**: 40+ accent colors and true black dark mode support.
+- **Visual Effects**: Toggle Glassmorphism, Aurora animated backgrounds, and reduced motion.
+- **Offline First**: Full PWA support with Service Worker caching and offline bookmark access.
+- **Cross-Platform**: Designed for desktop precision and mobile-first thumb-friendly navigation.
+
+---
+
+## 🛠 Technical Architecture
+
+### Frontend (The SPA)
+- **Framework**: React 18 with Vite for lightning-fast builds.
+- **Styling**: Pure CSS following a strict token-based system for themes and animations.
+- **Optimization**: All 21 tool hubs are **lazy-loaded** to keep the initial bundle small (~200KB gzipped).
+- **Security**: Strict Sanitization with `DOMPurify` for all user-generated and searched content.
+
+### Backend (The API)
+- **Framework**: FastAPI (Python 3.9+) providing a robust RESTful interface.
+- **Database**: SQLite for local persistence, with automatic JSON-to-SQL migration logic.
+- **Edge-Ready**: Optimized for Vercel Serverless Functions with ephemeral filesystem handling.
+
+### Core Libraries
+- **Mathematics**: `mathjs` for the advanced calculator.
+- **Documents**: `pdf-lib`, `jspdf`, and `marked`.
+- **Data**: `papaparse` (CSV), `xlsx` (Excel), and `hyparquet`.
+- **UI**: `canvas-confetti` and `html2canvas`.
+
+---
+
+## 📖 Getting Started
 
 ### Prerequisites
-
-- Node.js (v16+)
-- Python 3.9+
+- **Node.js** (v18+)
+- **Python** (3.9+)
 
 ### Installation
-
-1. **Clone the repository**:
+1. **Clone the repo**:
    ```bash
-   git clone <repository-url>
-   cd url-hub-react
+   git clone https://github.com/your-repo/nature-toolbox.git
+   cd nature-toolbox
    ```
-
-2. **Install Frontend Dependencies**:
+2. **Setup Backend**:
+   ```bash
+   pip install -r requirements.txt
+   python3 scripts/setup_db.py
+   ```
+3. **Setup Frontend**:
    ```bash
    npm install
    ```
 
-3. **Install Backend Dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+### Running Locally
+- **Backend**: `uvicorn api.index:app --port 8000`
+- **Frontend**: `npm run dev -- --port 3001`
 
-4. **Initialize the Database**:
-   ```bash
-   python3 scripts/setup_db.py
-   ```
+---
 
-### Running the Application
-
-1. **Start the FastAPI Backend**:
-   ```bash
-   uvicorn api.index:app --reload
-   ```
-   The API will be available at `http://localhost:8000`.
-
-2. **Start the Vite Frontend**:
-   ```bash
-   npm run dev
-   ```
-   Open `http://localhost:5173` in your browser.
-
-## File Structure
-
-- `api/`: FastAPI backend implementation.
-- `src/`: React frontend source code.
-  - `components/`: Modular React components (Header, TabBar, Modals, Views).
-  - `components/tools/`: Individual toolbox utility components.
-- `scripts/`: Python utility scripts for database setup, migration, and verification.
-- `data/`: SQLite database file and legacy JSON data files.
-- `public/`: Static assets and service worker.
-- `css/`: Global styles including glassmorphism and animations.
-- `legacy/`: Original vanilla JavaScript implementation (for reference).
-
-## Deployment on Vercel
-
-The project is configured for seamless deployment on Vercel.
-
-1. **Configure Vercel**: The `vercel.json` file handles routing for both the React frontend and the FastAPI backend.
-2. **Database on Vercel**: Since the Vercel filesystem is read-only, the application automatically initializes/copies the SQLite database to `/tmp/hub.db` at runtime to allow writes.
-3. **Deploy**:
-   ```bash
-   vercel
-   ```
-
-## Customization
-
-You can manage your links and categories directly through the UI. For advanced customization or bulk imports, you can modify the legacy JSON files in the `data/` directory and run the migration script:
-
-```bash
-python3 scripts/migrate.py
-```
-
-## License
-
-MIT
+## 📜 License
+MIT © 2024 Epic Toolbox Team
