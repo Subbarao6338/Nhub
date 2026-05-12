@@ -14,6 +14,18 @@
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
+      "name": "Finance Tools",
+      "short_name": "Finance",
+      "url": "/?tab=toolbox&tool=finance-main",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Security Hub",
+      "short_name": "Security",
+      "url": "/?tab=toolbox&tool=security-main",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
+    {
       "name": "Media Tools",
       "short_name": "Media",
       "url": "/?tab=toolbox&tool=pdf-main",

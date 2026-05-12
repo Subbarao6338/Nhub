@@ -60,12 +60,10 @@ const FinanceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'compound' && <CompoundInterestTool onResultChange={onResultChange} />}
       {activeTab === 'loan' && <LoanCalculator onResultChange={onResultChange} />}
       {activeTab === 'investment' && <InvestmentCalculator onResultChange={onResultChange} />}
-      {['vat', 'inflation', 'cagr', 'dcf'].includes(activeTab) && (
-          <div className="text-center p-20 card opacity-6">
-              <span className="material-icons mb-10" style={{fontSize: '2rem'}}>payments</span>
-              <div>This finance tool is being integrated.</div>
-          </div>
-      )}
+      {activeTab === 'vat' && <VatCalculator onResultChange={onResultChange} />}
+      {activeTab === 'inflation' && <InflationCalculator onResultChange={onResultChange} />}
+      {activeTab === 'cagr' && <CagrCalculator onResultChange={onResultChange} />}
+      {activeTab === 'dcf' && <DcfCalculator onResultChange={onResultChange} />}
     </div>
   );
 };
@@ -150,6 +148,123 @@ const InvestmentCalculator = ({ onResultChange }) => {
             <div className="flex-between"><span>Years</span><input type="number" className="pill w-100" value={years} onChange={e=>setYears(e.target.value)} /></div>
             <button className="btn-primary" onClick={calc}>Calculate Wealth</button>
             {res && <div className="tool-result text-center">Maturity Value: <b>₹{res}</b></div>}
+        </div>
+    );
+};
+
+const VatCalculator = ({ onResultChange }) => {
+    const [amt, setAmt] = useState(100);
+    const [rate, setRate] = useState(20);
+    const [type, setType] = useState('add');
+
+    const calc = () => {
+        const r = parseFloat(rate) / 100;
+        const a = parseFloat(amt);
+        let vat, total;
+        if (type === 'add') {
+            vat = a * r;
+            total = a + vat;
+        } else {
+            total = a;
+            vat = a - (a / (1 + r));
+        }
+        onResultChange({ text: `VAT (${rate}%): ${vat.toFixed(2)}, Total: ${total.toFixed(2)}`, filename: 'vat.txt' });
+        return { vat: vat.toFixed(2), total: total.toFixed(2), net: (total - vat).toFixed(2) };
+    };
+
+    const res = calc();
+
+    return (
+        <div className="grid gap-15 card p-15">
+            <div className="pill-group" style={{justifyContent: 'center'}}>
+                <button className={`pill ${type === 'add' ? 'active' : ''}`} onClick={() => setType('add')}>Add VAT</button>
+                <button className={`pill ${type === 'remove' ? 'active' : ''}`} onClick={() => setType('remove')}>Remove VAT</button>
+            </div>
+            <div className="flex-between"><span>Amount</span><input type="number" className="pill w-100" value={amt} onChange={e=>setAmt(e.target.value)} /></div>
+            <div className="flex-between"><span>Rate (%)</span><input type="number" className="pill w-100" value={rate} onChange={e=>setRate(e.target.value)} /></div>
+            <div className="tool-result">
+                <div className="flex-between mb-5"><span>Net Amount:</span> <b>{res.net}</b></div>
+                <div className="flex-between mb-5"><span>VAT Amount:</span> <b>{res.vat}</b></div>
+                <div className="flex-between font-bold" style={{fontSize: '1.2rem'}}><span>Total:</span> <b>{res.total}</b></div>
+            </div>
+        </div>
+    );
+};
+
+const InflationCalculator = ({ onResultChange }) => {
+    const [amt, setAmt] = useState(1000);
+    const [rate, setRate] = useState(3);
+    const [years, setYears] = useState(10);
+
+    const calc = () => {
+        const res = amt * Math.pow(1 + (rate/100), years);
+        onResultChange({ text: `${amt} today with ${rate}% inflation for ${years} years will be ${res.toFixed(2)}`, filename: 'inflation.txt' });
+        return res.toFixed(2);
+    };
+
+    return (
+        <div className="grid gap-15 card p-15">
+            <div className="flex-between"><span>Current Value</span><input type="number" className="pill w-100" value={amt} onChange={e=>setAmt(e.target.value)} /></div>
+            <div className="flex-between"><span>Inflation Rate (%)</span><input type="number" className="pill w-100" value={rate} onChange={e=>setRate(e.target.value)} /></div>
+            <div className="flex-between"><span>Years</span><input type="number" className="pill w-100" value={years} onChange={e=>setYears(e.target.value)} /></div>
+            <div className="tool-result text-center">
+                <div className="opacity-6 mb-5">Future Purchasing Power Equivalent:</div>
+                <div style={{fontSize: '2rem', fontWeight: 800}}>{calc()}</div>
+            </div>
+        </div>
+    );
+};
+
+const CagrCalculator = ({ onResultChange }) => {
+    const [start, setStart] = useState(1000);
+    const [end, setEnd] = useState(2000);
+    const [years, setYears] = useState(5);
+
+    const calc = () => {
+        const res = (Math.pow(end / start, 1 / years) - 1) * 100;
+        onResultChange({ text: `CAGR from ${start} to ${end} over ${years} years: ${res.toFixed(2)}%`, filename: 'cagr.txt' });
+        return res.toFixed(2);
+    };
+
+    return (
+        <div className="grid gap-15 card p-15">
+            <div className="flex-between"><span>Initial Value</span><input type="number" className="pill w-100" value={start} onChange={e=>setStart(e.target.value)} /></div>
+            <div className="flex-between"><span>Final Value</span><input type="number" className="pill w-100" value={end} onChange={e=>setEnd(e.target.value)} /></div>
+            <div className="flex-between"><span>Years</span><input type="number" className="pill w-100" value={years} onChange={e=>setYears(e.target.value)} /></div>
+            <div className="tool-result text-center">
+                <div className="opacity-6 mb-5">Annual Growth Rate:</div>
+                <div style={{fontSize: '2rem', fontWeight: 800}}>{calc()}%</div>
+            </div>
+        </div>
+    );
+};
+
+const DcfCalculator = ({ onResultChange }) => {
+    const [cf, setCf] = useState('1000,1200,1500,1800,2000');
+    const [rate, setRate] = useState(10);
+
+    const calc = () => {
+        const flows = cf.split(',').map(Number).filter(n=>!isNaN(n));
+        const r = rate / 100;
+        let npv = 0;
+        flows.forEach((f, i) => {
+            npv += f / Math.pow(1 + r, i + 1);
+        });
+        onResultChange({ text: `DCF for flows [${cf}] at ${rate}%: ${npv.toFixed(2)}`, filename: 'dcf.txt' });
+        return npv.toFixed(2);
+    };
+
+    return (
+        <div className="grid gap-15 card p-15">
+            <div className="form-group">
+                <label>Cash Flows (comma separated, Year 1 onwards)</label>
+                <input className="pill" value={cf} onChange={e=>setCf(e.target.value)} />
+            </div>
+            <div className="flex-between"><span>Discount Rate (%)</span><input type="number" className="pill w-100" value={rate} onChange={e=>setRate(e.target.value)} /></div>
+            <div className="tool-result text-center">
+                <div className="opacity-6 mb-5">Present Value:</div>
+                <div style={{fontSize: '2rem', fontWeight: 800}}>{calc()}</div>
+            </div>
         </div>
     );
 };

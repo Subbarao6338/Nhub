@@ -572,6 +572,7 @@ body::before {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
+  transition: all var(--transition-speed) ease;
 }
 
 .card {
@@ -977,7 +978,7 @@ body::before {
   color: var(--on-surface);
   cursor: pointer;
   font-weight: 700;
-  transition: all 0.2s;
+  transition: all var(--transition-speed) var(--transition-bounce);
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -1294,14 +1295,14 @@ body.search-active .search-dismiss-overlay {
 
 /* Mobile */
 @media (max-width: 768px) {
-  body { padding: 0.5rem; }
-  .top-bar { height: 64px; padding: 0 1rem; border-radius: var(--radius-lg); }
-  .tools-container { padding: 1rem; border-radius: var(--radius-lg); }
+  body { padding: 0.75rem; }
+  .top-bar { height: 64px; padding: 0 1.25rem; border-radius: var(--radius-lg); }
+  .tools-container { padding: 1.25rem; border-radius: var(--radius-lg); }
   .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; padding: 4px; background: var(--surface); backdrop-filter: blur(20px); border-top: 1px solid var(--border); }
   .tab-group { width: 100%; justify-content: space-around; padding: 2px; border-radius: var(--radius-md); gap: 2px; }
   .tab-item { flex-direction: column; padding: 4px; font-size: 0.65rem; border-radius: 8px; gap: 2px; }
   .tab-item .material-icons { font-size: 20px; }
-  .category-grid { grid-template-columns: 1fr; }
+  .category-grid { grid-template-columns: 1fr; gap: 1rem; }
 
   .card-actions {
     opacity: 1;
