@@ -176,7 +176,7 @@ const VatCalculator = ({ onResultChange }) => {
 
     return (
         <div className="grid gap-15 card p-15">
-            <div className="pill-group" style={{justifyContent: 'center'}}>
+            <div className="pill-group scrollable-x">
                 <button className={`pill ${type === 'add' ? 'active' : ''}`} onClick={() => setType('add')}>Add VAT</button>
                 <button className={`pill ${type === 'remove' ? 'active' : ''}`} onClick={() => setType('remove')}>Remove VAT</button>
             </div>

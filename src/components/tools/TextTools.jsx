@@ -84,7 +84,7 @@ const TextTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       )}
 
       {activeTab === 'modify' && (
-          <div className="flex-gap flex-wrap">
+          <div className="pill-group mb-15 scrollable-x">
               <button className="btn-primary" onClick={()=>handleAction('upper')}>UPPERCASE</button>
               <button className="pill" onClick={()=>handleAction('lower')}>lowercase</button>
               <button className="pill" onClick={()=>handleAction('title')}>Title Case</button>

@@ -119,7 +119,7 @@ const BmrTool = ({ onResultChange }) => {
 
   return (
     <div style={{ display: 'grid', gap: '15px' }}>
-      <div className="pill-group" style={{ justifyContent: 'center' }}>
+      <div className="pill-group scrollable-x">
         <button className={`pill ${gender === 'male' ? 'active' : ''}`} onClick={() => setGender('male')}>Male</button>
         <button className={`pill ${gender === 'female' ? 'active' : ''}`} onClick={() => setGender('female')}>Female</button>
       </div>

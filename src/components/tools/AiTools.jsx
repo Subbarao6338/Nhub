@@ -93,7 +93,7 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
       </div>
 
       {activeTab === 'image-gen' && (
-          <div className="flex-gap mb-15 flex-wrap">
+          <div className="pill-group mb-15 scrollable-x">
               {['natural', 'anime', 'cyberpunk', 'pixel-art', '3d-render', 'sketch', 'oil-painting', 'cinematic'].map(s => (
                   <button key={s} className={`pill ${style === s ? 'active' : ''}`} onClick={() => setStyle(s)} style={{fontSize: '0.75rem', padding: '6px 12px'}}>
                       {s.replace('-', ' ')}

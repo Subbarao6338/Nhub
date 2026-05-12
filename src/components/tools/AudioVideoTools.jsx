@@ -105,7 +105,7 @@ const FrequencyGenerator = () => {
             <div className="font-bold mb-10 uppercase tracking-wider opacity-6" style={{fontSize: '0.8rem'}}>Frequency</div>
             <div style={{ fontSize: '4rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '20px' }}>{freq}<span style={{fontSize: '1.5rem'}}>Hz</span></div>
             <input type="range" min="20" max="2000" step="1" value={freq} onChange={(e) => setFreq(parseInt(e.target.value))} className="w-full mb-20" style={{accentColor: 'var(--primary)'}} />
-            <div className="flex-wrap flex-center gap-10 mb-20">
+            <div className="pill-group mb-20 scrollable-x">
                 {['sine', 'square', 'sawtooth', 'triangle'].map(t => (
                     <button key={t} className={`pill ${type === t ? 'active' : ''}`} onClick={() => setType(t)} style={{ textTransform: 'capitalize' }}>{t}</button>
                 ))}

@@ -374,7 +374,7 @@ const TicTacToe = () => {
 
     return (
         <div className="card p-20 text-center">
-            <div className="pill-group mb-15" style={{justifyContent: 'center'}}>
+            <div className="pill-group mb-15 scrollable-x">
                 <button className={`pill ${!isPvp ? 'active' : ''}`} onClick={()=>setIsPvp(false)}>vs CPU</button>
                 <button className={`pill ${isPvp ? 'active' : ''}`} onClick={()=>setIsPvp(true)}>vs Player</button>
             </div>
