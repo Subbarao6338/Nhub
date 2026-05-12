@@ -12,28 +12,6 @@ import BookmarkModal from './components/BookmarkModal';
 import API_BASE from './api';
 import { storage } from './utils/storage';
 
-const OfflineIndicator = () => {
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
-
-  useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  return (
-    <div className={`offline-indicator ${isOffline ? 'visible' : ''}`}>
-      <span className="material-icons">{isOffline ? 'cloud_off' : 'cloud_done'}</span>
-      <span>{isOffline ? 'Offline Mode' : 'Online'}</span>
-    </div>
-  );
-};
-
 function App() {
   const [appName, setAppName] = useState(storage.get('hub_app_name', 'Epic Toolbox'));
   const [enableProfiles, setEnableProfiles] = useState(storage.getBoolean('hub_enable_profiles', false));
@@ -393,7 +371,6 @@ function App() {
     <div className="app-layout">
       <div className="search-dismiss-overlay" onClick={() => setSearchActive(false)}></div>
       <main className="main-content">
-        <OfflineIndicator />
         <Header
           appName={appName}
           currentProfile={enableProfiles ? currentProfileName : 'Default'}
