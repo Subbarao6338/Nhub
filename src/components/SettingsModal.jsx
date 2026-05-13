@@ -88,7 +88,7 @@ const CollapsibleSection = ({ id, title, icon, isOpen, onToggle, children }) => 
 const THEME_COLORS = [
   'indigo', 'blue', 'sky', 'cyan', 'teal', 'green', 'lime', 'yellow', 'amber', 'orange', 'deep-orange', 'red', 'pink', 'rose', 'purple', 'violet', 'slate', 'grey', 'brown', 'black', 'white',
   'nature', 'forest', 'ocean', 'earth', 'mountain', 'desert', 'sunset', 'winter', 'autumn', 'lavender', 'spring', 'galaxy', 'blackhole',
-  'midnight', 'aurora', 'blossom', 'canyon', 'glacier', 'meadow', 'sunlight', 'breeze', 'seedling', 'mist'
+  'midnight', 'blossom', 'canyon', 'glacier', 'meadow', 'sunlight', 'breeze', 'seedling', 'mist'
 ];
 
 const SettingsModal = ({
@@ -109,7 +109,7 @@ const SettingsModal = ({
   autoFocusSearch, setAutoFocusSearch,
   openInNewTab, setOpenInNewTab,
   disableGlass, setDisableGlass,
-  enableAurora, setEnableAurora,
+  disableAnimations, setDisableAnimations,
   reducedMotion, setReducedMotion,
   confirmDelete, setConfirmDelete,
   groupToolbox, setGroupToolbox,
@@ -222,6 +222,23 @@ const SettingsModal = ({
             </div>
           </div>
           <div className="form-group">
+            <label>Tab Visibility</label>
+            <div className="pill-group">
+              <button className={`pill ${hideBookmarks ? 'active' : ''}`} onClick={() => setHideBookmarks(!hideBookmarks)}>
+                <span className="material-icons">{hideBookmarks ? 'bookmarks' : 'bookmark_border'}</span>
+                <span>Hide Bookmarks</span>
+              </button>
+              <button className={`pill ${hideToolbox ? 'active' : ''}`} onClick={() => setHideToolbox(!hideToolbox)}>
+                <span className="material-icons">{hideToolbox ? 'handyman' : 'handyman'}</span>
+                <span>Hide Toolbox</span>
+              </button>
+              <button className={`pill ${showProjectsTab ? 'active' : ''}`} onClick={() => setShowProjectsTab(!showProjectsTab)}>
+                <span className="material-icons">{showProjectsTab ? 'architecture' : 'architecture'}</span>
+                <span>Show Projects</span>
+              </button>
+            </div>
+          </div>
+          <div className="form-group">
             <label>Navigation</label>
             <div className="pill-group">
               <button className={`pill ${autoFocusSearch ? 'active' : ''}`} onClick={() => setAutoFocusSearch(!autoFocusSearch)}>
@@ -303,9 +320,9 @@ const SettingsModal = ({
                 <span className="material-icons">{!disableGlass ? 'blur_on' : 'blur_off'}</span>
                 <span>Glass Effect</span>
               </button>
-              <button className={`pill ${enableAurora ? 'active' : ''}`} onClick={() => setEnableAurora(!enableAurora)}>
-                <span className="material-icons">auto_awesome</span>
-                <span>Aurora Background</span>
+              <button className={`pill ${disableAnimations ? 'active' : ''}`} onClick={() => setDisableAnimations(!disableAnimations)}>
+                <span className="material-icons">animation</span>
+                <span>Remove Animations</span>
               </button>
               <button className={`pill ${reducedMotion ? 'active' : ''}`} onClick={() => setReducedMotion(!reducedMotion)}>
                 <span className="material-icons">motion_photos_off</span>
@@ -337,18 +354,6 @@ const SettingsModal = ({
             <button className={`pill ${enableProfiles ? 'active' : ''}`} onClick={() => setEnableProfiles(!enableProfiles)}>
               <span className="material-icons">{enableProfiles ? 'account_circle' : 'no_accounts'}</span>
               <span>Enable Profiles</span>
-            </button>
-            <button className={`pill ${hideBookmarks ? 'active' : ''}`} onClick={() => setHideBookmarks(!hideBookmarks)}>
-              <span className="material-icons">{hideBookmarks ? 'bookmarks' : 'bookmark_border'}</span>
-              <span>Hide Bookmarks Tab</span>
-            </button>
-            <button className={`pill ${hideToolbox ? 'active' : ''}`} onClick={() => setHideToolbox(!hideToolbox)}>
-              <span className="material-icons">{hideToolbox ? 'handyman' : 'handyman'}</span>
-              <span>Hide Toolbox Tab</span>
-            </button>
-            <button className={`pill ${showProjectsTab ? 'active' : ''}`} onClick={() => setShowProjectsTab(!showProjectsTab)}>
-              <span className="material-icons">{showProjectsTab ? 'architecture' : 'architecture'}</span>
-              <span>Show Projects Tab</span>
             </button>
             <button className={`pill ${hideUrls ? 'active' : ''}`} onClick={() => setHideUrls(!hideUrls)}>
               <span className="material-icons">link_off</span>
@@ -503,7 +508,7 @@ const getHex = (color) => {
         nature: '#2d6a4f', forest: '#1b4332', ocean: '#0077b6', earth: '#78350f',
         mountain: '#475569', desert: '#dda15e', sunset: '#fb8500', winter: '#0369a1',
         autumn: '#bc4749', lavender: '#7c3aed', spring: '#166534', galaxy: '#c084fc',
-        blackhole: '#1a1a1a', midnight: '#0f172a', aurora: '#004d40', blossom: '#e11d48',
+        blackhole: '#1a1a1a', midnight: '#0f172a', blossom: '#e11d48',
         canyon: '#7c2d12', glacier: '#0284c7', meadow: '#4d7c0f', sunlight: '#92400e',
         breeze: '#0ea5e9', seedling: '#15803d', mist: '#64748b'
     };

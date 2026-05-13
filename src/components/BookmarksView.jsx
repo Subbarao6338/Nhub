@@ -8,18 +8,10 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
   const [links, setLinks] = useState([]);
   const [isUrlModalOpen, setIsUrlModalOpen] = useState(false);
   const [selectedLinkForUrls, setSelectedLinkForUrls] = useState(null);
-  const [modalPos, setModalPos] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
 
-  const handleLongPress = (link, rect) => {
+  const handleLongPress = (link) => {
     setSelectedLinkForUrls(link);
-    if (rect) {
-      const x = rect.left + rect.width / 2;
-      const y = rect.top + rect.height / 2;
-      setModalPos({ x, y });
-    } else {
-      setModalPos(null);
-    }
     setIsUrlModalOpen(true);
   };
 
@@ -199,19 +191,8 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
     <>
       {isUrlModalOpen && selectedLinkForUrls && (
         <>
-          <div className="modal-overlay" style={{display: 'block'}} onClick={() => { setIsUrlModalOpen(false); setModalPos(null); }}></div>
-          <div
-            className="modal modal-multi-url"
-            style={{
-              display: 'block',
-              ...(modalPos ? {
-                top: Math.max(20, Math.min(window.innerHeight - 20, modalPos.y)),
-                left: Math.max(20, Math.min(window.innerWidth - 20, modalPos.x)),
-                transform: 'translate(-50%, -50%)',
-                margin: 0
-              } : {})
-            }}
-          >
+          <div className="modal-overlay" style={{display: 'block'}} onClick={() => { setIsUrlModalOpen(false); }}></div>
+          <div className="modal modal-multi-url" style={{ display: 'block' }}>
             <div className="modal-header-flex">
               <h2>Multiple URLs</h2>
               <button className="icon-btn" onClick={() => setIsUrlModalOpen(false)}>
@@ -234,7 +215,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
               <button type="button" className="pill copy-all-btn" onClick={copyAllUrls}>
                 <span className="material-icons">content_copy</span> Copy All URLs
               </button>
-              <button type="button" className="dismiss-btn" onClick={() => { setIsUrlModalOpen(false); setModalPos(null); }}>Dismiss</button>
+              <button type="button" className="dismiss-btn" onClick={() => { setIsUrlModalOpen(false); }}>Dismiss</button>
             </div>
           </div>
         </>
@@ -274,7 +255,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
                   handleShare={handleShare}
                   handleCopy={handleCopy}
                   isCopied={copiedId === link.id}
-                  onLongPress={(rect) => handleLongPress(link, rect)}
+                  onLongPress={() => handleLongPress(link)}
                   categoryIcon={categories[link.category]}
                   hideIcons={hideIcons}
                   hideUrls={hideUrls}
@@ -327,7 +308,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
                   handleShare={handleShare}
                   handleCopy={handleCopy}
                   isCopied={copiedId === link.id}
-                  onLongPress={(rect) => handleLongPress(link, rect)}
+                  onLongPress={() => handleLongPress(link)}
                   categoryIcon={categories[cat]}
                   hideIcons={hideIcons}
                   hideUrls={hideUrls}
@@ -355,8 +336,7 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
     const timer = setTimeout(() => {
       isLongPressActive.current = true;
       if (link.urls && link.urls.length > 1) {
-        const rect = cardRef.current?.getBoundingClientRect();
-        onLongPress(rect);
+        onLongPress();
         setIsPressing(false); // Snap back when modal opens
       }
     }, 400); // 400ms for better responsiveness
@@ -403,6 +383,7 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
       onMouseLeave={cancelPress}
       onTouchStart={startPress}
       onTouchEnd={cancelPress}
+      onTouchMove={cancelPress}
       onContextMenu={handleContextMenu}
     >
       {link.urls && link.urls.length > 1 && (
