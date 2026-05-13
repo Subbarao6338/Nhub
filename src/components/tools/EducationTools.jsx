@@ -299,12 +299,56 @@ const ScientificCalculator = () => {
     );
 };
 
+const PrimeFactorizer = () => {
+    const [num, setNum] = useState(120);
+    const [result, setResult] = useState(null);
+
+    const factorize = () => {
+        let n = parseInt(num);
+        if (isNaN(n) || n < 2) return;
+        const inputNum = n;
+        const res = [];
+        let d = 2;
+        while (d * d <= n) {
+            if (n % d === 0) {
+                res.push(d);
+                n /= d;
+            } else {
+                d++;
+            }
+        }
+        if (n > 1) res.push(n);
+        setResult({ inputNum, factors: res });
+    };
+
+    return (
+        <div className="card p-20 text-center">
+            <div className="flex-gap mb-20">
+                <input type="number" className="pill flex-1" value={num} onChange={e=>setNum(e.target.value)} />
+                <button className="btn-primary" onClick={factorize}>Factorize</button>
+            </div>
+            {result && (
+                <div className="tool-result">
+                    <div className="opacity-6 smallest uppercase font-bold mb-10">Prime Factors</div>
+                    <div className="flex-center gap-10 flex-wrap">
+                        {result.factors.map((f, i) => (
+                            <span key={i} className="pill bg-primary color-white">{f}</span>
+                        ))}
+                    </div>
+                    <div className="mt-10 font-bold">{result.factors.join(' × ')} = {result.inputNum}</div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const EducationTools = ({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'periodic', label: 'Periodic Table' },
     { id: 'circle', label: 'Unit Circle' },
     { id: 'constants', label: 'Physics Constants' },
-    { id: 'scicalc', label: 'Scientific Calc' }
+    { id: 'scicalc', label: 'Scientific Calc' },
+    { id: 'primes', label: 'Prime Factor' }
   ];
 
   const [activeTab, setActiveTab] = useState('periodic');
@@ -320,7 +364,8 @@ const EducationTools = ({ toolId, onSubtoolChange }) => {
         'periodic-table': 'periodic',
         'unit-circle': 'circle',
         'physics-constants': 'constants',
-        'scientific-calc': 'scicalc'
+        'scientific-calc': 'scicalc',
+        'prime-factorizer': 'primes'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -348,6 +393,7 @@ const EducationTools = ({ toolId, onSubtoolChange }) => {
       {activeTab === 'circle' && <UnitCircle />}
       {activeTab === 'constants' && <PhysicsConstants />}
       {activeTab === 'scicalc' && <ScientificCalculator />}
+      {activeTab === 'primes' && <PrimeFactorizer />}
     </div>
   );
 };

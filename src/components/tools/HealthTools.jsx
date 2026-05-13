@@ -5,25 +5,37 @@ const HealthTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     { id: 'bmr', label: 'BMR' },
     { id: 'bmi', label: 'BMI' },
     { id: 'calories', label: 'Calories' },
-    { id: 'water', label: 'Water' }
+    { id: 'macros', label: 'Macros' },
+    { id: 'water', label: 'Water' },
+    { id: 'sleep', label: 'Sleep' }
   ];
 
   const [activeTab, setActiveTab] = useState('bmr');
 
   useEffect(() => {
-    const labels = { bmr: 'Basal Metabolic Rate', bmi: 'BMI Calculator', calories: 'Calorie Needs', water: 'Water Tracker' };
+    const labels = {
+      bmr: 'Basal Metabolic Rate',
+      bmi: 'BMI Calculator',
+      calories: 'Calorie Needs',
+      macros: 'Macro Splitter',
+      water: 'Water Tracker',
+      sleep: 'Sleep Calculator'
+    };
     if (onSubtoolChange) onSubtoolChange(labels[activeTab]);
   }, [activeTab]);
 
   useEffect(() => {
     if (toolId) {
       if (toolId === 'bmr-calc') setActiveTab('bmr');
+      else if (toolId === 'bmi-calc') setActiveTab('bmi');
       else if (toolId === 'calorie-calc') setActiveTab('calories');
       else if (toolId === 'water-tracker') setActiveTab('water');
+      else if (toolId === 'sleep-calc') setActiveTab('sleep');
+      else if (toolId === 'macro-calc') setActiveTab('macros');
     }
   }, [toolId]);
 
-  const isDeepLinked = !!toolId;
+  const isDeepLinked = !!toolId && tabs.some(t => t.id === toolId || toolId.includes(t.id));
 
   return (
     <div className="tool-form">
@@ -38,9 +50,99 @@ const HealthTools = ({ onResultChange, toolId, onSubtoolChange }) => {
       {activeTab === 'bmr' && <BmrTool onResultChange={onResultChange} />}
       {activeTab === 'bmi' && <BmiTool onResultChange={onResultChange} />}
       {activeTab === 'calories' && <CalorieTool onResultChange={onResultChange} />}
+      {activeTab === 'macros' && <MacroTool onResultChange={onResultChange} />}
       {activeTab === 'water' && <WaterTracker onResultChange={onResultChange} />}
+      {activeTab === 'sleep' && <SleepTool onResultChange={onResultChange} />}
     </div>
   );
+};
+
+const SleepTool = ({ onResultChange }) => {
+    const [wakeTime, setWakeTime] = useState("07:00");
+    const calculate = () => {
+        const [h, m] = wakeTime.split(':').map(Number);
+        const wakeDate = new Date();
+        wakeDate.setHours(h, m, 0, 0);
+
+        // 90 minute cycles
+        const cycles = [6, 5, 4, 3]; // Cycles of sleep
+        const bedtimes = cycles.map(c => {
+            const d = new Date(wakeDate.getTime() - (c * 90 + 15) * 60000); // 15 mins to fall asleep
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        });
+
+        onResultChange({ text: `Bedtimes for ${wakeTime} wake up: ${bedtimes.join(', ')}`, filename: 'sleep_schedule.txt' });
+        return bedtimes;
+    };
+
+    const bedtimes = calculate();
+
+    return (
+        <div className="card p-20 text-center">
+            <div className="form-group">
+                <label>I want to wake up at:</label>
+                <input type="time" className="pill" value={wakeTime} onChange={e=>setWakeTime(e.target.value)} />
+            </div>
+            <div className="tool-result">
+                <p className="opacity-6 mb-10">To wake up refreshed, try to sleep at:</p>
+                <div className="flex-center gap-10 flex-wrap">
+                    {bedtimes.map(t => <span key={t} className="pill active">{t}</span>)}
+                </div>
+                <p className="smallest opacity-5 mt-10">Calculated for 90-min cycles + 15 min to fall asleep.</p>
+            </div>
+        </div>
+    );
+};
+
+const MacroTool = ({ onResultChange }) => {
+    const [calories, setCalories] = useState(2000);
+    const [goal, setGoal] = useState('balanced');
+
+    const calculate = () => {
+        const ratios = {
+            balanced: { p: 0.3, c: 0.4, f: 0.3 },
+            lowcarb: { p: 0.4, c: 0.2, f: 0.4 },
+            highprot: { p: 0.5, c: 0.3, f: 0.2 }
+        };
+        const r = ratios[goal];
+        const p = (calories * r.p) / 4;
+        const c = (calories * r.c) / 4;
+        const f = (calories * r.f) / 9;
+
+        const result = { p: p.toFixed(0), c: c.toFixed(0), f: f.toFixed(0) };
+        onResultChange({ text: `Macros for ${calories}kcal (${goal}): P:${result.p}g, C:${result.c}g, F:${result.f}g`, filename: 'macros.txt' });
+        return result;
+    };
+
+    const res = calculate();
+
+    return (
+        <div className="grid gap-15">
+            <div className="form-group">
+                <label>Daily Calories</label>
+                <input type="number" className="pill" value={calories} onChange={e=>setCalories(e.target.value)} />
+            </div>
+            <div className="pill-group scrollable-x">
+                {['balanced', 'lowcarb', 'highprot'].map(g => (
+                    <button key={g} className={`pill ${goal === g ? 'active' : ''}`} onClick={()=>setGoal(g)}>{g.toUpperCase()}</button>
+                ))}
+            </div>
+            <div className="grid grid-3 gap-10">
+                <div className="card p-15 text-center">
+                    <div className="opacity-6 smallest">Protein</div>
+                    <div className="font-bold h2">{res.p}g</div>
+                </div>
+                <div className="card p-15 text-center">
+                    <div className="opacity-6 smallest">Carbs</div>
+                    <div className="font-bold h2">{res.c}g</div>
+                </div>
+                <div className="card p-15 text-center">
+                    <div className="opacity-6 smallest">Fats</div>
+                    <div className="font-bold h2">{res.f}g</div>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 const WaterTracker = ({ onResultChange }) => {
@@ -54,7 +156,7 @@ const WaterTracker = ({ onResultChange }) => {
 
     return (
         <div className="card p-20 text-center">
-            <div className="flex-center gap-10 mb-20">
+            <div className="flex-center gap-10 mb-20 flex-wrap">
                 {Array(goal).fill(0).map((_, i) => (
                     <span key={i} className="material-icons" style={{ color: i < glasses ? 'var(--blue)' : 'var(--border)', fontSize: '2rem' }}>
                         local_drink
@@ -73,21 +175,21 @@ const WaterTracker = ({ onResultChange }) => {
 const BmiTool = ({ onResultChange }) => {
     const [w, setW] = useState('');
     const [h, setH] = useState('');
-    const [bmi, setBmi] = useState(null);
+    const [result, setResult] = useState(null);
     const calc = () => {
-        const res = parseFloat(w) / ((parseFloat(h)/100)**2);
-        setBmi(res.toFixed(1));
-        onResultChange({ text: `BMI: ${res.toFixed(1)}`, filename: 'bmi.txt' });
+        const bmiVal = parseFloat(w) / ((parseFloat(h)/100)**2);
+        setResult({ bmi: bmiVal.toFixed(1), weight: w, height: h });
+        onResultChange({ text: `BMI: ${bmiVal.toFixed(1)}`, filename: 'bmi.txt' });
     };
     return (
         <div className="grid gap-15">
             <input type="number" placeholder="Weight (kg)" className="pill" value={w} onChange={e=>setW(e.target.value)} />
             <input type="number" placeholder="Height (cm)" className="pill" value={h} onChange={e=>setH(e.target.value)} />
             <button className="btn-primary" onClick={calc}>Calculate BMI</button>
-            {bmi && (
+            {result && (
                 <div className="tool-result text-center">
-                    <div style={{fontSize: '3rem', fontWeight: 800}}>{bmi}</div>
-                    <div className="opacity-6">{bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese'}</div>
+                    <div style={{fontSize: '3rem', fontWeight: 800}}>{result.bmi}</div>
+                    <div className="opacity-6">{result.bmi < 18.5 ? 'Underweight' : result.bmi < 25 ? 'Normal' : result.bmi < 30 ? 'Overweight' : 'Obese'}</div>
                 </div>
             )}
         </div>
@@ -167,14 +269,14 @@ const CalorieTool = ({ onResultChange }) => {
       </select>
       <button className="btn-primary" onClick={calculate}>Calculate Needs</button>
       {res && (
-        <div className="grid-2 mt-20" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
+        <div className="grid mt-20" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px' }}>
           <div className="card p-15">
             <div className="opacity-6">Maintenance</div>
             <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{res.maintenance.toFixed(0)} kcal</div>
           </div>
           <div className="card p-15">
             <div className="opacity-6">Weight Loss (-0.5kg/week)</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--accent-green)' }}>{res.loss.toFixed(0)} kcal</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--danger)' }}>{res.loss.toFixed(0)} kcal</div>
           </div>
           <div className="card p-15">
             <div className="opacity-6">Weight Gain (+0.5kg/week)</div>

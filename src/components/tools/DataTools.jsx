@@ -11,7 +11,8 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'quality', label: 'Data Quality' },
     { id: 'profiling', label: 'Data Profiling' },
     { id: 'anonymizer', label: 'Anonymizer' },
-    { id: 'json-csv', label: 'JSON ↔ CSV' }
+    { id: 'json-csv', label: 'JSON ↔ CSV' },
+    { id: 'mock', label: 'Mock Data Gen' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('viewer');
@@ -32,7 +33,8 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         'data-quality': 'quality',
         'data-anonymizer': 'anonymizer',
         'data-profiling': 'profiling',
-        'json-csv': 'json-csv'
+        'json-csv': 'json-csv',
+        'mock-gen': 'mock'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -63,8 +65,52 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'profiling' && <DataProfilingTool onResultChange={onResultChange} data={uploadedData} />}
       {activeTab === 'anonymizer' && <DataAnonymizer onResultChange={onResultChange} />}
       {activeTab === 'json-csv' && <JsonCsvConverter onResultChange={onResultChange} />}
+      {activeTab === 'mock' && <MockDataGenerator onResultChange={onResultChange} />}
     </div>
   );
+};
+
+const MockDataGenerator = ({ onResultChange }) => {
+    const [rows, setRows] = useState(10);
+    const [format, setFormat] = useState('json');
+
+    const generate = () => {
+        const data = [];
+        const names = ['Oak', 'Pine', 'Cedar', 'Maple', 'Birch', 'Willow', 'Ash', 'Elm'];
+        const types = ['Tree', 'Shrub', 'Flower', 'Grass', 'Moss', 'Fern'];
+
+        for (let i = 0; i < rows; i++) {
+            data.push({
+                id: i + 1,
+                name: names[Math.floor(Math.random() * names.length)] + ' ' + (i + 1),
+                type: types[Math.floor(Math.random() * types.length)],
+                value: Math.floor(Math.random() * 1000),
+                active: Math.random() > 0.5
+            });
+        }
+
+        const res = format === 'json' ? JSON.stringify(data, null, 2) : Papa.unparse(data);
+        onResultChange({ text: res, filename: `mock_data.${format}` });
+    };
+
+    return (
+        <div className="card p-20 text-center">
+            <div className="grid grid-2 gap-10 mb-20">
+                <div className="form-group">
+                    <label>Rows</label>
+                    <input type="number" className="pill" value={rows} onChange={e=>setRows(e.target.value)} />
+                </div>
+                <div className="form-group">
+                    <label>Format</label>
+                    <select className="pill" value={format} onChange={e=>setFormat(e.target.value)}>
+                        <option value="json">JSON</option>
+                        <option value="csv">CSV</option>
+                    </select>
+                </div>
+            </div>
+            <button className="btn-primary w-full" onClick={generate}>Generate Mock Data</button>
+        </div>
+    );
 };
 
 const DataViewer = ({ onResultChange, setGlobalData }) => {
@@ -115,8 +161,6 @@ const DataViewer = ({ onResultChange, setGlobalData }) => {
                 parquetRead({
                     file: content,
                     onComplete: (data) => {
-                        // hyparquet returns rows as arrays or objects depending on config
-                        // usually we need to map it
                         setData(data);
                         setGlobalData(data);
                         setHeaders(Object.keys(data[0] || {}));
