@@ -58,14 +58,16 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
           </div>
       )}
 
-      {activeTab === 'viewer' && <DataViewer onResultChange={onResultChange} setGlobalData={setUploadedData} />}
-      {activeTab === 'science' && <DataScienceTool onResultChange={onResultChange} />}
-      {activeTab === 'anomaly' && <AnomalyTool onResultChange={onResultChange} />}
-      {activeTab === 'quality' && <DataQualityTool onResultChange={onResultChange} data={uploadedData} />}
-      {activeTab === 'profiling' && <DataProfilingTool onResultChange={onResultChange} data={uploadedData} />}
-      {activeTab === 'anonymizer' && <DataAnonymizer onResultChange={onResultChange} />}
-      {activeTab === 'json-csv' && <JsonCsvConverter onResultChange={onResultChange} />}
-      {activeTab === 'mock' && <MockDataGenerator onResultChange={onResultChange} />}
+      <div className="hub-content animate-fadeIn">
+        {activeTab === 'viewer' && <DataViewer onResultChange={onResultChange} setGlobalData={setUploadedData} />}
+        {activeTab === 'science' && <DataScienceTool onResultChange={onResultChange} />}
+        {activeTab === 'anomaly' && <AnomalyTool onResultChange={onResultChange} />}
+        {activeTab === 'quality' && <DataQualityTool onResultChange={onResultChange} data={uploadedData} />}
+        {activeTab === 'profiling' && <DataProfilingTool onResultChange={onResultChange} data={uploadedData} />}
+        {activeTab === 'anonymizer' && <DataAnonymizer onResultChange={onResultChange} />}
+        {activeTab === 'json-csv' && <JsonCsvConverter onResultChange={onResultChange} />}
+        {activeTab === 'mock' && <MockDataGenerator onResultChange={onResultChange} />}
+      </div>
     </div>
   );
 };
@@ -117,8 +119,10 @@ const DataViewer = ({ onResultChange, setGlobalData }) => {
     const [data, setData] = useState([]);
     const [headers, setHeaders] = useState([]);
     const [fileName, setFileName] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const handleFileUpload = (e) => {
+        setLoading(true);
         const file = e.target.files[0];
         if (!file) return;
         setFileName(file.name);
@@ -181,12 +185,19 @@ const DataViewer = ({ onResultChange, setGlobalData }) => {
 
     return (
         <div className="grid gap-15">
-            <div className="card p-20 flex-column align-center">
-                <input type="file" accept=".csv,.json,.xlsx,.xls,.parquet" onChange={handleFileUpload} className="pill w-full mb-10" />
-                <p className="text-muted small m-0">Upload CSV, JSON, Excel, or Parquet to enable Profiling and Quality tools.</p>
+            <div className="card p-20 flex-column align-center text-center">
+                <div className="form-group w-full">
+                    <label>Upload Data File</label>
+                    <input type="file" accept=".csv,.json,.xlsx,.xls,.parquet" onChange={handleFileUpload} className="pill w-full" />
+                </div>
+                <p className="text-muted small m-0 mt-10">
+                    <span className="material-icons" style={{fontSize: '1rem', verticalAlign: 'middle', marginRight: '5px'}}>info</span>
+                    Upload CSV, JSON, Excel, or Parquet to enable Profiling and Quality tools.
+                </p>
+                {loading && <div className="mt-10 rotating material-icons color-primary">refresh</div>}
             </div>
             {data.length > 0 && (
-                <div className="card p-0 overflow-auto" style={{ maxHeight: '400px' }}>
+                <div className="card p-0 overflow-auto" style={{ maxHeight: '400px', borderRadius: 'var(--radius-lg)' }}>
                     <table className="w-full" style={{ borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                         <thead style={{ position: 'sticky', top: 0, background: 'var(--surface-solid)', zIndex: 1 }}>
                             <tr>
@@ -268,7 +279,10 @@ const DataQualityTool = ({ onResultChange, data }) => {
 
     const checkQuality = (rowsToUse) => {
         try {
-            const rows = rowsToUse || input.split('\n').filter(l => l.trim()).map(l => JSON.parse(l));
+            const rows = rowsToUse || input.split('\n').filter(l => l.trim()).map(l => {
+                try { return JSON.parse(l); }
+                catch(e) { throw new Error(`Invalid JSON in line: ${l}`); }
+            });
             const issues = [];
             rows.forEach((row, idx) => {
                 Object.entries(row).forEach(([key, val]) => {
@@ -282,14 +296,22 @@ const DataQualityTool = ({ onResultChange, data }) => {
     };
 
     return (
-        <div className="grid gap-15 card p-15">
+        <div className="grid gap-15 card p-20">
             {data ? (
-                <button className="btn-primary" onClick={() => checkQuality(data)}>Check Uploaded Data Quality ({data.length} rows)</button>
+                <button className="btn-primary w-full" onClick={() => checkQuality(data)}>
+                    <span className="material-icons mr-10">fact_check</span>
+                    Check Uploaded Data Quality ({data.length} rows)
+                </button>
             ) : (
                 <>
-                    <label className="font-bold">JSON Data (one object per line)</label>
-                    <textarea className="pill font-mono" rows="5" value={input} onChange={e => setInput(e.target.value)} />
-                    <button className="btn-primary" onClick={() => checkQuality()}>Check Manual Data Quality</button>
+                    <div className="form-group">
+                        <label>JSON Data (one object per line)</label>
+                        <textarea className="pill font-mono" rows="6" value={input} onChange={e => setInput(e.target.value)} placeholder='{"id": 1, "name": "..."}' />
+                    </div>
+                    <button className="btn-primary w-full" onClick={() => checkQuality()}>
+                        <span className="material-icons mr-10">fact_check</span>
+                        Check Manual Data Quality
+                    </button>
                 </>
             )}
             {report && (
@@ -321,11 +343,20 @@ const JsonCsvConverter = ({ onResultChange }) => {
         onResultChange({ text: json, filename: 'converted.json' });
     };
     return (
-        <div className="card p-15 grid gap-10">
-            <textarea className="pill font-mono" rows="8" value={val} onChange={e=>setVal(e.target.value)} />
+        <div className="card p-20 grid gap-15">
+            <div className="form-group">
+                <label>Data Content (JSON or CSV)</label>
+                <textarea className="pill font-mono" rows="10" value={val} onChange={e=>setVal(e.target.value)} />
+            </div>
             <div className="flex-gap">
-                <button className="btn-primary flex-1" onClick={toCsv}>TO CSV</button>
-                <button className="pill flex-1" onClick={toJson}>TO JSON</button>
+                <button className="btn-primary flex-1" onClick={toCsv}>
+                    <span className="material-icons mr-10">grid_on</span>
+                    TO CSV
+                </button>
+                <button className="pill flex-1" onClick={toJson}>
+                    <span className="material-icons mr-10">data_object</span>
+                    TO JSON
+                </button>
             </div>
         </div>
     );
@@ -353,10 +384,15 @@ const DataAnonymizer = ({ onResultChange }) => {
         });
     };
     return (
-        <div className="grid gap-15 card p-15">
-            <label className="font-bold">CSV to Anonymize</label>
-            <textarea className="pill font-mono" rows="5" value={input} onChange={e => setInput(e.target.value)} />
-            <button className="btn-primary" onClick={anonymize}>Anonymize PII (Names, Emails, Phones)</button>
+        <div className="grid gap-15 card p-20">
+            <div className="form-group">
+                <label>CSV Content to Anonymize</label>
+                <textarea className="pill font-mono" rows="6" value={input} onChange={e => setInput(e.target.value)} />
+            </div>
+            <button className="btn-primary w-full" onClick={anonymize}>
+                <span className="material-icons mr-10">privacy_tip</span>
+                Anonymize PII (Names, Emails, Phones)
+            </button>
         </div>
     );
 };
@@ -377,10 +413,16 @@ const DataScienceTool = ({ onResultChange }) => {
         } catch(e) { alert("Invalid format"); }
     };
     return (
-        <div className="grid gap-15 card p-15">
-            <textarea className="pill font-mono" rows="5" value={data} onChange={e=>setData(e.target.value)} />
-            <button className="btn-primary" onClick={calc}>Linear Regression (x,y)</button>
-            {res && <div className="tool-result text-center font-bold">y = {res.slope.toFixed(3)}x + {res.intercept.toFixed(3)}</div>}
+        <div className="grid gap-15 card p-20">
+            <div className="form-group">
+                <label>Data Pairs (x,y per line)</label>
+                <textarea className="pill font-mono" rows="5" value={data} onChange={e=>setData(e.target.value)} />
+            </div>
+            <button className="btn-primary w-full" onClick={calc}>
+                <span className="material-icons mr-10">trending_up</span>
+                Calculate Linear Regression
+            </button>
+            {res && <div className="tool-result text-center font-bold" style={{background: 'var(--primary-glow)'}}>y = {res.slope.toFixed(3)}x + {res.intercept.toFixed(3)}</div>}
         </div>
     );
 };
@@ -390,17 +432,32 @@ const AnomalyTool = ({ onResultChange }) => {
     const [out, setOut] = useState(null);
     const detect = () => {
         const nums = input.split(',').map(Number).filter(n=>!isNaN(n));
+        if (nums.length === 0) return;
         const mean = nums.reduce((a,b)=>a+b)/nums.length;
         const std = Math.sqrt(nums.map(x=>Math.pow(x-mean,2)).reduce((a,b)=>a+b)/nums.length);
         const anomalies = nums.filter(x => Math.abs(x-mean) > 2*std);
         setOut(anomalies);
-        onResultChange({ text: `Anomalies: ${anomalies.join(', ')}`, filename: 'anomalies.txt' });
+        onResultChange({ text: `Anomalies detected: ${anomalies.join(', ')}`, filename: 'anomalies.txt' });
     };
     return (
-        <div className="grid gap-15 card p-15">
-            <input className="pill" value={input} onChange={e=>setInput(e.target.value)} />
-            <button className="btn-primary" onClick={detect}>Detect Outliers (Z-Score &gt; 2)</button>
-            {out && <div className="tool-result">Found {out.length} outliers: {out.join(', ')}</div>}
+        <div className="grid gap-15 card p-20">
+            <div className="form-group">
+                <label>Comma-separated numbers</label>
+                <input className="pill" value={input} onChange={e=>setInput(e.target.value)} placeholder="10, 20, 100, 15..." />
+            </div>
+            <button className="btn-primary w-full" onClick={detect}>
+                <span className="material-icons mr-10">warning</span>
+                Detect Outliers (Z-Score &gt; 2)
+            </button>
+            {out && (
+                <div className="tool-result" style={{borderColor: out.length > 0 ? 'var(--danger)' : 'var(--primary)'}}>
+                    {out.length > 0 ? (
+                        <>Found <b>{out.length}</b> outliers: <code className="ml-10">{out.join(', ')}</code></>
+                    ) : (
+                        'No significant outliers detected.'
+                    )}
+                </div>
+            )}
         </div>
     );
 };

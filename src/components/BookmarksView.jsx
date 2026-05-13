@@ -245,6 +245,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
                   hideIcons={hideIcons}
                   hideUrls={hideUrls}
                   searchQuery={searchQuery}
+                  noAnimation={!!searchQuery}
                 />
               ))}
             </div>
@@ -297,6 +298,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
                   hideIcons={hideIcons}
                   hideUrls={hideUrls}
                   searchQuery={searchQuery}
+                  noAnimation={!!searchQuery}
                 />
               ))}
             </div>
@@ -307,7 +309,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
   );
 };
 
-const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handleShare, handleCopy, isCopied, onLongPress, categoryIcon, hideIcons, hideUrls, searchQuery }) => {
+const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handleShare, handleCopy, isCopied, onLongPress, categoryIcon, hideIcons, hideUrls, searchQuery, noAnimation }) => {
   const [pressTimer, setPressTimer] = useState(null);
   const isLongPress = React.useRef(false);
 
@@ -346,7 +348,7 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
 
   return (
     <div
-      className="card"
+      className={`card ${noAnimation ? 'no-animation' : ''}`}
       style={{'--delay': idx}}
       onClick={handleClick}
       onMouseDown={startPress}

@@ -269,7 +269,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
             </h3>
             <div className="category-grid">
               {TOOLS.filter(t => pinnedTools.includes(t.id)).map((tool, idx) => (
-                <ToolCard key={`pinned-${tool.id}`} tool={tool} idx={idx} isPinned={true} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} />
+                <ToolCard key={`pinned-${tool.id}`} tool={tool} idx={idx} isPinned={true} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} />
               ))}
             </div>
           </div>
@@ -290,7 +290,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
       {!groupedTools ? (
         <div className="category-grid p-0-10">
           {filteredTools.map((tool, idx) => (
-            <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} />
+            <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} />
           ))}
         </div>
       ) : (
@@ -306,7 +306,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
             </div>
             <div className="category-grid">
               {groupedTools[cat].map((tool, idx) => (
-                <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} />
+                <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} />
               ))}
             </div>
           </div>
@@ -316,13 +316,13 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
   );
 };
 
-const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, searchQuery, highlightText }) => {
+const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, searchQuery, highlightText, noAnimation }) => {
     const onKeyDown = React.useCallback(e => {
         if (e.key === 'Enter') openTool(tool.id);
     }, [openTool, tool.id]);
 
     return (
-        <div id={`card-${tool.id}`} className="card" style={{'--delay': idx}} onClick={() => openTool(tool.id)} tabIndex="0" onKeyDown={onKeyDown}>
+        <div id={`card-${tool.id}`} className={`card ${noAnimation ? 'no-animation' : ''}`} style={{'--delay': idx}} onClick={() => openTool(tool.id)} tabIndex="0" onKeyDown={onKeyDown}>
            <div className="card-actions">
                 <button className={`pin-btn ${isPinned ? 'active' : ''}`} onClick={(e) => togglePin(e, tool.id)} aria-label={isPinned ? 'Unpin tool' : 'Pin tool'}>
                     <span className="material-icons">push_pin</span>
