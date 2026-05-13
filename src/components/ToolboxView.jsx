@@ -38,6 +38,7 @@ const TOOLS = [
 
     // Math & Science
     { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['csv-viewer', 'data-visualizer', 'anomaly-detect', 'stat-calc', 'data-quality', 'data-profiling', 'data-anonymizer', 'json-csv', 'mock-gen'] },
+    { id: 'time-main', title: 'Date & Time Tools', icon: 'schedule', category: 'Productivity', component: DateTimeTools, subTools: ['stopwatch', 'pomodoro', 'worldclock', 'age', 'timestamp', 'panchangam', 'datediff', 'countdown'] },
 ];
 
 const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRecentTools, hideRecentTools }) => {
