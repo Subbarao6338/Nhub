@@ -1,11 +1,12 @@
 {
-  "name": "Nature toolbox",
+  "name": "Nature Toolbox Hub",
   "short_name": "Nature Hub",
-  "description": "A nature-inspired personal dashboard to organize and access your favorite websites, projects, and tools.",
+  "description": "A comprehensive nature-inspired toolbox with 100+ utilities for developers, students, and professionals.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#fdfbf7",
   "theme_color": "#2d6a4f",
+  "categories": ["productivity", "utilities", "developer", "education", "finance", "health"],
   "shortcuts": [
     {
       "name": "Developer Hub",
@@ -17,6 +18,12 @@
       "name": "Finance Tools",
       "short_name": "Finance",
       "url": "/?tab=toolbox&tool=finance-main",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Education Hub",
+      "short_name": "Edu",
+      "url": "/?tab=toolbox&tool=edu-main",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
@@ -32,51 +39,21 @@
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
-      "name": "Toolbox",
-      "short_name": "Tools",
-      "url": "/?tab=toolbox",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
       "name": "QR Scanner",
       "short_name": "Scan",
-      "description": "Scan QR codes offline",
       "url": "/?tab=toolbox&tool=qr-scan",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
       "name": "World Clock",
       "short_name": "Clock",
-      "description": "Check global timezones",
       "url": "/?tab=toolbox&tool=world-clock",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
-      "name": "RSA Generator",
-      "short_name": "Security",
-      "description": "Secure client-side key generation",
-      "url": "/?tab=toolbox&tool=rsa-gen",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "VAT Calculator",
-      "short_name": "Finance",
-      "description": "Calculate taxes and totals",
-      "url": "/?tab=toolbox&tool=vat-calc",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "Habits",
-      "short_name": "Habits",
-      "description": "Track your daily habits",
-      "url": "/?tab=toolbox&tool=habit-tracker",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "Draw",
-      "short_name": "Draw",
-      "description": "Sketch your ideas",
-      "url": "/?tab=toolbox&tool=canvas-draw",
+      "name": "Health Hub",
+      "short_name": "Health",
+      "url": "/?tab=toolbox&tool=health-main",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     }
   ],

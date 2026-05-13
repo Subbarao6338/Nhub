@@ -17,7 +17,7 @@ const TravelTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     }
   }, [toolId]);
 
-  const isDeepLinked = !!toolId;
+  const isDeepLinked = !!toolId && ['world-clock', 'timezone-conv', 'packing-list'].includes(toolId);
 
   return (
     <div className="tool-form">
@@ -42,7 +42,9 @@ const WorldClockTool = () => {
     { name: 'London', zone: 'Europe/London' },
     { name: 'New York', zone: 'America/New_York' },
     { name: 'Tokyo', zone: 'Asia/Tokyo' },
-    { name: 'Dubai', zone: 'Asia/Dubai' }
+    { name: 'Dubai', zone: 'Asia/Dubai' },
+    { name: 'Sydney', zone: 'Australia/Sydney' },
+    { name: 'Paris', zone: 'Europe/Paris' }
   ];
 
   useEffect(() => {
@@ -54,9 +56,10 @@ const WorldClockTool = () => {
     <div className="grid gap-12">
       <div className="card p-20 text-center mb-10">
           <div className="opacity-6 uppercase font-bold smallest mb-5">Local Time</div>
-          <div style={{fontSize: '3rem', fontWeight: 800}} className="color-primary">
+          <div style={{fontSize: '3.5rem', fontWeight: 800}} className="color-primary">
               {time.toLocaleTimeString([], { hour12: false })}
           </div>
+          <div className="opacity-5 smallest uppercase">{time.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
       </div>
       <div className="grid grid-2 gap-12">
         {zones.map(z => (
@@ -78,7 +81,7 @@ const TimezoneConverter = () => {
 
   const commonZones = [
     'UTC', 'America/New_York', 'America/Los_Angeles', 'Europe/London',
-    'Europe/Paris', 'Asia/Tokyo', 'Asia/Shanghai', 'Asia/Kolkata', 'Australia/Sydney', 'Asia/Dubai'
+    'Europe/Paris', 'Asia/Tokyo', 'Asia/Shanghai', 'Asia/Kolkata', 'Australia/Sydney', 'Asia/Dubai', 'Europe/Berlin', 'America/Chicago'
   ];
 
   const convert = () => {
@@ -102,7 +105,7 @@ const TimezoneConverter = () => {
       <div className="form-group">
         <label className="uppercase tracking-wider opacity-6" style={{fontSize: '0.8rem'}}>Target Timezone</label>
         <select className="pill w-full mt-5" value={targetZone} onChange={e => setTargetZone(e.target.value)}>
-          {commonZones.map(z => <option key={z} value={z}>{z}</option>)}
+          {commonZones.sort().map(z => <option key={z} value={z}>{z}</option>)}
         </select>
       </div>
       <div className="tool-result text-center">

@@ -10,7 +10,7 @@ const ImageTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     const labels = {
         'format': 'Convert', 'resize': 'Resize', 'blur': 'Privacy Blur',
         'metadata': 'Clean Meta', 'bw': 'B&W Filter', 'sepia': 'Sepia',
-        'invert': 'Invert', 'crop': 'Image Cropper'
+        'invert': 'Invert', 'crop': 'Image Cropper', 'filters': 'SVG Filters', 'b64': 'Base64'
     };
     if (onSubtoolChange) onSubtoolChange(labels[activeTab] || activeTab);
   }, [activeTab]);
@@ -20,10 +20,10 @@ const ImageTools = ({ onResultChange, toolId, onSubtoolChange }) => {
         const mapping = {
             'img-format': 'format', 'img-resize': 'resize', 'img-blur': 'blur',
             'img-meta': 'metadata', 'img-bw': 'bw', 'img-crop': 'crop',
-            'img-sepia': 'sepia', 'img-invert': 'invert', 'img-filters': 'filters'
+            'img-sepia': 'sepia', 'img-invert': 'invert', 'img-filters': 'filters',
+            'img-b64': 'b64'
         };
         if (mapping[toolId]) setActiveTab(mapping[toolId]);
-        else if (['sepia', 'invert', 'crop'].includes(toolId)) setActiveTab(toolId);
     }
   }, [toolId]);
 
@@ -56,23 +56,35 @@ const ImageTools = ({ onResultChange, toolId, onSubtoolChange }) => {
           </div>
       )}
 
-      <input type="file" onChange={handleUpload} accept="image/*" className="pill" style={{ width: '100%', marginBottom: '20px' }} />
+      <div className="card p-20 mb-20 text-center">
+          <input type="file" id="img-upload" onChange={handleUpload} accept="image/*" style={{ display: 'none' }} />
+          <label htmlFor="img-upload" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <span className="material-icons">upload_file</span>
+              {image ? 'Change Image' : 'Select Image'}
+          </label>
+          {image && <div className="mt-10 smallest opacity-6">{image.name} ({(image.size/1024).toFixed(1)} KB)</div>}
+      </div>
+
       {preview && (
-          <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-              <img ref={imgRef} src={preview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '12px' }} />
+          <div className="card p-10 mb-20 text-center glass-card" style={{ maxWidth: '400px', margin: '0 auto 20px' }}>
+              <img ref={imgRef} src={preview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '250px', borderRadius: '16px', display: 'block' }} />
           </div>
       )}
 
-      {image && activeTab === 'format' && <FormatConverter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
-      {image && activeTab === 'resize' && <ResizeImage imgRef={imgRef} image={image} onResultChange={onResultChange} />}
-      {image && activeTab === 'blur' && <PrivacyBlur imgRef={imgRef} image={image} onResultChange={onResultChange} />}
-      {image && activeTab === 'metadata' && <MetadataCleaner imgRef={imgRef} image={image} onResultChange={onResultChange} />}
-      {image && activeTab === 'bw' && <BlackWhiteFilter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
-      {image && activeTab === 'sepia' && <SepiaFilter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
-      {image && activeTab === 'invert' && <InvertFilter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
-      {image && activeTab === 'crop' && <ImageCropper imgRef={imgRef} image={image} onResultChange={onResultChange} />}
-      {image && activeTab === 'filters' && <SvgFilters imgRef={imgRef} image={image} onResultChange={onResultChange} />}
-      {image && activeTab === 'b64' && <ImageToBase64 image={image} onResultChange={onResultChange} />}
+      {image && (
+          <div className="tool-controls animate-slide-up">
+              {activeTab === 'format' && <FormatConverter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+              {activeTab === 'resize' && <ResizeImage imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+              {activeTab === 'blur' && <PrivacyBlur imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+              {activeTab === 'metadata' && <MetadataCleaner imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+              {activeTab === 'bw' && <BlackWhiteFilter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+              {activeTab === 'sepia' && <SepiaFilter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+              {activeTab === 'invert' && <InvertFilter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+              {activeTab === 'crop' && <ImageCropper imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+              {activeTab === 'filters' && <SvgFilters imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+              {activeTab === 'b64' && <ImageToBase64 image={image} onResultChange={onResultChange} />}
+          </div>
+      )}
     </div>
   );
 };
@@ -92,20 +104,50 @@ const FormatConverter = ({ imgRef, image, onResultChange }) => {
         }, target);
     };
     return (
-        <div style={{ textAlign: 'center' }}>
-            <select value={target} onChange={e => setTarget(e.target.value)} className="pill" style={{ marginBottom: '10px' }}>
-                <option value="image/png">PNG</option>
-                <option value="image/jpeg">JPG</option>
-                <option value="image/webp">WEBP</option>
-            </select>
-            <button className="btn-primary" onClick={convert}>Convert</button>
+        <div className="card p-20 text-center">
+            <div className="form-group">
+                <label>Target Format</label>
+                <select value={target} onChange={e => setTarget(e.target.value)} className="pill">
+                    <option value="image/png">PNG (Lossless)</option>
+                    <option value="image/jpeg">JPEG (Standard)</option>
+                    <option value="image/webp">WEBP (Modern)</option>
+                </select>
+            </div>
+            <button className="btn-primary w-full" onClick={convert}>Convert & Download</button>
         </div>
     );
 };
 
 const ResizeImage = ({ imgRef, image, onResultChange }) => {
-    const [width, setWidth] = useState(800);
-    const [height, setHeight] = useState(600);
+    const [width, setWidth] = useState(0);
+    const [height, setHeight] = useState(0);
+    const [maintainAspect, setMaintainAspect] = useState(true);
+
+    useEffect(() => {
+        if (imgRef.current) {
+            setWidth(imgRef.current.naturalWidth);
+            setHeight(imgRef.current.naturalHeight);
+        }
+    }, [image]);
+
+    const handleWidthChange = (val) => {
+        const w = parseInt(val) || 0;
+        setWidth(w);
+        if (maintainAspect && imgRef.current) {
+            const ratio = imgRef.current.naturalHeight / imgRef.current.naturalWidth;
+            setHeight(Math.round(w * ratio));
+        }
+    };
+
+    const handleHeightChange = (val) => {
+        const h = parseInt(val) || 0;
+        setHeight(h);
+        if (maintainAspect && imgRef.current) {
+            const ratio = imgRef.current.naturalWidth / imgRef.current.naturalHeight;
+            setWidth(Math.round(h * ratio));
+        }
+    };
+
     const resize = () => {
         const canvas = document.createElement('canvas');
         const img = imgRef.current;
@@ -118,18 +160,30 @@ const ResizeImage = ({ imgRef, image, onResultChange }) => {
             onResultChange({ text: `Resized to ${width}x${height}`, blob, filename: 'resized.png' });
         });
     };
+
     return (
-        <div style={{ textAlign: 'center' }}>
-            <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                <input type="number" value={width} onChange={e => setWidth(e.target.value)} placeholder="W" className="pill" style={{ flex: 1 }} />
-                <input type="number" value={height} onChange={e => setHeight(e.target.value)} placeholder="H" className="pill" style={{ flex: 1 }} />
+        <div className="card p-20">
+            <div className="grid grid-2-cols gap-10 mb-15">
+                <div className="form-group">
+                    <label>Width (px)</label>
+                    <input type="number" value={width} onChange={e => handleWidthChange(e.target.value)} className="pill" />
+                </div>
+                <div className="form-group">
+                    <label>Height (px)</label>
+                    <input type="number" value={height} onChange={e => handleHeightChange(e.target.value)} className="pill" />
+                </div>
             </div>
-            <button className="btn-primary" onClick={resize}>Resize</button>
+            <label className="flex-center gap-10 mb-20 cursor-pointer">
+                <input type="checkbox" checked={maintainAspect} onChange={e => setMaintainAspect(e.target.checked)} />
+                <span className="font-bold opacity-7">Maintain Aspect Ratio</span>
+            </label>
+            <button className="btn-primary w-full" onClick={resize}>Apply Resize</button>
         </div>
     );
 };
 
 const PrivacyBlur = ({ imgRef, image, onResultChange }) => {
+    const [intensity, setIntensity] = useState(10);
     const blur = () => {
         const canvas = document.createElement('canvas');
         const img = imgRef.current;
@@ -137,18 +191,25 @@ const PrivacyBlur = ({ imgRef, image, onResultChange }) => {
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
         const ctx = canvas.getContext('2d');
-        ctx.filter = 'blur(10px)';
+        ctx.filter = `blur(${intensity}px)`;
         ctx.drawImage(img, 0, 0);
         canvas.toBlob(blob => {
-            onResultChange({ text: 'Applied Privacy Blur', blob, filename: 'blurred.png' });
+            onResultChange({ text: `Applied ${intensity}px Privacy Blur`, blob, filename: 'blurred.png' });
         });
     };
-    return <button className="btn-primary" onClick={blur} style={{ width: '100%' }}>Apply Privacy Blur</button>;
+    return (
+        <div className="card p-20 text-center">
+            <div className="form-group mb-15">
+                <label>Blur Intensity: {intensity}px</label>
+                <input type="range" min="1" max="50" value={intensity} onChange={e=>setIntensity(e.target.value)} className="w-full" />
+            </div>
+            <button className="btn-primary w-full" onClick={blur}>Apply Blur</button>
+        </div>
+    );
 };
 
 const MetadataCleaner = ({ imgRef, image, onResultChange }) => {
     const clean = () => {
-        // Drawing to canvas naturally strips most EXIF
         const canvas = document.createElement('canvas');
         const img = imgRef.current;
         if (!img) return;
@@ -157,10 +218,15 @@ const MetadataCleaner = ({ imgRef, image, onResultChange }) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
         canvas.toBlob(blob => {
-            onResultChange({ text: 'Stripped EXIF Metadata', blob, filename: 'clean.png' });
+            onResultChange({ text: 'Stripped EXIF Metadata (Camera, Location, etc.)', blob, filename: 'clean.png' });
         });
     };
-    return <button className="btn-primary" onClick={clean} style={{ width: '100%' }}>Clean Metadata</button>;
+    return (
+        <div className="card p-20 text-center">
+            <p className="opacity-6 smallest mb-15">This tool re-renders the image on a canvas, which removes sensitive metadata like GPS coordinates and camera info.</p>
+            <button className="btn-primary w-full" onClick={clean}>Remove All Metadata</button>
+        </div>
+    );
 };
 
 const BlackWhiteFilter = ({ imgRef, image, onResultChange }) => {
@@ -177,7 +243,7 @@ const BlackWhiteFilter = ({ imgRef, image, onResultChange }) => {
             onResultChange({ text: 'Applied B&W Filter', blob, filename: 'bw.png' });
         });
     };
-    return <button className="btn-primary" onClick={apply} style={{ width: '100%' }}>Apply B&W Filter</button>;
+    return <button className="btn-primary w-full" onClick={apply}>Apply B&W Filter</button>;
 };
 
 const SepiaFilter = ({ imgRef, image, onResultChange }) => {
@@ -194,7 +260,7 @@ const SepiaFilter = ({ imgRef, image, onResultChange }) => {
             onResultChange({ text: 'Applied Sepia Filter', blob, filename: 'sepia.png' });
         });
     };
-    return <button className="btn-primary" onClick={apply} style={{ width: '100%' }}>Apply Sepia Filter</button>;
+    return <button className="btn-primary w-full" onClick={apply}>Apply Sepia Filter</button>;
 };
 
 const ImageCropper = ({ imgRef, onResultChange }) => {
@@ -215,12 +281,12 @@ const ImageCropper = ({ imgRef, onResultChange }) => {
         });
     };
     return (
-        <div className="grid gap-10">
-            <div className="grid grid-2-cols gap-5">
+        <div className="card p-20 grid gap-10">
+            <div className="grid grid-2-cols gap-10">
                 {['x','y','w','h'].map(k => (
-                    <div key={k} className="flex-between card p-5">
-                        <span className="small uppercase">{k}</span>
-                        <input type="number" className="pill" style={{width: '60px', padding: '5px'}} value={crop[k]} onChange={e=>setCrop({...crop, [k]: parseInt(e.target.value)})} />
+                    <div key={k} className="form-group">
+                        <label>{k.toUpperCase()} (%)</label>
+                        <input type="number" className="pill" value={crop[k]} onChange={e=>setCrop({...crop, [k]: Math.min(100, Math.max(0, parseInt(e.target.value)||0))})} />
                     </div>
                 ))}
             </div>
@@ -235,7 +301,12 @@ const ImageToBase64 = ({ image, onResultChange }) => {
         reader.onload = (e) => onResultChange({ text: e.target.result, filename: 'image_b64.txt' });
         reader.readAsDataURL(image);
     };
-    return <button className="btn-primary w-full" onClick={convert}>Convert Image to Base64</button>;
+    return (
+        <div className="card p-20 text-center">
+            <p className="opacity-6 smallest mb-15">Convert image into a Base64 string for CSS or HTML embedding.</p>
+            <button className="btn-primary w-full" onClick={convert}>Generate Base64</button>
+        </div>
+    );
 };
 
 const SvgFilters = ({ imgRef, onResultChange }) => {
@@ -250,20 +321,25 @@ const SvgFilters = ({ imgRef, onResultChange }) => {
         if (filter === 'posterize') ctx.filter = 'contrast(200%) brightness(150%) saturate(200%)';
         else if (filter === 'vintage') ctx.filter = 'sepia(50%) hue-rotate(-30deg) saturate(120%)';
         else if (filter === 'cold') ctx.filter = 'hue-rotate(180deg) saturate(80%)';
+        else if (filter === 'dramatic') ctx.filter = 'contrast(150%) brightness(80%) saturate(120%)';
         ctx.drawImage(img, 0, 0);
         canvas.toBlob(blob => {
             onResultChange({ text: `Applied ${filter} filter`, blob, filename: `${filter}.png` });
         });
     };
     return (
-        <div className="grid gap-10">
-            <select className="pill" value={filter} onChange={e=>setFilter(e.target.value)}>
-                <option value="none">Normal</option>
-                <option value="posterize">Posterize</option>
-                <option value="vintage">Vintage</option>
-                <option value="cold">Cold</option>
-            </select>
-            <button className="btn-primary w-full" onClick={apply}>Apply SVG Filter</button>
+        <div className="card p-20 grid gap-15">
+            <div className="form-group">
+                <label>Select Filter</label>
+                <select className="pill" value={filter} onChange={e=>setFilter(e.target.value)}>
+                    <option value="none">Normal</option>
+                    <option value="posterize">Posterize</option>
+                    <option value="vintage">Vintage</option>
+                    <option value="cold">Cold</option>
+                    <option value="dramatic">Dramatic</option>
+                </select>
+            </div>
+            <button className="btn-primary w-full" onClick={apply}>Apply Filter</button>
         </div>
     );
 };
@@ -282,7 +358,7 @@ const InvertFilter = ({ imgRef, image, onResultChange }) => {
             onResultChange({ text: 'Applied Invert Filter', blob, filename: 'invert.png' });
         });
     };
-    return <button className="btn-primary" onClick={apply} style={{ width: '100%' }}>Apply Invert Filter</button>;
+    return <button className="btn-primary w-full" onClick={apply} style={{ width: '100%' }}>Apply Invert Filter</button>;
 };
 
 export default ImageTools;

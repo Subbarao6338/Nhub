@@ -45,8 +45,8 @@ const TOOLS = [
     { id: 'dev-main', title: 'Developer Hub', icon: 'terminal', category: 'Developer', component: DevTools, subTools: ['json-formatter', 'jwt-decoder', 'cron-helper', 'sql-formatter', 'regex-tester', 'base64', 'diff-viewer', 'markdown-preview', 'uuid-gen', 'url-decode', 'yaml-json', 'minify', 'xml-json'] },
 
     // Math & Science
-    { id: 'edu-main', title: 'Education Hub', icon: 'school', category: 'Education', component: EducationTools, subTools: ['periodic-table', 'unit-circle', 'physics-constants', 'scientific-calc'] },
-    { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['csv-viewer', 'data-visualizer', 'anomaly-detect', 'stat-calc', 'data-quality', 'data-profiling', 'data-anonymizer', 'json-csv'] },
+    { id: 'edu-main', title: 'Education Hub', icon: 'school', category: 'Education', component: EducationTools, subTools: ['periodic-table', 'unit-circle', 'physics-constants', 'scientific-calc', 'prime-factorizer'] },
+    { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['csv-viewer', 'data-visualizer', 'anomaly-detect', 'stat-calc', 'data-quality', 'data-profiling', 'data-anonymizer', 'json-csv', 'mock-gen'] },
     { id: 'unit-main', title: 'Unit Converter', icon: 'balance', category: 'Education', component: UnitConverterTools, subTools: ['length-conv', 'weight-conv', 'temp-conv', 'currency-conv', 'data-conv'] },
 
     // System & Tools
@@ -54,7 +54,7 @@ const TOOLS = [
     { id: 'travel-main', title: 'Travel & Outdoor', icon: 'explore', category: 'Sensors', component: TravelTools, subTools: ['world-clock', 'timezone-conv', 'packing-list'] },
     { id: 'time-main', title: 'Date & Time', icon: 'schedule', category: 'Utility', component: DateTimeTools, subTools: ['age-calculator', 'timestamp-conv', 'stopwatch', 'pomodoro-timer', 'world-clock', 'timezone-conv', 'panchangam', 'date-diff', 'countdown'] },
     { id: 'finance-main', title: 'Finance Tools', icon: 'payments', category: 'Utility', component: FinanceTools, subTools: ['currency-conv', 'vat-calc', 'inflation', 'loan-calc', 'compound-int', 'cagr', 'dcf', 'tip-split', 'investment-calc'] },
-    { id: 'health-main', title: 'Health Hub', icon: 'monitor_heart', category: 'Health', component: HealthTools, subTools: ['bmr-calc', 'bmi-calc', 'calorie-calc', 'water-tracker'] },
+    { id: 'health-main', title: 'Health Hub', icon: 'monitor_heart', category: 'Health', component: HealthTools, subTools: ['bmr-calc', 'bmi-calc', 'calorie-calc', 'water-tracker', 'sleep-calc', 'macro-calc'] },
     { id: 'game-main', title: 'Games Hub', icon: 'casino', category: 'Games', component: GameTools, subTools: ['dice-roller', 'heads-tails', 'snake-game', '2048', 'sudoku', 'tictactoe', 'dino-jump'] },
     { id: 'security-main', title: 'Privacy & Security', icon: 'security', category: 'Security', component: PrivacySecurityTools, subTools: ['password-gen', 'hash-gen', 'rsa-gen', 'hmac-calc', 'security-info', 'privacy-audit', 'password-strength', 'data-anonymizer', 'aes-encrypt'] },
     { id: 'weather-main', title: 'Weather', icon: 'filter_drama', category: 'Sensors', component: WeatherTools, subTools: ['weather-forecast'] },
@@ -338,18 +338,28 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
   );
 };
 
-const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, searchQuery, highlightText }) => (
-    <div id={`card-${tool.id}`} className="card" style={{'--delay': idx}} onClick={() => openTool(tool.id)}>
-       <div className="card-actions">
-            <button className={`pin-btn ${isPinned ? 'active' : ''}`} onClick={(e) => togglePin(e, tool.id)}><span className="material-icons">push_pin</span></button>
-            <button onClick={(e) => handleShare(e, tool)}><span className="material-icons">share</span></button>
-       </div>
-       <div className="card-header">
-            <div className="card-icon flex-center" style={{ background: 'var(--bg)' }}><span className="material-icons">{tool.icon}</span></div>
-            <div className="card-title" dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
+const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, searchQuery, highlightText }) => {
+    const onKeyDown = React.useCallback(e => {
+        if (e.key === 'Enter') openTool(tool.id);
+    }, [openTool, tool.id]);
+
+    return (
+        <div id={`card-${tool.id}`} className="card" style={{'--delay': idx}} onClick={() => openTool(tool.id)} tabIndex="0" onKeyDown={onKeyDown}>
+           <div className="card-actions">
+                <button className={`pin-btn ${isPinned ? 'active' : ''}`} onClick={(e) => togglePin(e, tool.id)} aria-label={isPinned ? 'Unpin tool' : 'Pin tool'}>
+                    <span className="material-icons">push_pin</span>
+                </button>
+                <button onClick={(e) => handleShare(e, tool)} aria-label="Share tool">
+                    <span className="material-icons">share</span>
+                </button>
+           </div>
+           <div className="card-header">
+                <div className="card-icon flex-center" style={{ background: 'var(--bg)' }}><span className="material-icons">{tool.icon}</span></div>
+                <div className="card-title" dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
+            </div>
         </div>
-    </div>
-));
+    );
+});
 
 const getCategoryIcon = (cat) => {
     const icons = {

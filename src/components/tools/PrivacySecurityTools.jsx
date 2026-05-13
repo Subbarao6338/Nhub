@@ -10,7 +10,7 @@ const PrivacySecurityTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'audit', label: 'Privacy Audit' },
     { id: 'strength', label: 'Strength' },
     { id: 'anonymizer', label: 'Anonymizer' },
-    { id: 'aes', label: 'AES Encrypt' }
+    { id: 'aes', label: 'AES (GCM)' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('password-gen');
@@ -31,7 +31,8 @@ const PrivacySecurityTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         'privacy-audit': 'audit',
         'password-strength': 'strength',
         'data-anonymizer': 'anonymizer',
-        'aes-encrypt': 'aes'
+        'aes-encrypt': 'aes',
+        'aes-decrypt': 'aes'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -79,13 +80,15 @@ const PasswordGen = ({ onResultChange }) => {
         onResultChange({ text: res, filename: 'password.txt' });
     };
     return (
-        <div className="card p-20 text-center">
-            <div className="flex-center gap-15 mb-20">
-                <label>Length: {len}</label>
-                <input type="range" min="8" max="64" value={len} onChange={e=>setLen(e.target.value)} />
+        <div className="card p-30 text-center">
+            <div className="form-group mb-20">
+                <label>Password Length: {len}</label>
+                <input type="range" min="8" max="64" value={len} onChange={e=>setLen(e.target.value)} className="w-full" />
             </div>
-            <div className="tool-result mb-20 font-mono" style={{wordBreak: 'break-all'}}>{pass || '---'}</div>
-            <button className="btn-primary w-full" onClick={gen}>Generate Password</button>
+            <div className="tool-result mb-20 font-mono" style={{wordBreak: 'break-all', fontSize: '1.2rem'}}>{pass || 'Click generate...'}</div>
+            <button className="btn-primary w-full" onClick={gen}>
+                <span className="material-icons mr-10">key</span> Generate Secure Password
+            </button>
         </div>
     );
 };
@@ -93,17 +96,29 @@ const PasswordGen = ({ onResultChange }) => {
 const HashGen = ({ onResultChange }) => {
   const [input, setInput] = useState('');
   const [res, setRes] = useState('');
+  const [algo, setAlgo] = useState('SHA-256');
+
   const hash = async () => {
     const msg = new TextEncoder().encode(input);
-    const buf = await crypto.subtle.digest('SHA-256', msg);
+    const buf = await crypto.subtle.digest(algo, msg);
     const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
     setRes(hex);
     onResultChange({ text: hex, filename: 'hash.txt' });
   };
+
   return (
-    <div className="card p-15 grid gap-10">
-      <textarea className="pill font-mono" rows="3" placeholder="Input..." value={input} onChange={e=>setInput(e.target.value)} />
-      <button className="btn-primary" onClick={hash}>SHA-256 Hash</button>
+    <div className="card p-20 grid gap-15">
+      <div className="form-group">
+          <label>Hash Algorithm</label>
+          <select className="pill" value={algo} onChange={e=>setAlgo(e.target.value)}>
+              <option value="SHA-256">SHA-256</option>
+              <option value="SHA-384">SHA-384</option>
+              <option value="SHA-512">SHA-512</option>
+              <option value="SHA-1">SHA-1 (Legacy)</option>
+          </select>
+      </div>
+      <textarea className="pill font-mono" rows="4" placeholder="Enter text to hash..." value={input} onChange={e=>setInput(e.target.value)} />
+      <button className="btn-primary" onClick={hash}>Generate {algo} Hash</button>
       {res && <div className="tool-result font-mono text-xs break-all">{res}</div>}
     </div>
   );
@@ -140,9 +155,15 @@ const RsaGen = () => {
         <div className="grid gap-15">
             <button className="btn-primary" onClick={gen} disabled={loading}>{loading ? 'Generating 2048-bit keys...' : 'Generate RSA Key Pair'}</button>
             {keys && (
-                <div className="grid gap-10">
-                    <textarea className="pill font-mono" rows="5" readOnly value={keys.public} />
-                    <textarea className="pill font-mono" rows="5" readOnly value={keys.private} />
+                <div className="grid grid-2-cols gap-10">
+                    <div className="flex-column gap-5">
+                        <label className="smallest uppercase font-bold opacity-6">Public Key</label>
+                        <textarea className="pill font-mono" rows="10" readOnly value={keys.public} />
+                    </div>
+                    <div className="flex-column gap-5">
+                        <label className="smallest uppercase font-bold opacity-6">Private Key</label>
+                        <textarea className="pill font-mono" rows="10" readOnly value={keys.private} />
+                    </div>
                 </div>
             )}
         </div>
@@ -151,27 +172,61 @@ const RsaGen = () => {
 
 const AesTool = ({ onResultChange }) => {
     const [text, setText] = useState('Secret message');
-    const [key, setKey] = useState('secret-key');
+    const [key, setKey] = useState('secret-password');
     const [res, setRes] = useState('');
+    const [mode, setMode] = useState('encrypt');
 
-    const encrypt = async () => {
+    const handleAction = async () => {
+        if (!key) return alert("Key required");
         const enc = new TextEncoder();
-        const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(key.padEnd(32).slice(0,32)), "AES-GCM", false, ["encrypt"]);
-        const iv = crypto.getRandomValues(new Uint8Array(12));
-        const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, keyMaterial, enc.encode(text));
-        const combined = new Uint8Array(iv.length + encrypted.byteLength);
-        combined.set(iv); combined.set(new Uint8Array(encrypted), iv.length);
-        const b64 = btoa(String.fromCharCode(...combined));
-        setRes(b64);
-        onResultChange({ text: b64, filename: 'encrypted.txt' });
+
+        // Derive key from password
+        const passwordKey = await crypto.subtle.importKey("raw", enc.encode(key), "PBKDF2", false, ["deriveKey"]);
+        const salt = enc.encode("nature-salt"); // In real app, use random salt
+        const derivedKey = await crypto.subtle.deriveKey(
+            { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+            passwordKey,
+            { name: "AES-GCM", length: 256 },
+            false,
+            ["encrypt", "decrypt"]
+        );
+
+        if (mode === 'encrypt') {
+            const iv = crypto.getRandomValues(new Uint8Array(12));
+            const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, derivedKey, enc.encode(text));
+            const combined = new Uint8Array(iv.length + encrypted.byteLength);
+            combined.set(iv); combined.set(new Uint8Array(encrypted), iv.length);
+            const b64 = btoa(String.fromCharCode(...combined));
+            setRes(b64);
+            onResultChange({ text: b64, filename: 'encrypted.txt' });
+        } else {
+            try {
+                const combined = new Uint8Array(atob(text).split("").map(c => c.charCodeAt(0)));
+                const iv = combined.slice(0, 12);
+                const data = combined.slice(12);
+                const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, derivedKey, data);
+                const decoded = new TextDecoder().decode(decrypted);
+                setRes(decoded);
+                onResultChange({ text: decoded });
+            } catch(e) { alert("Decryption failed. Check key/data."); }
+        }
     };
 
     return (
-        <div className="card p-15 grid gap-10">
-            <input className="pill" placeholder="Key" value={key} onChange={e=>setKey(e.target.value)} />
-            <textarea className="pill font-mono" rows="3" value={text} onChange={e=>setText(e.target.value)} />
-            <button className="btn-primary" onClick={encrypt}>AES-GCM Encrypt</button>
-            {res && <div className="tool-result font-mono text-xs break-all">{res}</div>}
+        <div className="card p-20 grid gap-15">
+            <div className="pill-group">
+                <button className={`pill ${mode === 'encrypt' ? 'active' : ''}`} onClick={()=>setMode('encrypt')}>Encrypt</button>
+                <button className={`pill ${mode === 'decrypt' ? 'active' : ''}`} onClick={()=>setMode('decrypt')}>Decrypt</button>
+            </div>
+            <input className="pill" type="password" placeholder="Passphrase" value={key} onChange={e=>setKey(e.target.value)} />
+            <textarea className="pill font-mono" rows="4" value={text} onChange={e=>setText(e.target.value)} placeholder={mode === 'encrypt' ? 'Message to encrypt' : 'Base64 to decrypt'} />
+            <button className="btn-primary" onClick={handleAction}>{mode.toUpperCase()}</button>
+            {res && (
+                <div className="tool-result">
+                    <div className="opacity-6 smallest mb-5 uppercase font-bold">Result</div>
+                    <div className="font-mono break-all">{res}</div>
+                </div>
+            )}
         </div>
     );
 };
@@ -191,10 +246,10 @@ const HmacCalc = ({ onResultChange }) => {
     };
 
     return (
-        <div className="card p-15 grid gap-10">
-            <input className="pill" placeholder="Key" value={key} onChange={e=>setKey(e.target.value)} />
-            <textarea className="pill font-mono" rows="3" placeholder="Message" value={msg} onChange={e=>setMsg(e.target.value)} />
-            <button className="btn-primary" onClick={calc}>HMAC SHA-256</button>
+        <div className="card p-20 grid gap-15">
+            <input className="pill" placeholder="Secret Key" value={key} onChange={e=>setKey(e.target.value)} />
+            <textarea className="pill font-mono" rows="3" placeholder="Message to sign..." value={msg} onChange={e=>setMsg(e.target.value)} />
+            <button className="btn-primary" onClick={calc}>Generate HMAC SHA-256</button>
             {res && <div className="tool-result font-mono text-xs break-all">{res}</div>}
         </div>
     );
@@ -204,44 +259,48 @@ const PasswordStrength = ({ onResultChange }) => {
     const [pass, setPass] = useState('');
     const check = (p) => {
         let score = 0;
-        if (p.length > 8) score++;
-        if (p.length > 12) score++;
+        if (p.length >= 8) score++;
+        if (p.length >= 12) score++;
         if (/[A-Z]/.test(p)) score++;
         if (/[0-9]/.test(p)) score++;
         if (/[^A-Za-z0-9]/.test(p)) score++;
         return score;
     };
     const score = check(pass);
-    const labels = ['Very Weak', 'Weak', 'Fair', 'Strong', 'Very Strong', 'Excellent'];
+    const labels = ['Too Short', 'Weak', 'Fair', 'Strong', 'Very Strong', 'Excellent'];
+    const colors = ['var(--danger)', 'var(--danger)', 'var(--nature-gold)', 'var(--nature-moss)', 'var(--nature-moss)', 'var(--primary)'];
 
     useEffect(() => {
-        onResultChange({ text: `Strength for "${pass}": ${labels[score]}`, filename: 'strength.txt' });
+        if (pass) onResultChange({ text: `Strength for "${pass}": ${labels[score]}`, filename: 'strength.txt' });
     }, [pass]);
 
     return (
-        <div className="card p-20 text-center">
-            <input type="password" className="pill w-full mb-15" value={pass} onChange={e=>setPass(e.target.value)} placeholder="Type password..." />
-            <div className="w-full bg-border rounded-full h-10 mb-10 overflow-hidden">
-                <div style={{ width: `${(score/5)*100}%`, background: score < 2 ? 'var(--danger)' : score < 4 ? 'var(--nature-gold)' : 'var(--nature-moss)', height: '100%', transition: 'all 0.3s' }} />
+        <div className="card p-30 text-center">
+            <input type="password" className="pill w-full mb-20 text-center" style={{fontSize: '1.2rem'}} value={pass} onChange={e=>setPass(e.target.value)} placeholder="Type password..." />
+            <div className="w-full bg-border rounded-full h-12 mb-15 overflow-hidden p-2">
+                <div style={{ width: `${(score/5)*100}%`, background: colors[score], height: '100%', borderRadius: 'inherit', transition: 'all 0.5s var(--transition-bounce)' }} />
             </div>
-            <div className="font-bold" style={{ color: score < 2 ? 'var(--danger)' : score < 4 ? 'var(--nature-gold)' : 'var(--nature-moss)' }}>{labels[score]}</div>
+            <div className="font-bold h2" style={{ color: colors[score] }}>{labels[score]}</div>
+            <p className="opacity-5 smallest mt-10">Complexity analysis: Length, Uppercase, Numbers, Special Characters.</p>
         </div>
     );
 };
 
 const DataAnonymizer = ({ onResultChange }) => {
-    const [input, setInput] = useState('My email is test@example.com and phone is 123-456-7890.');
+    const [input, setInput] = useState('Contact: john.doe@example.com or call 555-0199. IP: 192.168.1.1');
     const anon = () => {
         let res = input;
         res = res.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g, '[EMAIL]');
         res = res.replace(/\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g, '[PHONE]');
+        res = res.replace(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/g, '[IP_ADDR]');
         setInput(res);
         onResultChange({ text: res, filename: 'anonymized.txt' });
     };
     return (
-        <div className="card p-15 grid gap-10">
-            <textarea className="pill font-mono" rows="5" value={input} onChange={e=>setInput(e.target.value)} />
-            <button className="btn-primary" onClick={anon}>Anonymize PII</button>
+        <div className="card p-20 grid gap-15">
+            <label className="smallest uppercase font-bold opacity-6">Text with Sensitive Data</label>
+            <textarea className="pill font-mono" rows="6" value={input} onChange={e=>setInput(e.target.value)} />
+            <button className="btn-primary" onClick={anon}>Anonymize PII (Email, Phone, IP)</button>
         </div>
     );
 };
@@ -263,28 +322,33 @@ const PrivacyAudit = () => {
     return (
         <div className="grid gap-10">
             {Object.entries(perms).map(([k, v]) => (
-                <div key={k} className="card p-15 flex-between no-animation">
-                    <span className="capitalize">{k}</span>
-                    <span className="pill" style={{ fontSize: '0.75rem', background: v === 'granted' ? 'var(--nature-moss)' : v === 'denied' ? 'var(--danger)' : 'var(--border)', color: v === 'granted' ? 'white' : 'inherit' }}>{v}</span>
+                <div key={k} className="card p-20 flex-between no-animation glass-card">
+                    <div className="flex-center gap-15">
+                        <span className="material-icons opacity-6">{k === 'camera' ? 'videocam' : k === 'microphone' ? 'mic' : k === 'geolocation' ? 'location_on' : 'notifications'}</span>
+                        <span className="capitalize font-bold">{k}</span>
+                    </div>
+                    <span className="pill" style={{ fontSize: '0.75rem', background: v === 'granted' ? 'var(--nature-moss)' : v === 'denied' ? 'var(--danger)' : 'var(--border)', color: 'white' }}>{v.toUpperCase()}</span>
                 </div>
             ))}
-            <button className="pill mt-10" onClick={check}>Refresh Permissions</button>
+            <button className="pill mt-10 m-auto" onClick={check}>
+                <span className="material-icons">refresh</span> Refresh Audit
+            </button>
         </div>
     );
 };
 
 const SecurityInfo = () => (
-    <div className="card p-20 about-content">
-        <h3>Security Best Practices</h3>
+    <div className="card p-30 about-content glass-card">
+        <h2 className="color-primary">Security Best Practices</h2>
         <ul>
-            <li>Use unique, complex passwords for every account.</li>
-            <li>Enable Two-Factor Authentication (2FA) whenever possible.</li>
-            <li>Be cautious of phishing attempts and unexpected links.</li>
-            <li>Keep your browser and operating system updated.</li>
-            <li>Use a VPN on public Wi-Fi networks.</li>
+            <li><strong>Use unique, complex passwords</strong> for every account. Consider using the Password Gen tool.</li>
+            <li><strong>Enable Multi-Factor Authentication (MFA)</strong> whenever possible.</li>
+            <li><strong>Audit your browser permissions</strong> regularly using our Privacy Audit tool.</li>
+            <li><strong>Keep your browser and system updated</strong> to patch security vulnerabilities.</li>
+            <li><strong>Be wary of suspicious links</strong> and always check the URL before entering data.</li>
         </ul>
-        <div className="tool-result mt-20">
-            <b>Environment:</b> {window.isSecureContext ? 'Secure Context (HTTPS)' : 'Insecure Context'}
+        <div className="tool-result mt-30 text-center">
+            <b>Secure Environment:</b> {window.isSecureContext ? <span className="color-primary">YES (HTTPS)</span> : <span className="color-danger">NO</span>}
         </div>
     </div>
 );

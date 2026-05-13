@@ -17,52 +17,46 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{
+        <div className="flex-center flex-column" style={{
           padding: '2rem',
           textAlign: 'center',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
           height: '100vh',
-          backgroundColor: '#f8f9fa',
-          color: '#212529'
+          background: 'var(--bg-gradient)',
+          color: 'var(--on-surface)'
         }}>
-          <h1 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Something went wrong</h1>
-          <p style={{ marginBottom: '1.5rem', color: '#6c757d' }}>
-            The application encountered an unexpected error.
+          <span className="material-icons" style={{ fontSize: '5rem', color: 'var(--danger)', marginBottom: '1rem' }}>eco</span>
+          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '1rem' }}>Nature hit a snag</h1>
+          <p style={{ marginBottom: '1.5rem', color: 'var(--text-muted)', maxWidth: '400px' }}>
+            Even in the digital wilderness, things can go wrong. We've encountered an unexpected error.
           </p>
-          <button
-            onClick={() => {
-              localStorage.clear();
-              window.location.reload();
-            }}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#4f46e5',
-              color: 'white',
-              border: 'none',
-              borderRadius: '0.5rem',
-              cursor: 'pointer',
-              fontWeight: '500'
-            }}
-          >
-            Clear Data & Refresh
-          </button>
+          <div className="flex-gap">
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  this.setState({ hasError: false, error: null });
+                  window.location.reload();
+                }}
+              >
+                Try Again
+              </button>
+              <button
+                className="pill"
+                onClick={() => {
+                  if (window.confirm("This will clear all your settings and bookmarks. Continue?")) {
+                      localStorage.clear();
+                      window.location.reload();
+                  }
+                }}
+              >
+                Reset App
+              </button>
+          </div>
           {import.meta.env.DEV && (
-            <pre style={{
-              marginTop: '2rem',
-              textAlign: 'left',
-              backgroundColor: '#e9ecef',
-              padding: '1rem',
-              borderRadius: '0.25rem',
-              maxWidth: '90%',
-              overflow: 'auto',
-              fontSize: '0.875rem'
-            }}>
-              {this.state.error && this.state.error.toString()}
-            </pre>
+            <div className="card mt-20 p-20" style={{ maxWidth: '90%', overflow: 'auto', textAlign: 'left' }}>
+              <pre className="font-mono smallest">
+                {this.state.error && this.state.error.toString()}
+              </pre>
+            </div>
           )}
         </div>
       );
