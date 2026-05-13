@@ -139,6 +139,7 @@ def init_db():
     if 'created_at' not in columns:
         # SQLite doesn't allow CURRENT_TIMESTAMP as a default for ADD COLUMN in some environments
         cursor.execute("ALTER TABLE links ADD COLUMN created_at TIMESTAMP DEFAULT 0")
+        cursor.execute("UPDATE links SET created_at = CURRENT_TIMESTAMP WHERE created_at = 0")
 
     # Deduplicate before adding unique index
     cursor.execute('''

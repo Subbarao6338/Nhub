@@ -4,7 +4,7 @@ import API_BASE from '../api';
 const BookmarkModal = ({ link, profileId, profiles, enableProfiles, onClose, onSave }) => {
   const [title, setTitle] = useState(link?.title || '');
   const [url, setUrl] = useState(link?.url || '');
-  const [urls, setUrls] = useState(link?.urls || []);
+  const [urls, setUrls] = useState(link?.urls?.filter(u => u !== link?.url) || []);
   const [icon, setIcon] = useState(link?.icon || '');
   const [category, setCategory] = useState(link?.category || 'Utilities');
   const [selectedProfileId, setSelectedProfileId] = useState(link?.profile_id || profileId);
@@ -97,7 +97,7 @@ const BookmarkModal = ({ link, profileId, profiles, enableProfiles, onClose, onS
             <select
               value={selectedProfileId}
               onChange={(e) => setSelectedProfileId(parseInt(e.target.value))}
-              style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text)' }}
+              style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--on-surface)' }}
             >
               {profiles?.map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
