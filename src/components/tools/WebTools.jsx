@@ -49,10 +49,12 @@ const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
           </div>
       )}
 
-      {activeTab === 'social' && <SocialTools toolId={toolId} />}
-      {activeTab === 'web-md' && <WebToMarkdown onResultChange={onResultChange} />}
-      {activeTab === 'mhtml' && <WebToMhtml onResultChange={onResultChange} />}
-      {activeTab === 'url-pdf' && <UrlToPdf onResultChange={onResultChange} />}
+      <div className="hub-content animate-fadeIn">
+        {activeTab === 'social' && <SocialTools toolId={toolId} />}
+        {activeTab === 'web-md' && <WebToMarkdown onResultChange={onResultChange} />}
+        {activeTab === 'mhtml' && <WebToMhtml onResultChange={onResultChange} />}
+        {activeTab === 'url-pdf' && <UrlToPdf onResultChange={onResultChange} />}
+      </div>
     </div>
   );
 };
@@ -79,17 +81,24 @@ const SocialTools = ({ toolId }) => {
     } catch (err) { setStatus('error'); }
   };
   return (
-    <div className="grid gap-15 card p-15">
-      <input type="text" value={url} onChange={e => setUrl(e.target.value)} placeholder="Media URL (YouTube, Twitter, Insta)..." className="pill w-full" />
-      <div className="flex-gap">
-          <button className={`pill flex-1 ${type === 'auto' ? 'active' : ''}`} onClick={() => setType('auto')}>Auto</button>
-          <button className={`pill flex-1 ${type === 'video' ? 'active' : ''}`} onClick={() => setType('video')}>Video</button>
-          <button className={`pill flex-1 ${type === 'audio' ? 'active' : ''}`} onClick={() => setType('audio')}>Audio</button>
+    <div className="grid gap-12 card p-20">
+      <div className="form-group">
+        <label>Media URL</label>
+        <input type="text" value={url} onChange={e => setUrl(e.target.value)} placeholder="YouTube, Twitter, Instagram URL..." className="pill w-full" />
       </div>
-      <button className="btn-primary w-full" onClick={handleDownload} disabled={status === 'downloading' || !url}>
+      <div className="form-group">
+        <label>Download Type</label>
+        <div className="flex-gap">
+            <button className={`pill flex-1 ${type === 'auto' ? 'active' : ''}`} onClick={() => setType('auto')}>Auto</button>
+            <button className={`pill flex-1 ${type === 'video' ? 'active' : ''}`} onClick={() => setType('video')}>Video</button>
+            <button className={`pill flex-1 ${type === 'audio' ? 'active' : ''}`} onClick={() => setType('audio')}>Audio</button>
+        </div>
+      </div>
+      <button className="btn-primary w-full" onClick={handleDownload} disabled={status === 'downloading' || !url} style={{marginTop: '10px'}}>
+        <span className="material-icons mr-10">{status === 'downloading' ? 'sync' : 'download'}</span>
         {status === 'downloading' ? 'Processing...' : 'Download Media ZIP'}
       </button>
-      {status === 'error' && <div className="text-danger small text-center">Download failed. Please check the URL.</div>}
+      {status === 'error' && <div className="danger-box text-center mt-10">Download failed. Please check the URL.</div>}
     </div>
   );
 };
@@ -127,32 +136,52 @@ const WebToMarkdown = ({ onResultChange }) => {
   };
 
   return (
-    <div className="card p-15 grid gap-10">
-      <div className="flex-gap">
-        <input className="pill flex-1" placeholder="Enter URL..." value={url} onChange={e=>setUrl(e.target.value)} />
-        <button className="btn-primary" onClick={fetchUrl} disabled={loading || !url}>{loading ? '...' : 'Fetch'}</button>
+    <div className="card p-20 grid gap-15">
+      <div className="form-group">
+        <label>Fetch from URL</label>
+        <div className="flex-gap">
+          <input className="pill flex-1" placeholder="https://example.com" value={url} onChange={e=>setUrl(e.target.value)} />
+          <button className="btn-primary" onClick={fetchUrl} disabled={loading || !url}>
+            <span className="material-icons">{loading ? 'sync' : 'search'}</span>
+          </button>
+        </div>
       </div>
-      <div className="text-center opacity-5">OR</div>
-      <textarea className="pill font-mono" rows="5" placeholder="Paste HTML..." value={html} onChange={e=>setHtml(e.target.value)} />
-      <button className="btn-primary" onClick={() => convert()}>Convert HTML to Markdown</button>
+      <div className="text-center opacity-6 font-bold" style={{fontSize: '0.8rem'}}>— OR —</div>
+      <div className="form-group">
+        <label>Paste HTML Content</label>
+        <textarea className="pill font-mono" rows="6" placeholder="<html>...</html>" value={html} onChange={e=>setHtml(e.target.value)} />
+      </div>
+      <button className="btn-primary w-full" onClick={() => convert()}>
+        <span className="material-icons mr-10">code</span>
+        Convert to Markdown
+      </button>
     </div>
   );
 };
 
 const WebToMhtml = ({ onResultChange }) => {
     const [url, setUrl] = useState('');
+    const [loading, setLoading] = useState(false);
     const download = async () => {
+        setLoading(true);
         try {
             const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
             const data = await res.json();
             const blob = new Blob([data.contents], { type: 'application/x-mimearchive' });
-            onResultChange({ text: 'Web Archive (MHTML)', blob, filename: 'web.mhtml' });
+            onResultChange({ text: 'Web Archive (MHTML) successfully created.', blob, filename: 'web.mhtml' });
         } catch(e) { alert("Failed to fetch page"); }
+        finally { setLoading(false); }
     };
     return (
-        <div className="card p-15 grid gap-15">
-            <input className="pill w-full" placeholder="Enter Web URL..." value={url} onChange={e=>setUrl(e.target.value)} />
-            <button className="btn-primary" onClick={download} disabled={!url}>Save as MHTML</button>
+        <div className="card p-20 grid gap-15">
+            <div className="form-group">
+                <label>Target URL</label>
+                <input className="pill w-full" placeholder="https://example.com" value={url} onChange={e=>setUrl(e.target.value)} />
+            </div>
+            <button className="btn-primary w-full" onClick={download} disabled={!url || loading}>
+                <span className="material-icons mr-10">{loading ? 'sync' : 'archive'}</span>
+                {loading ? 'Archiving...' : 'Save as MHTML'}
+            </button>
         </div>
     );
 };
@@ -192,7 +221,7 @@ const UrlToPdf = ({ onResultChange }) => {
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
             pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            onResultChange({ text: 'Converted URL to PDF', blob: pdf.output('blob'), filename: 'webpage.pdf' });
+            onResultChange({ text: 'Successfully converted URL to PDF.', blob: pdf.output('blob'), filename: 'webpage.pdf' });
         } catch(e) {
             alert("Failed to convert URL to PDF: " + e.message);
         } finally {
@@ -201,10 +230,14 @@ const UrlToPdf = ({ onResultChange }) => {
     };
 
     return (
-        <div className="card p-15 grid gap-15">
-            <input className="pill w-full" placeholder="Enter Web URL..." value={url} onChange={e=>setUrl(e.target.value)} />
-            <button className="btn-primary" onClick={convert} disabled={loading || !url}>
-                {loading ? 'Converting...' : 'Convert URL to PDF'}
+        <div className="card p-20 grid gap-15">
+            <div className="form-group">
+                <label>Target URL</label>
+                <input className="pill w-full" placeholder="https://example.com" value={url} onChange={e=>setUrl(e.target.value)} />
+            </div>
+            <button className="btn-primary w-full" onClick={convert} disabled={loading || !url}>
+                <span className="material-icons mr-10">{loading ? 'sync' : 'picture_as_pdf'}</span>
+                {loading ? 'Generating PDF...' : 'Convert URL to PDF'}
             </button>
         </div>
     );

@@ -149,8 +149,11 @@ function App() {
 
   const handleTouchStart = (e) => {
     const container = document.querySelector('.tools-container');
-    if (container && container.scrollTop === 0) {
+    // Only capture touch start if we are at the very top and NOT inside a horizontally scrollable element
+    const isInsideScrollableX = e.target.closest('.scrollable-x');
+    if (container && container.scrollTop <= 0 && !isInsideScrollableX) {
       touchStart.current = e.targetTouches[0].clientY;
+      touchEnd.current = 0; // Reset end position
     } else {
       touchStart.current = 0;
     }
@@ -159,6 +162,13 @@ function App() {
   const handleTouchMove = (e) => {
     if (touchStart.current === 0) return;
     touchEnd.current = e.targetTouches[0].clientY;
+
+    // If user is pulling down (distance > 0), we can prevent default to avoid double scroll/bounce
+    // but ONLY if they've pulled enough to indicate a refresh intent
+    const distance = touchEnd.current - touchStart.current;
+    if (distance > 10 && distance < 120) {
+      // Small pull, let it be natural or slightly resisted
+    }
   };
 
   const handleTouchEnd = () => {

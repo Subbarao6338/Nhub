@@ -102,50 +102,66 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
           </div>
       )}
 
-      {activeTab === 'local' ? (
-          <div className="card p-20 grid gap-15">
-              <textarea className="pill w-full" rows="4" placeholder="Enter text for local analysis..." value={input} onChange={e=>setInput(e.target.value)} />
-              <button className="btn-primary w-full" onClick={runLocalAnalysis}>Analyze Sentiment (Local)</button>
-              {localSentiment && (
-                  <div className="tool-result text-center">
-                      Sentiment: <b className={localSentiment.toLowerCase()}>{localSentiment}</b>
+      <div className="hub-content animate-fadeIn">
+          {activeTab === 'local' ? (
+              <div className="card p-20 grid gap-15">
+                  <div className="form-group">
+                    <label>Text for Local Analysis</label>
+                    <textarea className="pill w-full" rows="4" placeholder="Enter text here..." value={input} onChange={e=>setInput(e.target.value)} />
                   </div>
-              )}
-          </div>
-      ) : activeTab !== 'chat' ? (
-          <>
-            <div className="card p-20 grid gap-15">
-                <textarea className="pill w-full" rows="3" placeholder="Enter prompt..." value={input} onChange={e=>setInput(e.target.value)} />
-                <button className="btn-primary w-full" onClick={activeTab === 'image-gen' ? generateImage : generateText} disabled={loading || !input}>
-                    {loading ? 'Generating...' : 'Generate with AI'}
-                </button>
-            </div>
-            {res && (
-                <div className="mt-20 card p-15 text-center overflow-hidden">
-                    {activeTab === 'image-gen' ? (
-                        <img src={res} alt="AI Gen" style={{ width: '100%', borderRadius: '12px' }} />
-                    ) : (
-                        <div className="text-left font-serif line-height-1.6 whitespace-pre-wrap">{res}</div>
-                    )}
-                </div>
-            )}
-          </>
-      ) : (
-          <div className="grid gap-15">
-              <div className="card p-15 overflow-auto" style={{ maxHeight: '400px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {chat.length === 0 && <div className="text-center opacity-5">Ask me anything...</div>}
-                  {chat.map((m, i) => (
-                      <div key={i} className={`p-10 rounded-12 ${m.role === 'user' ? 'bg-primary color-white ml-20' : 'bg-surface border mr-20'}`}>
-                          {m.content}
+                  <button className="btn-primary w-full" onClick={runLocalAnalysis}>
+                    <span className="material-icons mr-10">analytics</span>
+                    Analyze Sentiment
+                  </button>
+                  {localSentiment && (
+                      <div className="tool-result text-center">
+                          Sentiment Score: <b className={localSentiment.toLowerCase()}>{localSentiment}</b>
                       </div>
-                  ))}
+                  )}
               </div>
-              <div className="flex-gap">
-                  <input className="pill flex-1" value={input} onChange={e=>setInput(e.target.value)} placeholder="Type a message..." onKeyDown={e=>e.key==='Enter' && sendMessage()} />
-                  <button className="icon-btn" onClick={sendMessage} disabled={loading}><span className="material-icons">{loading ? 'refresh' : 'send'}</span></button>
+          ) : activeTab !== 'chat' ? (
+              <div className="grid gap-20">
+                <div className="card p-20 grid gap-15">
+                    <div className="form-group">
+                        <label>{activeTab === 'image-gen' ? 'Image Prompt' : 'Story Topic'}</label>
+                        <textarea className="pill w-full" rows="3" placeholder="Describe what you want to generate..." value={input} onChange={e=>setInput(e.target.value)} />
+                    </div>
+                    <button className="btn-primary w-full" onClick={activeTab === 'image-gen' ? generateImage : generateText} disabled={loading || !input}>
+                        <span className="material-icons mr-10">{loading ? 'sync' : 'auto_awesome'}</span>
+                        {loading ? 'Generating...' : 'Generate with AI'}
+                    </button>
+                </div>
+                {res && (
+                    <div className="card p-15 text-center overflow-hidden">
+                        {activeTab === 'image-gen' ? (
+                            <img src={res} alt="AI Gen" style={{ width: '100%', borderRadius: '12px', boxShadow: 'var(--shadow-md)' }} />
+                        ) : (
+                            <div className="tool-result text-left" style={{marginTop: 0, border: 'none', boxShadow: 'none'}}>
+                                <div className="font-serif line-height-1.6 whitespace-pre-wrap">{res}</div>
+                            </div>
+                        )}
+                    </div>
+                )}
               </div>
-          </div>
-      )}
+          ) : (
+              <div className="grid gap-15">
+                  <div className="card p-15 overflow-auto" style={{ height: '400px', display: 'flex', flexDirection: 'column', gap: '10px', borderRadius: 'var(--radius-lg)' }}>
+                      {chat.length === 0 && <div className="text-center opacity-5 m-auto">Ask me anything...<br/><span className="material-icons" style={{fontSize: '3rem'}}>forum</span></div>}
+                      {chat.map((m, i) => (
+                          <div key={i} className={`p-15 rounded-16 ${m.role === 'user' ? 'bg-primary color-white ml-20' : 'bg-surface border mr-20 shadow-sm'}`} style={{borderRadius: m.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px'}}>
+                              {m.content}
+                          </div>
+                      ))}
+                  </div>
+                  <div className="flex-gap p-5 bg-surface border rounded-full shadow-sm">
+                      <input className="pill flex-1 border-none shadow-none" value={input} onChange={e=>setInput(e.target.value)} placeholder="Type a message..." onKeyDown={e=>e.key==='Enter' && sendMessage()} />
+                      <button className="icon-btn btn-primary" onClick={sendMessage} disabled={loading} style={{width: '44px', height: '44px'}}>
+                        <span className="material-icons">{loading ? 'sync' : 'send'}</span>
+                      </button>
+                  </div>
+              </div>
+          )}
+      </div>
     </div>
   );
 };

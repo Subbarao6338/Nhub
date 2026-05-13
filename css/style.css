@@ -521,6 +521,7 @@ body::before {
   flex: 1;
   overflow-y: auto;
   overscroll-behavior-y: contain;
+  touch-action: pan-y;
   padding: 2.5rem;
   background: var(--surface);
   backdrop-filter: blur(var(--glass-blur));
@@ -583,6 +584,7 @@ body::before {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
+  touch-action: manipulation;
   transition: all 0.4s var(--transition-bounce);
   cursor: pointer;
   display: flex;
@@ -591,14 +593,14 @@ body::before {
   box-shadow: var(--shadow-sm);
   animation: leaf-entry 0.6s var(--transition-bounce) forwards;
   animation-delay: calc(var(--delay) * 0.05s);
-  opacity: 0;
+  opacity: 1; /* Ensure visible by default */
   will-change: transform, opacity;
 }
 
 @keyframes leaf-entry {
   from {
-    opacity: 0;
-    transform: translateY(30px) rotate(5deg) scale(0.9);
+    opacity: 0.2; /* Minimal visibility during animation start */
+    transform: translateY(20px) rotate(2deg) scale(0.95);
   }
   to {
     opacity: 1;
@@ -1045,15 +1047,22 @@ input.pill:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--pri
 /* Tool Specifics */
 .tool-form {
   padding-bottom: 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .tool-result {
   margin-top: 2rem;
-  padding: 2rem;
-  background: var(--nature-mist);
-  border-radius: var(--radius-lg);
+  padding: 1.75rem;
+  background: var(--surface-solid);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
   border-left: 6px solid var(--primary);
-  animation: slideUp 0.4s ease-out;
+  box-shadow: var(--shadow-md);
+  animation: slideUp 0.4s var(--transition-bounce);
+  font-weight: 500;
+  line-height: 1.6;
 }
 
 [data-theme="dark"] .tool-result { background: rgba(255,255,255,0.05); }
@@ -1180,6 +1189,37 @@ body.no-hover-effects .card:hover { transform: none; }
   animation: none !important;
   opacity: 1 !important;
   transform: none !important;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s var(--transition-bounce) forwards;
+}
+
+.tools-container.refreshing {
+  opacity: 0.7;
+  pointer-events: none;
+  transition: all 0.3s ease;
+}
+
+.refresh-indicator {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  animation: slideUp 0.3s var(--transition-bounce);
 }
 
 /* Search Container & Overlay */
