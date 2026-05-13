@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import CategoryNav from './CategoryNav';
 import NatureEmptyState from './NatureEmptyState';
 import API_BASE from '../api';
@@ -8,10 +9,12 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
   const [links, setLinks] = useState([]);
   const [isUrlModalOpen, setIsUrlModalOpen] = useState(false);
   const [selectedLinkForUrls, setSelectedLinkForUrls] = useState(null);
+  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
   const [copiedId, setCopiedId] = useState(null);
 
-  const handleLongPress = (link) => {
+  const handleLongPress = (link, coords) => {
     setSelectedLinkForUrls(link);
+    setModalPosition(coords || { x: window.innerWidth / 2, y: window.innerHeight / 2 });
     setIsUrlModalOpen(true);
   };
 
@@ -187,12 +190,46 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
     alert("All URLs copied to clipboard!");
   };
 
+  const getModalStyle = () => {
+    if (window.innerWidth <= 768) return { display: 'block' }; // Center on mobile
+
+    const modalWidth = 500;
+    const padding = 20;
+    let left = modalPosition.x;
+    let top = modalPosition.y;
+
+    // Boundary checks for width
+    if (left + modalWidth > window.innerWidth) {
+      left = window.innerWidth - modalWidth - padding;
+    }
+
+    // Rough boundary check for height (assuming max-height is 90vh)
+    const estimatedMaxHeight = window.innerHeight * 0.8;
+    if (top + estimatedMaxHeight > window.innerHeight) {
+      top = window.innerHeight - estimatedMaxHeight - padding;
+    }
+
+    if (left < padding) left = padding;
+    if (top < padding) top = padding;
+
+    return {
+      display: 'block',
+      position: 'fixed',
+      left: `${left}px`,
+      top: `${top}px`,
+      transform: 'none',
+      margin: 0,
+      maxWidth: `${modalWidth}px`,
+      maxHeight: '90vh'
+    };
+  };
+
   return (
     <>
-      {isUrlModalOpen && selectedLinkForUrls && (
+      {isUrlModalOpen && selectedLinkForUrls && createPortal(
         <>
           <div className="modal-overlay" style={{display: 'block'}} onClick={() => { setIsUrlModalOpen(false); }}></div>
-          <div className="modal modal-multi-url" style={{ display: 'block' }}>
+          <div className="modal modal-multi-url" style={getModalStyle()}>
             <div className="modal-header-flex">
               <h2>Multiple URLs</h2>
               <button className="icon-btn" onClick={() => setIsUrlModalOpen(false)}>
@@ -218,7 +255,8 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
               <button type="button" className="dismiss-btn" onClick={() => { setIsUrlModalOpen(false); }}>Dismiss</button>
             </div>
           </div>
-        </>
+        </>,
+        document.body
       )}
 
       <CategoryNav
@@ -255,7 +293,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
                   handleShare={handleShare}
                   handleCopy={handleCopy}
                   isCopied={copiedId === link.id}
-                  onLongPress={() => handleLongPress(link)}
+                  onLongPress={(coords) => handleLongPress(link, coords)}
                   categoryIcon={categories[link.category]}
                   hideIcons={hideIcons}
                   hideUrls={hideUrls}
@@ -308,7 +346,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
                   handleShare={handleShare}
                   handleCopy={handleCopy}
                   isCopied={copiedId === link.id}
-                  onLongPress={() => handleLongPress(link)}
+                  onLongPress={(coords) => handleLongPress(link, coords)}
                   categoryIcon={categories[cat]}
                   hideIcons={hideIcons}
                   hideUrls={hideUrls}
@@ -325,29 +363,32 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
 };
 
 const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handleShare, handleCopy, isCopied, onLongPress, categoryIcon, hideIcons, hideUrls, searchQuery, noAnimation }) => {
-  const [pressTimer, setPressTimer] = useState(null);
+  const pressTimer = React.useRef(null);
   const [isPressing, setIsPressing] = useState(false);
   const isLongPressActive = React.useRef(false);
   const cardRef = React.useRef(null);
 
-  const startPress = () => {
+  const startPress = (e) => {
+    const coords = {
+      x: e.clientX || (e.touches ? e.touches[0].clientX : 0),
+      y: e.clientY || (e.touches ? e.touches[0].clientY : 0)
+    };
     isLongPressActive.current = false;
     setIsPressing(true);
-    const timer = setTimeout(() => {
+    pressTimer.current = setTimeout(() => {
       isLongPressActive.current = true;
       if (link.urls && link.urls.length > 1) {
-        onLongPress();
+        onLongPress(coords);
         setIsPressing(false); // Snap back when modal opens
       }
     }, 400); // 400ms for better responsiveness
-    setPressTimer(timer);
   };
 
   const cancelPress = () => {
     setIsPressing(false);
-    if (pressTimer) {
-      clearTimeout(pressTimer);
-      setPressTimer(null);
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
     }
   };
 
