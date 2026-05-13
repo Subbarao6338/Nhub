@@ -1,20 +1,26 @@
 import React from 'react';
 
-const Header = ({ appName, currentProfile, profiles, setView, onSettingsClick, hideBookmarks, children }) => {
+const Header = ({ appName, currentProfile, profiles, setView, onSettingsClick, hideBookmarks, hideToolbox, currentTab, children }) => {
   const profile = profiles.find(p => p.name === currentProfile) || { icon: 'inbox' };
 
   return (
     <header className="top-bar">
       <div
         className="logo-container"
-        onClick={() => setView(hideBookmarks ? 'toolbox' : 'bookmarks')}
+        onClick={() => {
+          if (hideBookmarks) setView('toolbox');
+          else if (hideToolbox) setView('bookmarks');
+          else setView(currentTab === 'bookmarks' ? 'toolbox' : 'bookmarks');
+        }}
       >
         <div className="flex-center" style={{ background: 'var(--primary-glow)', padding: '8px', borderRadius: 'var(--radius-md)' }}>
             <span className="material-icons app-logo" style={{ fontSize: '28px' }}>
               {currentProfile === 'Default' ? 'eco' : (profile.icon || 'person')}
             </span>
         </div>
-        <h1 className="page-title" style={{ fontSize: '1.25rem' }}>{appName || 'Epic Toolbox'}</h1>
+        <h1 className="page-title" style={{ fontSize: '1.25rem' }}>
+          {appName === 'Epic Toolbox' ? (currentTab ? currentTab.charAt(0).toUpperCase() + currentTab.slice(1) : 'Epic Toolbox') : appName}
+        </h1>
       </div>
       <div className="top-actions">
         {children}

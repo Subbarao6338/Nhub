@@ -23,6 +23,7 @@ function App() {
   const [theme, setTheme] = useState(storage.get('hub_theme', 'light'));
   const [accentColor, setAccentColor] = useState(storage.get('hub_accent_color', 'indigo'));
   const [hideBookmarks, setHideBookmarks] = useState(storage.get('hub_hide_bookmarks') !== null ? storage.getBoolean('hub_hide_bookmarks') : false);
+  const [hideToolbox, setHideToolbox] = useState(storage.getBoolean('hub_hide_toolbox', false));
   const [showProjectsTab, setShowProjectsTab] = useState(storage.getBoolean('hub_show_projects_tab', false));
 
   const setTab = (tab, skipHistory = false) => {
@@ -247,16 +248,35 @@ function App() {
     storage.set('hub_hide_bookmarks', hideBookmarks);
   }, [hideBookmarks]);
 
+  useEffect(() => {
+    storage.set('hub_hide_toolbox', hideToolbox);
+  }, [hideToolbox]);
+
   // Tab Validation and Redirection
   useEffect(() => {
+    if (hideBookmarks && hideToolbox) {
+        // Prevent both being hidden simultaneously to avoid redirection loops
+        setHideToolbox(false);
+        storage.set('hub_hide_toolbox', false);
+        return;
+    }
+
     if (hideBookmarks && currentTab === 'bookmarks') {
       setTab('toolbox');
+    } else if (hideToolbox && currentTab === 'toolbox') {
+      setTab('bookmarks');
     } else if (!showProjectsTab && currentTab === 'projects') {
-      setTab('toolbox');
+      setTab(hideToolbox ? 'bookmarks' : 'toolbox');
     } else if (!['toolbox', 'bookmarks', 'projects'].includes(currentTab)) {
-      setTab('toolbox');
+      setTab(hideBookmarks ? 'toolbox' : 'bookmarks');
     }
-  }, [currentTab, hideBookmarks, showProjectsTab]);
+
+    // Reset scroll on tab change to prevent headers from disappearing
+    const container = document.querySelector('.tools-container');
+    if (container) {
+      container.scrollTop = 0;
+    }
+  }, [currentTab, hideBookmarks, hideToolbox, showProjectsTab]);
 
   useEffect(() => {
     if (autoFocusSearch && !isSettingsOpen && !isProfileOpen) {
@@ -378,6 +398,8 @@ function App() {
           setView={(view) => setTab(view)}
           onSettingsClick={() => setIsSettingsOpen(true)}
           hideBookmarks={hideBookmarks}
+          hideToolbox={hideToolbox}
+          currentTab={currentTab}
         >
           <SearchOverlay
             active={searchActive}
@@ -399,6 +421,7 @@ function App() {
           searchActive={searchActive}
           enableProfiles={enableProfiles}
           hideBookmarks={hideBookmarks}
+          hideToolbox={hideToolbox}
           showProjectsTab={showProjectsTab}
         />
 
@@ -471,6 +494,8 @@ function App() {
           setEnableProfiles={setEnableProfiles}
           hideBookmarks={hideBookmarks}
           setHideBookmarks={setHideBookmarks}
+          hideToolbox={hideToolbox}
+          setHideToolbox={setHideToolbox}
           showProjectsTab={showProjectsTab}
           setShowProjectsTab={setShowProjectsTab}
           startupTab={startupTab}
