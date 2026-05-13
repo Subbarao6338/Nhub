@@ -176,6 +176,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
   );
 
   const copyAllUrls = () => {
+    if (!selectedLinkForUrls) return;
     const allUrls = selectedLinkForUrls.urls || [selectedLinkForUrls.url];
     navigator.clipboard.writeText(allUrls.join('\n'));
     alert("All URLs copied to clipboard!");
@@ -186,21 +187,30 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
       {isUrlModalOpen && selectedLinkForUrls && (
         <>
           <div className="modal-overlay" style={{display: 'block'}} onClick={() => setIsUrlModalOpen(false)}></div>
-          <div className="modal" style={{display: 'block'}}>
-            <h2>Select URL</h2>
+          <div className="modal modal-multi-url" style={{display: 'block'}}>
+            <div className="modal-header-flex">
+              <h2>Multiple URLs</h2>
+              <button className="icon-btn" onClick={() => setIsUrlModalOpen(false)}>
+                <span className="material-icons">close</span>
+              </button>
+            </div>
+            <p className="modal-subtitle">
+              Select a URL to open from "<strong>{selectedLinkForUrls.title}</strong>"
+            </p>
             <div className="url-list">
               {(selectedLinkForUrls.urls || [selectedLinkForUrls.url]).map((url, i) => (
                 <a key={i} href={url} target={openInNewTab ? '_blank' : '_self'} className="url-btn" onClick={() => setIsUrlModalOpen(false)}>
-                  <span>{url}</span>
-                  <span className="url-btn-icon">🔗</span>
+                  <span className="material-icons url-btn-icon">link</span>
+                  <span className="url-btn-content">{url}</span>
+                  <span className="material-icons url-btn-arrow">open_in_new</span>
                 </a>
               ))}
             </div>
-            <div className="form-actions" style={{justifyContent: 'space-between', alignItems: 'center'}}>
-              <button type="button" className="btn-small" onClick={copyAllUrls} style={{margin: 0}}>
-                <span className="material-icons" style={{fontSize: '1rem', verticalAlign: 'middle'}}>content_copy</span> Copy All
+            <div className="modal-footer-actions">
+              <button type="button" className="pill copy-all-btn" onClick={copyAllUrls}>
+                <span className="material-icons">content_copy</span> Copy All URLs
               </button>
-              <button type="button" onClick={() => setIsUrlModalOpen(false)}>Cancel</button>
+              <button type="button" className="dismiss-btn" onClick={() => setIsUrlModalOpen(false)}>Dismiss</button>
             </div>
           </div>
         </>
@@ -311,20 +321,24 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
 
 const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handleShare, handleCopy, isCopied, onLongPress, categoryIcon, hideIcons, hideUrls, searchQuery, noAnimation }) => {
   const [pressTimer, setPressTimer] = useState(null);
-  const isLongPress = React.useRef(false);
+  const [isPressing, setIsPressing] = useState(false);
+  const isLongPressActive = React.useRef(false);
 
   const startPress = () => {
-    isLongPress.current = false;
+    isLongPressActive.current = false;
+    setIsPressing(true);
     const timer = setTimeout(() => {
-      isLongPress.current = true;
+      isLongPressActive.current = true;
       if (link.urls && link.urls.length > 1) {
         onLongPress();
+        setIsPressing(false); // Snap back when modal opens
       }
-    }, 500);
+    }, 400); // 400ms for better responsiveness
     setPressTimer(timer);
   };
 
   const cancelPress = () => {
+    setIsPressing(false);
     if (pressTimer) {
       clearTimeout(pressTimer);
       setPressTimer(null);
@@ -332,11 +346,17 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
   };
 
   const handleClick = (e) => {
-    if (isLongPress.current) {
-      isLongPress.current = false;
+    if (isLongPressActive.current) {
+      isLongPressActive.current = false;
       return;
     }
     window.open(link.url, openInNewTab ? '_blank' : '_self');
+  };
+
+  const handleContextMenu = (e) => {
+    if (link.urls && link.urls.length > 1) {
+        e.preventDefault(); // Prevent native context menu to avoid collision
+    }
   };
 
   let hostname = '';
@@ -348,7 +368,7 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
 
   return (
     <div
-      className={`card ${noAnimation ? 'no-animation' : ''}`}
+      className={`card ${noAnimation ? 'no-animation' : ''} ${isPressing ? 'is-pressing' : ''}`}
       style={{'--delay': idx}}
       onClick={handleClick}
       onMouseDown={startPress}
@@ -356,15 +376,21 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
       onMouseLeave={cancelPress}
       onTouchStart={startPress}
       onTouchEnd={cancelPress}
+      onContextMenu={handleContextMenu}
     >
       <div className="card-header">
         {!hideIcons && <BookmarkIcon link={link} categoryIcon={categoryIcon || 'link'} />}
         <div className="card-title" dangerouslySetInnerHTML={{ __html: highlightText(link.title, searchQuery) }} />
       </div>
       {!hideUrls && (
-        <div className="card-url">
-          {hostname}
-          {link.urls && link.urls.length > 1 && <span className="fallback-badge">{link.urls.length} URLs</span>}
+        <div className="card-url" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{hostname}</span>
+          {link.urls && link.urls.length > 1 && (
+            <span className="fallback-badge" title="Long-press to see all URLs">
+              <span className="material-icons">layers</span>
+              {link.urls.length}
+            </span>
+          )}
         </div>
       )}
       <div className="card-actions" onClick={e => e.stopPropagation()}>
