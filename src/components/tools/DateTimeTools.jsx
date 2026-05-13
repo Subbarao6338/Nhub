@@ -63,7 +63,8 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'datediff' && <DateDiffTool onResultChange={onResultChange} />}
       {activeTab === 'timezone' && <TimezoneConverter onResultChange={onResultChange} />}
       {activeTab === 'countdown' && <CountdownTimer onResultChange={onResultChange} />}
-      {['timestamp', 'panchangam'].includes(activeTab) && (
+      {activeTab === 'panchangam' && <PanchangamTool onResultChange={onResultChange} />}
+      {['timestamp'].includes(activeTab) && (
           <div className="text-center p-20 card opacity-6">
               <span className="material-icons mb-10" style={{fontSize: '2rem'}}>schedule</span>
               <div>This date & time tool is being integrated.</div>
@@ -71,6 +72,197 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       )}
     </div>
   );
+};
+
+const PanchangamTool = ({ onResultChange }) => {
+    const [mode, setMode] = useState('datetime');
+    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [time, setTime] = useState(new Date().toTimeString().split(' ')[0].substring(0, 5));
+    const [lat, setLat] = useState('17.3850');
+    const [lng, setLng] = useState('78.4867');
+    const [tz, setTz] = useState('5.5');
+    const [name, setName] = useState('');
+    const [result, setResult] = useState(null);
+
+    const SAMVATSARAMS = [
+        "Prabhava", "Vibhava", "Shukla", "Pramodoota", "Prajotpatti", "Angirasa", "Srimukha", "Bhava", "Yuva", "Dhatru",
+        "Eswara", "Bahudhanya", "Pramadhi", "Vikrama", "Vrisha", "Chitrabhanu", "Swabhannu", "Tarana", "Parthiva", "Vyaya",
+        "Sarvajit", "Sarvadhari", "Virodhi", "Vikruti", "Khara", "Nandana", "Vijaya", "Jaya", "Manmadha", "Durmukhi",
+        "Hevilambi", "Vilambi", "Vikari", "Sarvari", "Plava", "Subhakrutu", "Sobhakrutu", "Krodhi", "Viswavasu", "Parabhava",
+        "Plavanga", "Keelaka", "Saumya", "Sadharana", "Virodhakrutu", "Paridhavi", "Pramadicha", "Ananda", "Rakshasa", "Anala",
+        "Pingala", "Kalayukti", "Siddharti", "Raudri", "Durmati", "Dundubhi", "Rudhirodgari", "Raktakshi", "Krodhana", "Akshaya"
+    ];
+
+    const LUCKY_INFO = {
+        "Mesham": { num: "1, 8", color: "Red", day: "Tuesday" },
+        "Vrushabham": { num: "2, 7", color: "White, Pink", day: "Friday" },
+        "Midhunam": { num: "3, 6", color: "Green, Yellow", day: "Wednesday" },
+        "Karkatakam": { num: "4", color: "White, Silver", day: "Monday" },
+        "Simham": { num: "5", color: "Gold, Orange", day: "Sunday" },
+        "Kanya": { num: "3, 6", color: "Green", day: "Wednesday" },
+        "Thula": { num: "2, 7", color: "White, Blue", day: "Friday" },
+        "Vrushchikam": { num: "1, 8", color: "Red, Maroon", day: "Tuesday" },
+        "Dhanassu": { num: "3, 5, 9", color: "Yellow", day: "Thursday" },
+        "Makaram": { num: "4, 8", color: "Black, Dark Blue", day: "Saturday" },
+        "Kumbham": { num: "8", color: "Blue", day: "Saturday" },
+        "Meenam": { num: "3, 7, 9", color: "Yellow, Sea Green", day: "Thursday" }
+    };
+
+    const NAMA_RAASI = [
+        { regex: /^[AEIL]/i, rasi: "Mesham", nak: "Aswini/Bharani" },
+        { regex: /^[UV]/i, rasi: "Vrushabham", nak: "Krittika/Rohini" },
+        { regex: /^[KCHGH]/i, rasi: "Midhunam", nak: "Mrigasira/Arudra" },
+        { regex: /^[DH]/i, rasi: "Karkatakam", nak: "Punarvasu/Pushyami" },
+        { regex: /^[MT]/i, rasi: "Simham", nak: "Makha/Pubba" },
+        { regex: /^[PSHN]/i, rasi: "Kanya", nak: "Uttara/Hasta" },
+        { regex: /^[RT]/i, rasi: "Thula", nak: "Chitra/Swati" },
+        { regex: /^[NY]/i, rasi: "Vrushchikam", nak: "Anuradha/Jyeshta" },
+        { regex: /^[B]/i, rasi: "Dhanassu", nak: "Moola/Poorvashada" },
+        { regex: /^[JKH]/i, rasi: "Makaram", nak: "Uttarashada/Sravanam" },
+        { regex: /^[GS]/i, rasi: "Kumbham", nak: "Dhanishta/Satabhisham" },
+        { regex: /^[D]/i, rasi: "Meenam", nak: "Poorvabhadra/Uttarabhadra" }
+    ];
+
+    const getJulianDate = (dt) => (dt.getTime() / 86400000) - (dt.getTimezoneOffset() / 1440) + 2440587.5;
+    const rev = (angle) => angle - Math.floor(angle / 360.0) * 360.0;
+
+    const getSunLong = (jd) => {
+        const d = jd - 2451543.5;
+        const M = rev(356.0470 + 0.9856002585 * d);
+        const w = 282.9404 + 4.70935e-5 * d;
+        const e = 0.016709 - 1.151e-9 * d;
+        const E = M + (180/Math.PI) * e * Math.sin(M * Math.PI/180) * (1 + e * Math.cos(M * Math.PI/180));
+        const x = Math.cos(E * Math.PI/180) - e;
+        const y = Math.sin(E * Math.PI/180) * Math.sqrt(1 - e*e);
+        const v = Math.atan2(y, x) * 180/Math.PI;
+        return rev(v + w);
+    };
+
+    const getMoonLong = (jd) => {
+        const d = jd - 2451543.5;
+        const N = rev(125.1228 - 0.0529538083 * d);
+        const M = rev(115.3654 + 13.0649929509 * d);
+        const a = 60.2666, e = 0.0549, i = 5.1454, w = rev(318.0634 + 0.1643573223 * d);
+        let E = M + (180/Math.PI) * e * Math.sin(M * Math.PI/180);
+        for(let j=0; j<3; j++) E = E - (E - (180/Math.PI) * e * Math.sin(E * Math.PI/180) - M) / (1 - e * Math.cos(E * Math.PI/180));
+        const x = a * (Math.cos(E * Math.PI/180) - e), y = a * Math.sqrt(1 - e*e) * Math.sin(E * Math.PI/180);
+        const v = Math.atan2(y, x) * 180/Math.PI;
+        const xecl = Math.cos(N * Math.PI/180) * Math.cos((v+w) * Math.PI/180) - Math.sin(N * Math.PI/180) * Math.sin((v+w) * Math.PI/180) * Math.cos(i * Math.PI/180);
+        const yecl = Math.sin(N * Math.PI/180) * Math.cos((v+w) * Math.PI/180) + Math.cos(N * Math.PI/180) * Math.sin((v+w) * Math.PI/180) * Math.cos(i * Math.PI/180);
+        return rev(Math.atan2(yecl, xecl) * 180/Math.PI);
+    };
+
+    const calculate = () => {
+        if (mode === 'name') {
+            if (!name) return;
+            const char = name.trim().charAt(0).toUpperCase();
+            const match = NAMA_RAASI.find(m => m.regex.test(char)) || NAMA_RAASI[0];
+            const res = {
+                rasi: match.rasi,
+                nakshatra: match.nak,
+                samvatsaram: SAMVATSARAMS[((new Date().getFullYear() - 1987) % 60 + 60) % 60],
+                lucky: LUCKY_INFO[match.rasi]
+            };
+            setResult(res);
+            onResultChange({ text: `Panchangam for ${name}: ${res.rasi}, ${res.nakshatra}`, filename: 'panchangam.txt' });
+            return;
+        }
+
+        const dt = new Date(`${date}T${time}`);
+        const jdUT = getJulianDate(dt) - (parseFloat(tz) / 24.0);
+        const sunL = getSunLong(jdUT), moonL = getMoonLong(jdUT), aya = 23.85 + 1.397 * ((jdUT - 2451545.0) / 36525);
+        const nMoon = rev(moonL - aya);
+
+        const tithis = ["Padyami", "Vidiya", "Tadiya", "Chavithi", "Panchami", "Shashti", "Saptami", "Ashtami", "Navami", "Dashami", "Ekadashi", "Dwadashi", "Trayodashi", "Chaturdashi", "Pournami", "Padyami (B)", "Vidiya (B)", "Tadiya (B)", "Chavithi (B)", "Panchami (B)", "Shashti (B)", "Saptami (B)", "Ashtami (B)", "Navami (B)", "Dashami (B)", "Ekadashi (B)", "Dwadashi (B)", "Trayodashi (B)", "Chaturdashi (B)", "Amavasya"];
+        const naks = ["Aswini", "Bharani", "Krittika", "Rohini", "Mrigasira", "Arudra", "Punarvasu", "Pushyami", "Aslesha", "Makha", "Pubba", "Uttara", "Hasta", "Chitra", "Swati", "Visakha", "Anuradha", "Jyeshta", "Moola", "Poorvashada", "Uttarashada", "Sravanam", "Dhanishta", "Satabhisham", "Poorvabhadra", "Uttarabhadra", "Revati"];
+        const rasis = ["Mesham", "Vrushabham", "Midhunam", "Karkatakam", "Simham", "Kanya", "Thula", "Vrushchikam", "Dhanassu", "Makaram", "Kumbham", "Meenam"];
+
+        let diff = moonL - sunL; if (diff < 0) diff += 360;
+        const rasiIdx = Math.floor(nMoon / 30);
+        const res = {
+            tithi: tithis[Math.floor(diff / 12)],
+            nakshatra: naks[Math.floor(nMoon / (360/27))],
+            pada: Math.floor((nMoon % (360/27)) / (360/108)) + 1,
+            rasi: rasis[rasiIdx],
+            samvatsaram: SAMVATSARAMS[((dt.getFullYear() - 1987) % 60 + 60) % 60],
+            vara: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][dt.getDay()],
+            lucky: LUCKY_INFO[rasis[rasiIdx]]
+        };
+        setResult(res);
+        onResultChange({ text: `Panchangam: ${res.tithi}, ${res.nakshatra}, ${res.rasi}`, filename: 'panchangam.txt' });
+    };
+
+    return (
+        <div className="card p-20">
+            <div className="pill-group mb-20">
+                <button className={`pill ${mode === 'datetime' ? 'active' : ''}`} onClick={() => {setMode('datetime'); setResult(null);}}>By DateTime</button>
+                <button className={`pill ${mode === 'name' ? 'active' : ''}`} onClick={() => {setMode('name'); setResult(null);}}>By Name</button>
+            </div>
+
+            {mode === 'datetime' ? (
+                <div className="grid gap-15">
+                    <div className="grid grid-2-cols gap-10">
+                        <input type="date" className="pill w-full" value={date} onChange={e=>setDate(e.target.value)} />
+                        <input type="time" className="pill w-full" value={time} onChange={e=>setTime(e.target.value)} />
+                    </div>
+                    <div className="grid grid-2-cols gap-10">
+                        <input type="text" className="pill w-full" placeholder="Lat (17.38)" value={lat} onChange={e=>setLat(e.target.value)} />
+                        <input type="text" className="pill w-full" placeholder="Lng (78.48)" value={lng} onChange={e=>setLng(e.target.value)} />
+                    </div>
+                </div>
+            ) : (
+                <input type="text" className="pill w-full mb-15" placeholder="Enter first name..." value={name} onChange={e=>setName(e.target.value)} />
+            )}
+
+            <button className="btn-primary w-full mt-15" onClick={calculate}>Calculate Details</button>
+
+            {result && (
+                <div className="tool-result mt-20 animate-fadeIn">
+                    <div className="text-center mb-15">
+                        <div className="opacity-6 smallest uppercase font-bold">Telugu Samvatsaram</div>
+                        <div className="h2 color-primary">{result.samvatsaram} Nama Samvatsaram</div>
+                    </div>
+                    <div className="grid grid-2-cols gap-10">
+                        <div className="card p-10 text-center no-animation bg-surface">
+                            <div className="smallest opacity-6">Raasi</div>
+                            <div className="font-bold">{result.rasi}</div>
+                        </div>
+                        <div className="card p-10 text-center no-animation bg-surface">
+                            <div className="smallest opacity-6">Nakshatram</div>
+                            <div className="font-bold">{result.nakshatra} {result.pada ? `(${result.pada} Pada)` : ''}</div>
+                        </div>
+                        {result.tithi && (
+                            <div className="card p-10 text-center no-animation bg-surface">
+                                <div className="smallest opacity-6">Thidhi</div>
+                                <div className="font-bold">{result.tithi}</div>
+                            </div>
+                        )}
+                        {result.vara && (
+                            <div className="card p-10 text-center no-animation bg-surface">
+                                <div className="smallest opacity-6">Vaaram</div>
+                                <div className="font-bold">{result.vara}</div>
+                            </div>
+                        )}
+                    </div>
+                    <div className="mt-15 p-15 card bg-primary-container no-animation">
+                        <div className="smallest opacity-6 mb-10 font-bold uppercase">Personalized Lucky Details</div>
+                        <div className="grid gap-5">
+                            <div className="flex-between"><span>Lucky Numbers:</span> <span className="font-bold">{result.lucky.num}</span></div>
+                            <div className="flex-between"><span>Lucky Colors:</span> <span className="font-bold">{result.lucky.color}</span></div>
+                            <div className="flex-between"><span>Lucky Days:</span> <span className="font-bold">{result.lucky.day}</span></div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <style dangerouslySetInnerHTML={{ __html: `
+                .bg-surface { background: var(--bg); border: 1px solid var(--border); }
+                .bg-primary-container { background: var(--primary); color: white; border-radius: 20px; }
+                .bg-primary-container span { color: rgba(255,255,255,0.8); }
+                .bg-primary-container .font-bold { color: white; }
+                .flex-between { display: flex; justify-content: space-between; align-items: center; }
+            `}} />
+        </div>
+    );
 };
 
 const CountdownTimer = ({ onResultChange }) => {
