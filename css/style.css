@@ -686,7 +686,7 @@ body::before {
 
 .card-actions {
   position: absolute;
-  top: 10px;
+  bottom: 10px;
   right: 10px;
   display: flex;
   gap: 4px;
@@ -721,6 +721,13 @@ body::before {
 .card-actions button.btn-delete:hover {
   background: var(--danger);
   color: white;
+}
+
+.card-badge-top {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 5;
 }
 
 /* Category Headers */
@@ -1366,9 +1373,6 @@ body.search-active .search-dismiss-overlay {
 
   .card-actions {
     opacity: 1;
-    top: auto;
-    bottom: 10px;
-    right: 10px;
   }
 
   .desktop-only { display: none !important; }
