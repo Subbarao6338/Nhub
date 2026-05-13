@@ -13,7 +13,28 @@ document.head.appendChild(link);
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('Service Worker registered', reg))
+      .then(reg => {
+        console.log('Service Worker registered', reg);
+
+        // Check for updates
+        reg.onupdatefound = () => {
+          const installingWorker = reg.installing;
+          if (installingWorker) {
+            installingWorker.onstatechange = () => {
+              if (installingWorker.state === 'installed') {
+                if (navigator.serviceWorker.controller) {
+                  // New content is available; please refresh.
+                  console.log('New content is available; reloading page.');
+                  window.location.reload();
+                } else {
+                  // Content is cached for offline use.
+                  console.log('Content is cached for offline use.');
+                }
+              }
+            };
+          }
+        };
+      })
       .catch(err => console.log('Service Worker registration failed', err));
   });
 }
