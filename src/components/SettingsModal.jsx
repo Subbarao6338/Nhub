@@ -102,6 +102,7 @@ const SettingsModal = ({
   accentColor, setAccentColor,
   isCompact, setIsCompact,
   hideBookmarks, setHideBookmarks,
+  hideToolbox, setHideToolbox,
   hideUrls, setHideUrls,
   hideIcons, setHideIcons,
   showStats, setShowStats,
@@ -340,6 +341,10 @@ const SettingsModal = ({
             <button className={`pill ${hideBookmarks ? 'active' : ''}`} onClick={() => setHideBookmarks(!hideBookmarks)}>
               <span className="material-icons">{hideBookmarks ? 'bookmarks' : 'bookmark_border'}</span>
               <span>Hide Bookmarks Tab</span>
+            </button>
+            <button className={`pill ${hideToolbox ? 'active' : ''}`} onClick={() => setHideToolbox(!hideToolbox)}>
+              <span className="material-icons">{hideToolbox ? 'handyman' : 'handyman'}</span>
+              <span>Hide Toolbox Tab</span>
             </button>
             <button className={`pill ${showProjectsTab ? 'active' : ''}`} onClick={() => setShowProjectsTab(!showProjectsTab)}>
               <span className="material-icons">{showProjectsTab ? 'architecture' : 'architecture'}</span>

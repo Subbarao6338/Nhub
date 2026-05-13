@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 test('Verify PDF Tools migration', async ({ page }) => {
-  await page.goto('http://localhost:3001/?tab=toolbox');
+  await page.goto('http://localhost:5173/?tab=toolbox');
 
   // Check PDF Tools card
   const pdfCard = page.locator('#card-pdf-main');
