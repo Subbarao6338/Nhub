@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Body, Query, BackgroundTasks
+from fastapi import FastAPI, HTTPException, Body, Query, BackgroundTasks, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
@@ -16,6 +16,13 @@ import socket
 import dns.resolver
 import yt_dlp
 import yaml
+import docx
+import PyPDF2
+import ebooklib
+from ebooklib import epub
+from bs4 import BeautifulSoup
+from deep_translator import GoogleTranslator
+import mailparser
 
 # Add the project root to sys.path so we can import from scripts
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -641,3 +648,118 @@ def analyze_text(request: SentimentRequest):
         "negative_score": neg_count,
         "word_count": len(words)
     }
+
+def extract_text_from_pdf(file_path):
+    text = ""
+    with open(file_path, 'rb') as f:
+        reader = PyPDF2.PdfReader(f)
+        for page in reader.pages:
+            text += page.extract_text() + "\n"
+    return text
+
+def extract_text_from_docx(file_path):
+    doc = docx.Document(file_path)
+    return "\n".join([para.text for para in doc.paragraphs])
+
+def extract_text_from_epub(file_path):
+    book = epub.read_epub(file_path)
+    text = ""
+    for item in book.get_items():
+        if item.get_type() == ebooklib.ITEM_DOCUMENT:
+            soup = BeautifulSoup(item.get_content(), 'html.parser')
+            text += soup.get_text() + "\n"
+    return text
+
+def extract_text_from_html(file_path):
+    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+        soup = BeautifulSoup(f.read(), 'html.parser')
+        return soup.get_text()
+
+def extract_text_from_mhtml(file_path):
+    try:
+        mail = mailparser.parse_from_file(file_path)
+        # Try to get the body
+        body = mail.body or ""
+        # If it's HTML, strip tags
+        if "<html>" in body.lower() or "<body>" in body.lower():
+            soup = BeautifulSoup(body, 'html.parser')
+            return soup.get_text()
+        return body
+    except Exception as e:
+        print(f"MHTML parse error: {e}")
+        # Fallback to simple HTML extraction if mailparser fails
+        return extract_text_from_html(file_path)
+
+def translate_long_text(text, target_lang):
+    if not text.strip():
+        return ""
+
+    translator = GoogleTranslator(source='auto', target=target_lang)
+
+    # deep-translator has a limit around 5000 chars
+    max_chars = 4500
+    chunks = [text[i:i + max_chars] for i in range(0, len(text), max_chars)]
+
+    translated_chunks = []
+    for chunk in chunks:
+        try:
+            translated_chunks.append(translator.translate(chunk))
+        except Exception as e:
+            print(f"Translation error: {e}")
+            translated_chunks.append(f"[Translation Error: {str(e)}]")
+
+    return "".join(translated_chunks)
+
+@app.post("/api/docs/translate")
+async def translate_doc(
+    file: UploadFile = File(...),
+    target_lang: str = Form("en")
+):
+    # Map friendly names to language codes if necessary
+    lang_map = {
+        "english": "en",
+        "telugu": "te"
+    }
+    target_code = lang_map.get(target_lang.lower(), target_lang)
+
+    suffix = os.path.splitext(file.filename)[1].lower()
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        content = await file.read()
+        tmp.write(content)
+        tmp_path = tmp.name
+
+    try:
+        text = ""
+        if suffix == ".pdf":
+            text = extract_text_from_pdf(tmp_path)
+        elif suffix == ".docx":
+            text = extract_text_from_docx(tmp_path)
+        elif suffix in [".epub"]:
+            text = extract_text_from_epub(tmp_path)
+        elif suffix in [".html", ".htm"]:
+            text = extract_text_from_html(tmp_path)
+        elif suffix == ".mhtml":
+            text = extract_text_from_mhtml(tmp_path)
+        elif suffix in [".md", ".txt"]:
+            with open(tmp_path, 'r', encoding='utf-8', errors='ignore') as f:
+                text = f.read()
+        else:
+            raise HTTPException(status_code=400, detail=f"Unsupported file type: {suffix}")
+
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="No text extracted from document.")
+
+        translated_text = translate_long_text(text, target_code)
+
+        return {
+            "original_filename": file.filename,
+            "target_lang": target_lang,
+            "translated_text": translated_text
+        }
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Translation failed: {str(e)}")
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
