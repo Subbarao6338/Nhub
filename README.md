@@ -31,7 +31,7 @@ A massive collection of consolidated tools organized into 21 category Hubs:
 
 ### 🎨 Personalization & UX
 - **Epic Theme 2.0**: 40+ accent colors and true black dark mode support.
-- **Visual Effects**: Toggle Glassmorphism, Aurora animated backgrounds, and reduced motion.
+- **Visual Effects**: Toggle Glassmorphism and reduced motion.
 - **Offline First**: Full PWA support with Service Worker caching and offline bookmark access.
 - **Cross-Platform**: Designed for desktop precision and mobile-first thumb-friendly navigation.
 

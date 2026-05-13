@@ -107,7 +107,7 @@ function App() {
 
   // Visual Settings
   const [disableGlass, setDisableGlass] = useState(storage.getBoolean('hub_disable_glass', false));
-  const [enableAurora, setEnableAurora] = useState(storage.get('hub_enable_aurora') !== 'false');
+  const [disableAnimations, setDisableAnimations] = useState(storage.getBoolean('hub_disable_animations', false));
   const [reducedMotion, setReducedMotion] = useState(storage.getBoolean('hub_reduced_motion', false));
   const [confirmDelete, setConfirmDelete] = useState(storage.get('hub_confirm_delete') !== 'false');
   const [groupToolbox, setGroupToolbox] = useState(storage.get('hub_group_toolbox') !== 'false');
@@ -220,16 +220,16 @@ function App() {
   }, [disableGlass]);
 
   useEffect(() => {
-    if (enableAurora) document.body.classList.remove('no-aurora');
-    else document.body.classList.add('no-aurora');
-    storage.set('hub_enable_aurora', enableAurora);
-  }, [enableAurora]);
-
-  useEffect(() => {
     if (reducedMotion) document.body.classList.add('reduced-motion');
     else document.body.classList.remove('reduced-motion');
     storage.set('hub_reduced_motion', reducedMotion);
   }, [reducedMotion]);
+
+  useEffect(() => {
+    if (disableAnimations) document.body.classList.add('no-animations');
+    else document.body.classList.remove('no-animations');
+    storage.set('hub_disable_animations', disableAnimations);
+  }, [disableAnimations]);
 
   useEffect(() => {
     if (enableHoverEffects) document.body.classList.remove('no-hover-effects');
@@ -272,13 +272,18 @@ function App() {
     }
 
     if (hideBookmarks && currentTab === 'bookmarks') {
-      setTab('toolbox');
+      if (!hideToolbox) setTab('toolbox');
+      else if (showProjectsTab) setTab('projects');
     } else if (hideToolbox && currentTab === 'toolbox') {
-      setTab('bookmarks');
+      if (!hideBookmarks) setTab('bookmarks');
+      else if (showProjectsTab) setTab('projects');
     } else if (!showProjectsTab && currentTab === 'projects') {
-      setTab(hideToolbox ? 'bookmarks' : 'toolbox');
+      if (!hideToolbox) setTab('toolbox');
+      else if (!hideBookmarks) setTab('bookmarks');
     } else if (!['toolbox', 'bookmarks', 'projects'].includes(currentTab)) {
-      setTab(hideBookmarks ? 'toolbox' : 'bookmarks');
+      if (!hideToolbox) setTab('toolbox');
+      else if (!hideBookmarks) setTab('bookmarks');
+      else if (showProjectsTab) setTab('projects');
     }
 
     // Reset scroll on tab change to prevent headers from disappearing
@@ -530,8 +535,8 @@ function App() {
           setOpenInNewTab={setOpenInNewTab}
           disableGlass={disableGlass}
           setDisableGlass={setDisableGlass}
-          enableAurora={enableAurora}
-          setEnableAurora={setEnableAurora}
+          disableAnimations={disableAnimations}
+          setDisableAnimations={setDisableAnimations}
           reducedMotion={reducedMotion}
           setReducedMotion={setReducedMotion}
           confirmDelete={confirmDelete}

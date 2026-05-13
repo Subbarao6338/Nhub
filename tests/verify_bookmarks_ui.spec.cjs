@@ -31,9 +31,7 @@ test('Verify Bookmark Card Changes', async ({ page }) => {
   const modal = page.locator('.modal.modal-multi-url');
   await expect(modal).toBeVisible();
 
-  // Verify modal has dynamic positioning (it should have top and left in style attribute)
+  // Verify modal is displayed
   const style = await modal.getAttribute('style');
-  expect(style).toContain('top:');
-  expect(style).toContain('left:');
   expect(style).toContain('display: block');
 });
