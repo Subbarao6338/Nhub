@@ -616,6 +616,24 @@ body::before {
   animation: leaf-sway 2s ease-in-out infinite;
 }
 
+.fallback-badge {
+  background: var(--primary-glow);
+  color: var(--primary);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--border);
+  width: fit-content;
+}
+
+.fallback-badge .material-icons {
+  font-size: 14px;
+}
+
 @keyframes leaf-sway {
   0%, 100% { transform: translateY(-8px) scale(1.02) rotate(0deg); }
   25% { transform: translateY(-8px) scale(1.02) rotate(0.5deg); }
@@ -1530,4 +1548,80 @@ body.search-active .search-dismiss-overlay {
 .dropdown-menu button:hover {
     background: var(--primary-glow);
     color: var(--primary);
+}
+
+/* Bookmark Multi-URL Modal Styles */
+.modal-multi-url {
+  max-width: 500px;
+  animation: modal-pop 0.3s var(--transition-bounce);
+}
+
+@keyframes modal-pop {
+  from { opacity: 0; transform: translate(-50%, -45%) scale(0.95); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+.modal-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-header-flex h2 {
+  margin: 0;
+}
+
+.modal-subtitle {
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.url-btn-content {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.url-btn-icon {
+  color: var(--primary);
+  opacity: 0.7;
+}
+
+.url-btn-arrow {
+  font-size: 1.2rem;
+  opacity: 0.5;
+}
+
+.modal-footer-actions {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.copy-all-btn {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dismiss-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.card:active, .card.is-pressing {
+  transform: scale(0.98);
+  border-color: var(--primary);
+  box-shadow: inset 0 0 10px var(--primary-glow);
+  transition: transform 0.1s;
 }
