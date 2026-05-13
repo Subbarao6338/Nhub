@@ -10,7 +10,7 @@ test('Verify PDF Tools migration', async ({ page }) => {
 
   // Check sub-tools in PDF Hub
   const expectedSubTools = [
-    'Merge', 'Split', 'Delete', 'Rearrange', 'Rotate', 'Sign', 'Watermark',
+    'Merge PDF', 'Split PDF', 'Delete Pages', 'Rearrange', 'Rotate', 'Sign', 'Watermark',
     'Numbers', 'Crop', 'Lock', 'Unlock', 'Metadata', 'Compress', 'Grayscale',
     'Flatten', 'Img to PDF', 'PDF to Img', 'Word to PDF', 'Excel to PDF',
     'PDF to Word', 'PDF to Text', 'PDF to ZIP', 'Extract Assets', 'Scan PDF (OCR)'

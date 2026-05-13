@@ -1,8 +1,8 @@
-# Epic Toolbox 🌿
+# Epic Toolbox 🌿 — Harmony & Flow Update
 
 ![Epic Toolbox Screenshot](toolbox_hubs.png)
 
-Epic Toolbox is a modern, full-stack personal dashboard designed to organize your digital life. Built with a focus on a **"Nature Design Mandate"**, it features organic shapes, earthy colors, and a peaceful user experience, all while packing a massive suite of over 100+ utility tools.
+Epic Toolbox is a premium, nature-inspired utility hub designed to harmonize your digital workflow. Following the **Nature Design Mandate v6 ("Harmony & Flow")**, it merges professional-grade tools with a serene, organic interface.
 
 ## ✨ About the Project
 
@@ -30,10 +30,11 @@ A massive collection of consolidated tools organized into 21 category Hubs:
 - **Smart Search**: Navigate thousands of links and tools instantly using category prefixes (e.g., `cat:dev`).
 
 ### 🎨 Personalization & UX
-- **Epic Theme 2.0**: 40+ accent colors and true black dark mode support.
-- **Visual Effects**: Toggle Glassmorphism and reduced motion.
-- **Offline First**: Full PWA support with Service Worker caching and offline bookmark access.
-- **Cross-Platform**: Designed for desktop precision and mobile-first thumb-friendly navigation.
+- **Harmony & Flow (v6)**: Refined pebble geometry, leaf-sway animations, and ambient shadows.
+- **Epic Theme Engine**: 40+ nature-inspired accent colors with adaptive dark mode.
+- **Visual Harmony**: Toggle glassmorphism, reduced motion, and compact modes.
+- **Offline Superiority**: Advanced PWA v19 with intelligent caching and multi-shortcut support.
+- **Haptic Feedback**: Responsive vibration sequences for a tactile mobile experience.
 
 ---
 

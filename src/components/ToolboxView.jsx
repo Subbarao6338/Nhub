@@ -32,13 +32,34 @@ const TOOLS = [
     // Communication & Web
     { id: 'web-main', title: 'Web & Social Tools', icon: 'public', category: 'Web', component: WebTools, subTools: ['social-downloader', 'web-to-md', 'web-mhtml', 'url-to-pdf'] },
     { id: 'network-main', title: 'Network Hub', icon: 'router', category: 'Web', component: NetworkTools, subTools: ['ip-info', 'ping', 'dns', 'whois', 'speed', 'geo', 'ssl', 'subnet', 'bluetooth'] },
+    { id: 'ai-main', title: 'AI Hub', icon: 'auto_awesome', category: 'Web', component: AiTools, subTools: ['ai-chat', 'ai-image', 'ai-text'] },
 
     // Developer & Docs
+    { id: 'dev-main', title: 'Dev Hub', icon: 'terminal', category: 'Developer', component: DevTools, subTools: ['json-formatter', 'jwt-decoder', 'sql-formatter', 'diff-viewer', 'regex-tester'] },
     { id: 'doc-main', title: 'Document Tools', icon: 'description', category: 'Developer', component: DocTools, subTools: ['md-editor', 'doc-translator'] },
+    { id: 'pdf-main', title: 'PDF Hub', icon: 'picture_as_pdf', category: 'Developer', component: PdfTools, subTools: ['pdf-merge', 'pdf-split', 'pdf-lock', 'img-to-pdf'] },
+
+    // Media & Creative
+    { id: 'image-main', title: 'Image Tools', icon: 'image', category: 'Media', component: ImageTools, subTools: ['image-compress', 'image-crop', 'image-filter'] },
+    { id: 'color-main', title: 'Color Hub', icon: 'palette', category: 'Media', component: ColorTools, subTools: ['color-picker', 'palette-gen', 'gradient-gen'] },
+    { id: 'audio-main', title: 'Audio Hub', icon: 'audiotrack', category: 'Media', component: AudioVideoTools, subTools: ['audio-trim', 'audio-conv'] },
 
     // Math & Science
     { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['csv-viewer', 'data-visualizer', 'anomaly-detect', 'stat-calc', 'data-quality', 'data-profiling', 'data-anonymizer', 'json-csv', 'mock-gen'] },
+    { id: 'finance-main', title: 'Finance Tools', icon: 'payments', category: 'Productivity', component: FinanceTools, subTools: ['loan-calc', 'investment-calc', 'tax-calc'] },
+    { id: 'unit-main', title: 'Unit Converter', icon: 'straighten', category: 'Productivity', component: UnitConverterTools },
+
+    // Productivity & Health
     { id: 'time-main', title: 'Date & Time Tools', icon: 'schedule', category: 'Productivity', component: DateTimeTools, subTools: ['stopwatch', 'pomodoro', 'worldclock', 'age', 'timestamp', 'panchangam', 'datediff', 'countdown'] },
+    { id: 'health-main', title: 'Health Hub', icon: 'monitor_heart', category: 'Health', component: HealthTools, subTools: ['bmi-calc', 'water-track', 'calorie-calc'] },
+    { id: 'edu-main', title: 'Education Hub', icon: 'school', category: 'Education', component: EducationTools },
+
+    // System & Hardware
+    { id: 'device-main', title: 'Device Hub', icon: 'important_devices', category: 'Sensors', component: DeviceTools, subTools: ['battery-info', 'screen-info', 'vibrate-test'] },
+    { id: 'privacy-main', title: 'Privacy Hub', icon: 'security', category: 'Security', component: PrivacySecurityTools, subTools: ['pass-gen', 'hash-gen'] },
+
+    // Games & Fun
+    { id: 'game-main', title: 'Games Hub', icon: 'sports_esports', category: 'Games', component: GameTools, subTools: ['snake', '2048', 'sudoku'] },
 ];
 
 const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRecentTools, hideRecentTools }) => {

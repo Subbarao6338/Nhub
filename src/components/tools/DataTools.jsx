@@ -235,7 +235,14 @@ const DataProfilingTool = ({ onResultChange, data }) => {
             if (stats.type === 'Numeric' && nums.length > 0) {
                 stats.min = Math.min(...nums);
                 stats.max = Math.max(...nums);
-                stats.mean = (nums.reduce((a,b)=>a+b, 0) / nums.length).toFixed(2);
+                stats.mean = (nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(2);
+                // Median calculation
+                const sorted = [...nums].sort((a, b) => a - b);
+                const mid = Math.floor(sorted.length / 2);
+                stats.median = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+                // Standard Deviation
+                const avg = parseFloat(stats.mean);
+                stats.stdDev = Math.sqrt(nums.map(x => Math.pow(x - avg, 2)).reduce((a, b) => a + b) / nums.length).toFixed(2);
             }
             return stats;
         });
@@ -264,6 +271,8 @@ const DataProfilingTool = ({ onResultChange, data }) => {
                                 <div>Min: <b>{stat.min}</b></div>
                                 <div>Max: <b>{stat.max}</b></div>
                                 <div>Mean: <b>{stat.mean}</b></div>
+                                <div>Median: <b>{stat.median}</b></div>
+                                <div>Std Dev: <b>{stat.stdDev}</b></div>
                             </>
                         )}
                     </div>

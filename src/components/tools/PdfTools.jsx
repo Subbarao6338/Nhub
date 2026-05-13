@@ -48,9 +48,9 @@ const ImageToPdf = ({ onResultChange }) => {
 
 const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const tabs = [
-    { id: 'merge', label: 'Merge' },
-    { id: 'split', label: 'Split' },
-    { id: 'delete', label: 'Delete' },
+    { id: 'merge', label: 'Merge PDF' },
+    { id: 'split', label: 'Split PDF' },
+    { id: 'delete', label: 'Delete Pages' },
     { id: 'rearrange', label: 'Rearrange' },
     { id: 'rotate', label: 'Rotate' },
     { id: 'sign', label: 'Sign' },

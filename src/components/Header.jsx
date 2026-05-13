@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 
-const Header = ({ appName, currentProfile, profiles, setView, onSettingsClick, hideBookmarks, hideToolbox, currentTab, children }) => {
+const Header = memo(({ appName, currentProfile, profiles, setView, onSettingsClick, hideBookmarks, hideToolbox, currentTab, children }) => {
   const profile = profiles.find(p => p.name === currentProfile) || { icon: 'inbox' };
 
   return (
@@ -19,7 +19,7 @@ const Header = ({ appName, currentProfile, profiles, setView, onSettingsClick, h
             </span>
         </div>
         <h1 className="page-title" style={{ fontSize: '1.25rem' }}>
-          {appName === 'Epic Toolbox' ? (currentTab ? currentTab.charAt(0).toUpperCase() + currentTab.slice(1) : 'Epic Toolbox') : appName}
+          {(appName === 'Epic Toolbox' || !appName) ? (currentTab ? currentTab.charAt(0).toUpperCase() + currentTab.slice(1) : 'Epic Toolbox') : appName}
         </h1>
       </div>
       <div className="top-actions">
@@ -30,6 +30,6 @@ const Header = ({ appName, currentProfile, profiles, setView, onSettingsClick, h
       </div>
     </header>
   );
-};
+});
 
 export default Header;
