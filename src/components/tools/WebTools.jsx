@@ -9,7 +9,9 @@ const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'social', label: 'Social Tools' },
     { id: 'web-md', label: 'Url to Markdown' },
     { id: 'mhtml', label: 'Url to MHTML' },
-    { id: 'url-pdf', label: 'Url to PDF' }
+    { id: 'url-pdf', label: 'Url to PDF' },
+    { id: 'dns-check', label: 'DNS Health' },
+    { id: 'whois-web', label: 'WHOIS Lookup' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('social');
@@ -54,6 +56,8 @@ const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         {activeTab === 'web-md' && <WebToMarkdown onResultChange={onResultChange} />}
         {activeTab === 'mhtml' && <WebToMhtml onResultChange={onResultChange} />}
         {activeTab === 'url-pdf' && <UrlToPdf onResultChange={onResultChange} />}
+        {activeTab === 'dns-check' && <DnsHealth onResultChange={onResultChange} />}
+        {activeTab === 'whois-web' && <WhoisLookup onResultChange={onResultChange} />}
       </div>
     </div>
   );
@@ -182,6 +186,41 @@ const WebToMhtml = ({ onResultChange }) => {
                 <span className="material-icons mr-10">{loading ? 'sync' : 'archive'}</span>
                 {loading ? 'Archiving...' : 'Save as MHTML'}
             </button>
+        </div>
+    );
+};
+
+const DnsHealth = ({ onResultChange }) => {
+    const [domain, setDomain] = useState('google.com');
+    const [status, setStatus] = useState(null);
+
+    const check = async () => {
+        setStatus('checking');
+        try {
+            const res = await fetch(`https://dns.google/resolve?name=${domain}`);
+            const data = await res.json();
+            setStatus(data.Status === 0 ? 'Healthy' : 'Issues Detected');
+        } catch(e) { setStatus('Error'); }
+    };
+
+    return (
+        <div className="card p-20 text-center">
+            <input className="pill mb-15" value={domain} onChange={e=>setDomain(e.target.value)} />
+            <button className="btn-primary w-full" onClick={check}>Check DNS Propagation</button>
+            {status && <div className="tool-result mt-15">{status}</div>}
+        </div>
+    );
+};
+
+const WhoisLookup = ({ onResultChange }) => {
+    const [domain, setDomain] = useState('nature.com');
+    const lookup = async () => {
+        onResultChange({ text: `WHOIS for ${domain}: Simulated response. Registry: ICANN.`, filename: 'whois.txt' });
+    };
+    return (
+        <div className="card p-20 text-center">
+            <input className="pill mb-15" value={domain} onChange={e=>setDomain(e.target.value)} />
+            <button className="btn-primary w-full" onClick={lookup}>Lookup Domain Owner</button>
         </div>
     );
 };

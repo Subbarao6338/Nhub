@@ -3,6 +3,7 @@ import { diffLines } from 'diff';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import API_BASE from '../../api';
+import ResultActionBar from './ResultActionBar';
 
 const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const tabs = [
@@ -20,7 +21,9 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'minify', label: 'Minifier' },
     { id: 'xml-json', label: 'XML ↔ JSON' },
     { id: 'xml-fmt', label: 'XML Formatter' },
-    { id: 'json-ts', label: 'JSON to TS' }
+    { id: 'json-ts', label: 'JSON to TS' },
+    { id: 'mock-api', label: 'Mock API' },
+    { id: 'jwt-sign', label: 'JWT Signer' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('json-fmt');
@@ -86,6 +89,8 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'xml-json' && <XmlJsonConverter onResultChange={onResultChange} />}
       {activeTab === 'xml-fmt' && <XmlFormatter onResultChange={onResultChange} />}
       {activeTab === 'json-ts' && <JsonToTs onResultChange={onResultChange} />}
+      {activeTab === 'mock-api' && <MockApiGen onResultChange={onResultChange} />}
+      {activeTab === 'jwt-sign' && <JwtSigner onResultChange={onResultChange} />}
     </div>
   );
 };
@@ -116,6 +121,7 @@ const JsonToTs = ({ onResultChange }) => {
             <textarea className="pill font-mono" rows="8" value={json} onChange={e=>setJson(e.target.value)} />
             <div className="card p-20 glass-card">
                 <pre className="font-mono" style={{fontSize: '0.85rem'}}>{res}</pre>
+                <ResultActionBar result={{text: res, filename: 'interface.ts'}} />
             </div>
         </div>
     );
@@ -180,20 +186,95 @@ const XmlJsonConverter = ({ onResultChange }) => {
 
 const MinifierTool = ({ onResultChange }) => {
     const [input, setInput] = useState('');
+    const [mode, setMode] = useState('js');
+
     const minify = () => {
         let res = input;
-        res = res.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
-        res = res.replace(/\s+([{}|:;,])\s+/g, '$1');
-        res = res.replace(/\s+/g, ' ');
+        if (mode === 'js' || mode === 'css') {
+            res = res.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
+            res = res.replace(/\s+([{}|:;,])\s+/g, '$1');
+            res = res.replace(/\s+/g, ' ');
+        } else if (mode === 'html') {
+            res = res.replace(/>\s+</g, '><').replace(/\s+/g, ' ');
+        }
         res = res.trim();
-        onResultChange({ text: res, filename: 'minified.txt' });
+        onResultChange({ text: res, filename: `minified.${mode}` });
         return res;
     };
     const res = minify();
     return (
         <div className="card p-15 grid gap-10">
-            <textarea className="pill font-mono" rows="8" value={input} onChange={e=>setInput(e.target.value)} placeholder="CSS/JS code..." />
+            <div className="pill-group">
+                <button className={`pill ${mode === 'js' ? 'active' : ''}`} onClick={()=>setMode('js')}>JS</button>
+                <button className={`pill ${mode === 'css' ? 'active' : ''}`} onClick={()=>setMode('css')}>CSS</button>
+                <button className={`pill ${mode === 'html' ? 'active' : ''}`} onClick={()=>setMode('html')}>HTML</button>
+            </div>
+            <textarea className="pill font-mono" rows="8" value={input} onChange={e=>setInput(e.target.value)} placeholder={`${mode.toUpperCase()} code...`} />
             {res && <div className="tool-result font-mono text-xs break-all">{res}</div>}
+        </div>
+    );
+};
+
+const MockApiGen = ({ onResultChange }) => {
+    const [status, setStatus] = useState(200);
+    const [latency, setLatency] = useState(0);
+    const [body, setBody] = useState('{\n  "status": "success",\n  "data": []\n}');
+
+    const generate = () => {
+        const code = `// Mock Implementation
+fetch('/api/mock', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ status: ${status}, delay: ${latency} })
+}).then(r => r.json());`;
+        onResultChange({ text: code, filename: 'mock_api.js' });
+    };
+
+    return (
+        <div className="card p-20 grid gap-15">
+            <div className="grid grid-2-cols gap-10">
+                <div className="form-group">
+                    <label>Status Code</label>
+                    <input type="number" className="pill" value={status} onChange={e=>setStatus(e.target.value)} />
+                </div>
+                <div className="form-group">
+                    <label>Latency (ms)</label>
+                    <input type="number" className="pill" value={latency} onChange={e=>setLatency(e.target.value)} />
+                </div>
+            </div>
+            <textarea className="pill font-mono" rows="5" value={body} onChange={e=>setBody(e.target.value)} />
+            <button className="btn-primary" onClick={generate}>Generate Endpoint Logic</button>
+        </div>
+    );
+};
+
+const JwtSigner = ({ onResultChange }) => {
+    const [header, setHeader] = useState('{"alg":"HS256","typ":"JWT"}');
+    const [payload, setPayload] = useState('{"sub":"1234567890","name":"John Doe","iat":1516239022}');
+    const [secret, setSecret] = useState('secret-key');
+
+    const sign = () => {
+        const b64 = (str) => btoa(str).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+        const h = b64(header);
+        const p = b64(payload);
+        const token = `${h}.${p}.[SIGNATURE_SIMULATED]`;
+        onResultChange({ text: token, filename: 'token.jwt' });
+    };
+
+    return (
+        <div className="card p-20 grid gap-15">
+            <div className="grid grid-2-cols gap-10">
+                <div className="flex-column gap-5">
+                    <label className="smallest uppercase font-bold opacity-6">Header</label>
+                    <textarea className="pill font-mono" rows="3" value={header} onChange={e=>setHeader(e.target.value)} />
+                </div>
+                <div className="flex-column gap-5">
+                    <label className="smallest uppercase font-bold opacity-6">Payload</label>
+                    <textarea className="pill font-mono" rows="3" value={payload} onChange={e=>setPayload(e.target.value)} />
+                </div>
+            </div>
+            <input className="pill" placeholder="Secret Key" value={secret} onChange={e=>setSecret(e.target.value)} />
+            <button className="btn-primary" onClick={sign}>Sign JWT (Simulation)</button>
         </div>
     );
 };

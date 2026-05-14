@@ -6,7 +6,8 @@ const AudioVideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'metronome', label: 'Metronome' },
     { id: 'tuner', label: 'Tuner' },
     { id: 'nature-sounds', label: 'Nature Sounds' },
-    { id: 'recorder', label: 'Voice Recorder' }
+    { id: 'recorder', label: 'Voice Recorder' },
+    { id: 'bpm-tap', label: 'BPM Tapper' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('frequency');
@@ -52,6 +53,7 @@ const AudioVideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'tuner' && <InstrumentTuner />}
       {activeTab === 'nature-sounds' && <NatureSoundsTool />}
       {activeTab === 'recorder' && <VoiceRecorder onResultChange={onResultChange} />}
+      {activeTab === 'bpm-tap' && <BpmTapper onResultChange={onResultChange} />}
     </div>
   );
 };
@@ -316,6 +318,38 @@ const VoiceRecorder = ({ onResultChange }) => {
             <button className={`btn-primary w-full ${recording ? 'danger' : ''}`} onClick={recording ? stop : start}>
                 {recording ? 'Stop Recording' : 'Start Recording'}
             </button>
+        </div>
+    );
+};
+
+const BpmTapper = ({ onResultChange }) => {
+    const [taps, setTaps] = useState([]);
+    const [bpm, setBpm] = useState(0);
+
+    const handleTap = () => {
+        const now = Date.now();
+        const newTaps = [now, ...taps].slice(0, 10);
+        setTaps(newTaps);
+        if (newTaps.length > 1) {
+            const intervals = [];
+            for (let i = 0; i < newTaps.length - 1; i++) {
+                intervals.push(newTaps[i] - newTaps[i+1]);
+            }
+            const avg = intervals.reduce((a,b)=>a+b) / intervals.length;
+            const res = Math.round(60000 / avg);
+            setBpm(res);
+            onResultChange({ text: `Detected BPM: ${res}` });
+        }
+    };
+
+    return (
+        <div className="card p-30 text-center">
+            <div className="opacity-6 smallest uppercase font-bold mb-10">BPM Tapper</div>
+            <div style={{fontSize: '5rem', fontWeight: 800, color: 'var(--primary)'}} className="mb-20">{bpm || '---'}</div>
+            <button className="btn-primary w-full" style={{height: '120px', fontSize: '1.5rem'}} onClick={handleTap}>
+                TAP TO BEAT
+            </button>
+            <button className="pill mt-15" onClick={()=>{setTaps([]); setBpm(0);}}>Reset</button>
         </div>
     );
 };

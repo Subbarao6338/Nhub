@@ -158,17 +158,30 @@ const DnsTool = ({ onResultChange }) => {
             if (data.Answer) {
                 const formatted = {};
                 data.Answer.forEach(ans => {
-                    const type = ans.type === 1 ? 'A' : (ans.type === 28 ? 'AAAA' : (ans.type === 15 ? 'MX' : 'TXT'));
+                    const type = ans.type === 1 ? 'A' : (ans.type === 28 ? 'AAAA' : (ans.type === 15 ? 'MX' : (ans.type === 16 ? 'TXT' : (ans.type === 5 ? 'CNAME' : 'OTHER'))));
                     (formatted[type] || (formatted[type] = [])).push(ans.data);
                 });
                 setRecords(formatted);
+                onResultChange({ text: `DNS for ${domain}:\n` + JSON.stringify(formatted, null, 2), filename: 'dns.json' });
             } else setRecords({'Error': ['No records found']});
         } catch(e) { setRecords({'Error': ['Lookup failed']}); }
     };
     return (
         <div className="grid gap-15">
             <div className="flex-gap"><input type="text" value={domain} onChange={e => setDomain(e.target.value)} className="pill flex-1" /><button className="btn-primary" onClick={lookup}>Lookup</button></div>
-            {records && <div className="tool-result font-mono">{Object.entries(records).map(([t,v])=>(<div key={t} className="mb-10"><div className="font-bold color-primary">{t}</div>{v.map((val,i)=><div key={i} style={{paddingLeft: '10px'}}>{val}</div>)}</div>))}</div>}
+            {records && (
+                <div className="tool-result font-mono grid gap-10">
+                    {Object.entries(records).map(([t, v]) => (
+                        <div key={t} className="p-10 border rounded-12 bg-white">
+                            <div className="flex-between mb-5">
+                                <span className="pill active" style={{fontSize: '0.7rem', padding: '2px 8px'}}>{t}</span>
+                                <span className="opacity-5 smallest">{v.length} records</span>
+                            </div>
+                            {v.map((val, i) => <div key={i} className="small break-all" style={{paddingLeft: '5px'}}>• {val}</div>)}
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
@@ -176,22 +189,35 @@ const DnsTool = ({ onResultChange }) => {
 const SpeedTestTool = () => {
     const [speed, setSpeed] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [progress, setProgress] = useState(0);
+
     const run = async () => {
-        setLoading(true); const start = Date.now();
+        setLoading(true); setProgress(0); setSpeed(null);
+        const start = Date.now();
         try {
-            const res = await fetch('https://upload.wikimedia.org/wikipedia/commons/3/3f/Fronalpstock_big.jpg', { cache: 'no-store' });
-            const blob = await res.blob();
+            const response = await fetch('https://upload.wikimedia.org/wikipedia/commons/3/3f/Fronalpstock_big.jpg', { cache: 'no-store' });
+            const reader = response.body.getReader();
+            const contentLength = +response.headers.get('Content-Length');
+            let receivedLength = 0;
+            while(true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+                receivedLength += value.length;
+                setProgress(Math.round((receivedLength / contentLength) * 100));
+            }
             const duration = (Date.now() - start) / 1000;
-            const mbps = ((blob.size * 8) / (duration * 1024 * 1024)).toFixed(2);
+            const mbps = ((receivedLength * 8) / (duration * 1024 * 1024)).toFixed(2);
             setSpeed(mbps);
-        } catch(e) { alert("Failed"); }
+        } catch(e) { alert("Speed test failed. Check connection."); }
         finally { setLoading(false); }
     };
     return (
         <div className="card p-20 text-center">
-            <span className="material-icons" style={{fontSize: '3rem', color: 'var(--primary)'}}>speed</span>
-            <div style={{fontSize: '2rem', fontWeight: 800}} className="mv-15">{speed ? `${speed} Mbps` : '---'}</div>
-            <button className="btn-primary w-full" onClick={run} disabled={loading}>{loading ? 'Testing...' : 'Start Test'}</button>
+            <div className="sensor-circle m-auto mb-20" style={{width: '120px', height: '120px', border: '8px solid var(--border)', borderTopColor: 'var(--primary)', transform: `rotate(${progress * 3.6}deg)`}}>
+                <div style={{fontSize: '1.5rem', fontWeight: 800, transform: `rotate(${-progress * 3.6}deg)`}}>{speed || progress + '%'}</div>
+            </div>
+            <div style={{fontSize: '2rem', fontWeight: 800}} className="mb-15">{speed ? `${speed} Mbps` : 'Ready'}</div>
+            <button className="btn-primary w-full" onClick={run} disabled={loading}>{loading ? 'Testing...' : 'Run Speed Test'}</button>
         </div>
     );
 };

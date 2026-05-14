@@ -73,7 +73,9 @@ const DeviceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'level' && <LevelTool />}
       {activeTab === 'gps' && <GpsTool onResultChange={onResultChange} />}
       {activeTab === 'sound' && <SoundMeter onResultChange={onResultChange} />}
-      {['sensors', 'magnetic', 'ruler', 'protractor'].includes(activeTab) && (
+      {activeTab === 'sensors' && <SensorGraph title="Accelerometer" type="devicemotion" property="acceleration" />}
+      {activeTab === 'magnetic' && <SensorGraph title="Magnetometer" type="deviceorientation" property="magnetic" />}
+      {['ruler', 'protractor'].includes(activeTab) && (
           <div className="text-center p-20 card opacity-6">
               <span className="material-icons mb-10" style={{fontSize: '2rem'}}>sensors</span>
               <div>This hardware tool is being integrated.</div>
@@ -295,6 +297,44 @@ const GpsTool = ({ onResultChange }) => {
                 </div>
             ) : <span className="material-icons opacity-3" style={{fontSize: '4rem'}}>location_on</span>}
             <button className="btn-primary w-full mt-20" onClick={get}>Get Current Location</button>
+        </div>
+    );
+};
+
+const SensorGraph = ({ title, type, property }) => {
+    const [data, setData] = useState({ x: 0, y: 0, z: 0 });
+    const [history, setHistory] = useState([]);
+
+    useEffect(() => {
+        const handle = (e) => {
+            let next = { x: 0, y: 0, z: 0 };
+            if (type === 'devicemotion' && e.acceleration) {
+                next = { x: e.acceleration.x || 0, y: e.acceleration.y || 0, z: e.acceleration.z || 0 };
+            } else if (type === 'deviceorientation') {
+                next = { x: e.beta || 0, y: e.gamma || 0, z: e.alpha || 0 };
+            }
+            setData(next);
+            setHistory(h => [next, ...h].slice(0, 50));
+        };
+        window.addEventListener(type, handle);
+        return () => window.removeEventListener(type, handle);
+    }, [type]);
+
+    return (
+        <div className="card p-20">
+            <h3 className="mb-15">{title}</h3>
+            <div className="grid grid-3 gap-10 mb-20 text-center">
+                <div className="pill">X: {data.x.toFixed(2)}</div>
+                <div className="pill">Y: {data.y.toFixed(2)}</div>
+                <div className="pill">Z: {data.z.toFixed(2)}</div>
+            </div>
+            <div className="border rounded-16 p-10 bg-white" style={{height: '150px'}}>
+                <svg viewBox="0 0 100 50" className="w-full h-full" preserveAspectRatio="none">
+                    <polyline fill="none" stroke="var(--primary)" strokeWidth="0.5" points={history.map((h, i) => `${i*2},${25 - h.x}`).join(' ')} />
+                    <polyline fill="none" stroke="var(--danger)" strokeWidth="0.5" points={history.map((h, i) => `${i*2},${25 - h.y}`).join(' ')} />
+                    <polyline fill="none" stroke="var(--nature-moss)" strokeWidth="0.5" points={history.map((h, i) => `${i*2},${25 - h.z}`).join(' ')} />
+                </svg>
+            </div>
         </div>
     );
 };

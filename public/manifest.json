@@ -1,12 +1,14 @@
 {
-  "name": "Epic Toolbox",
+  "name": "Epic Toolbox — Harmony & Flow",
   "short_name": "EpicToolbox",
-  "description": "A serene, nature-inspired dashboard with 100+ professional utility tools for developers and students.",
-  "start_url": ".",
+  "description": "A nature-inspired professional utility hub with 150+ tools for developers, students, and digital nomads.",
+  "start_url": "/?pwa=true",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui"],
   "background_color": "#fdfbf7",
   "theme_color": "#2d6a4f",
-  "categories": ["productivity", "utilities", "developer", "education", "finance", "health"],
+  "orientation": "any",
+  "categories": ["productivity", "utilities", "developer", "education", "finance", "health", "graphics", "games"],
   "shortcuts": [
     {
       "name": "AI Assistant",
@@ -21,45 +23,21 @@
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
-      "name": "Finance Tools",
-      "short_name": "Finance",
-      "url": "/?tab=toolbox&tool=finance-main",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "Education Hub",
-      "short_name": "Edu",
-      "url": "/?tab=toolbox&tool=edu-main",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "Security Hub",
-      "short_name": "Security",
-      "url": "/?tab=toolbox&tool=security-main",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "Media Tools",
-      "short_name": "Media",
+      "name": "PDF Tools",
+      "short_name": "PDF",
       "url": "/?tab=toolbox&tool=pdf-main",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
-      "name": "QR Scanner",
-      "short_name": "Scan",
-      "url": "/?tab=toolbox&tool=qr-scan",
+      "name": "Games Hub",
+      "short_name": "Games",
+      "url": "/?tab=toolbox&tool=game-main",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
-      "name": "World Clock",
-      "short_name": "Clock",
-      "url": "/?tab=toolbox&tool=world-clock",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "Health Hub",
-      "short_name": "Health",
-      "url": "/?tab=toolbox&tool=health-main",
+      "name": "Network Hub",
+      "short_name": "Net",
+      "url": "/?tab=toolbox&tool=network-main",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     }
   ],
@@ -87,6 +65,15 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/urlhub.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Toolbox Dashboard"
     }
   ]
 }

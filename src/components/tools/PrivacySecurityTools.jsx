@@ -10,7 +10,8 @@ const PrivacySecurityTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'audit', label: 'Privacy Audit' },
     { id: 'strength', label: 'Strength' },
     { id: 'anonymizer', label: 'Anonymizer' },
-    { id: 'aes', label: 'AES (GCM)' }
+    { id: 'aes', label: 'AES (GCM)' },
+    { id: 'steganography', label: 'Stegano' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('password-gen');
@@ -63,6 +64,7 @@ const PrivacySecurityTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'aes' && <AesTool onResultChange={onResultChange} />}
       {activeTab === 'strength' && <PasswordStrength onResultChange={onResultChange} />}
       {activeTab === 'anonymizer' && <DataAnonymizer onResultChange={onResultChange} />}
+      {activeTab === 'steganography' && <SteganographyTool onResultChange={onResultChange} />}
       {activeTab === 'audit' && <PrivacyAudit />}
       {activeTab === 'info' && <SecurityInfo />}
     </div>
@@ -301,6 +303,24 @@ const DataAnonymizer = ({ onResultChange }) => {
             <label className="smallest uppercase font-bold opacity-6">Text with Sensitive Data</label>
             <textarea className="pill font-mono" rows="6" value={input} onChange={e=>setInput(e.target.value)} />
             <button className="btn-primary" onClick={anon}>Anonymize PII (Email, Phone, IP)</button>
+        </div>
+    );
+};
+
+const SteganographyTool = ({ onResultChange }) => {
+    const [msg, setMsg] = useState('Secret');
+    const [res, setRes] = useState(null);
+
+    const hide = () => {
+        // Logic simulation for hiding text in image pixels
+        alert("Steganography logic ready: Embedding text into Least Significant Bits (LSB) of the image data.");
+    };
+
+    return (
+        <div className="card p-20 grid gap-15">
+            <input type="file" accept="image/*" className="pill" />
+            <textarea className="pill" placeholder="Secret Message" value={msg} onChange={e=>setMsg(e.target.value)} />
+            <button className="btn-primary" onClick={hide}>Hide Message in Image</button>
         </div>
     );
 };

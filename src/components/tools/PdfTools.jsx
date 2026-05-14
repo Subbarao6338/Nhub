@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { PDFDocument, rgb } from 'pdf-lib';
-import * as pdfjsLib from 'pdfjs-dist';
-import { jsPDF } from 'jspdf';
-import * as XLSX from 'xlsx';
-import html2canvas from 'html2canvas';
-import mammoth from 'mammoth';
-import JSZip from 'jszip';
-import Tesseract from 'tesseract.js';
 
-// Setup PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// Dynamic imports for heavy libraries to improve initial hub load speed
+const loadPdfLib = () => import('pdf-lib');
+const loadPdfJs = () => import('pdfjs-dist');
+const loadJsPdf = () => import('jspdf');
+const loadXlsx = () => import('xlsx');
+const loadHtml2Canvas = () => import('html2canvas');
+const loadMammoth = () => import('mammoth');
+const loadJsZip = () => import('jszip');
+const loadTesseract = () => import('tesseract.js');
 
 const ImageToPdf = ({ onResultChange }) => {
     const [images, setImages] = useState([]);
@@ -19,6 +18,7 @@ const ImageToPdf = ({ onResultChange }) => {
         if (images.length === 0) return;
         setIsProcessing(true);
         try {
+            const { PDFDocument } = await loadPdfLib();
             const pdfDoc = await PDFDocument.create();
             for (const file of images) {
                 const bytes = await file.arrayBuffer();
@@ -134,6 +134,8 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const pdfjsLib = await loadPdfJs();
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
       const arrayBuffer = await files[0].arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       let fullText = "";
@@ -156,6 +158,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const pdfjsLib = await loadPdfJs();
       const arrayBuffer = await files[0].arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       const page = await pdf.getPage(1);
@@ -179,6 +182,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const mammoth = await loadMammoth();
       const arrayBuffer = await files[0].arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
       const html = result.value;
@@ -190,9 +194,11 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
       container.style.left = '-9999px';
       container.innerHTML = html;
       document.body.appendChild(container);
+      const html2canvas = (await loadHtml2Canvas()).default;
       const canvas = await html2canvas(container);
       document.body.removeChild(container);
       const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = await loadJsPdf();
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
@@ -209,6 +215,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const XLSX = await loadXlsx();
       const arrayBuffer = await files[0].arrayBuffer();
       const workbook = XLSX.read(arrayBuffer);
       const html = XLSX.utils.sheet_to_html(workbook.Sheets[workbook.SheetNames[0]]);
@@ -238,6 +245,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const pdfjsLib = await loadPdfJs();
       const arrayBuffer = await files[0].arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       let fullText = "";
@@ -259,7 +267,9 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const JSZip = (await loadJsZip()).default;
       const zip = new JSZip();
+      const pdfjsLib = await loadPdfJs();
       const arrayBuffer = await files[0].arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       for (let i = 1; i <= pdf.numPages; i++) {
@@ -286,7 +296,9 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const JSZip = (await loadJsZip()).default;
       const zip = new JSZip();
+      const pdfjsLib = await loadPdfJs();
       const arrayBuffer = await files[0].arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       let imgCount = 0;
@@ -327,9 +339,11 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const pdfjsLib = await loadPdfJs();
       const arrayBuffer = await files[0].arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       let fullText = "";
+      const Tesseract = (await loadTesseract()).default;
       const worker = await Tesseract.createWorker();
       await worker.loadLanguage('eng');
       await worker.initialize('eng');
@@ -361,6 +375,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const pdfjsLib = await loadPdfJs();
       const arrayBuffer = await files[0].arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       let fullText = "";
@@ -392,6 +407,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length < 2) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const mergedPdf = await PDFDocument.create();
       for (const file of files) {
         const pdfBytes = await file.arrayBuffer();
@@ -409,6 +425,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const pdfBytes = await files[0].arrayBuffer();
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const pages = pdfDoc.getPages();
@@ -426,6 +443,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0 || !pagesToRemove) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const pdfBytes = await files[0].arrayBuffer();
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const indices = pagesToRemove.split(',').map(s => parseInt(s.trim()) - 1).filter(n => !isNaN(n));
@@ -445,6 +463,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0 || !pageOrder) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const pdfBytes = await files[0].arrayBuffer();
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const newDoc = await PDFDocument.create();
@@ -461,6 +480,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0 || !splitRange) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const pdfBytes = await files[0].arrayBuffer();
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const newDoc = await PDFDocument.create();
@@ -485,6 +505,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument, rgb } = await loadPdfLib();
       const pdfBytes = await files[0].arrayBuffer();
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const pages = pdfDoc.getPages();
@@ -507,6 +528,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0 || !watermarkText) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument, rgb } = await loadPdfLib();
       const pdfBytes = await files[0].arrayBuffer();
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const pages = pdfDoc.getPages();
@@ -531,6 +553,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const pdfBytes = await files[0].arrayBuffer();
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const pages = pdfDoc.getPages();
@@ -552,6 +575,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0 || !signatureImage) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const pdfBytes = await files[0].arrayBuffer();
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const signatureBytes = await signatureImage.arrayBuffer();
@@ -577,6 +601,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0 || !password) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const pdfBytes = await files[0].arrayBuffer();
       const pdfDoc = await PDFDocument.load(pdfBytes);
       const encryptedBytes = await pdfDoc.save({ userPassword: password, ownerPassword: password });
@@ -589,6 +614,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0 || !password) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const pdfBytes = await files[0].arrayBuffer();
       const pdfDoc = await PDFDocument.load(pdfBytes, { password });
       const decryptedBytes = await pdfDoc.save();
@@ -601,6 +627,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const pdfBytes = await files[0].arrayBuffer();
       const pdfDoc = await PDFDocument.load(pdfBytes);
       pdfDoc.setTitle(metadata.title);
@@ -617,6 +644,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (files.length === 0) return;
     setIsProcessing(true);
     try {
+      const { PDFDocument } = await loadPdfLib();
       const pdfBytes = await files[0].arrayBuffer();
       const pdfDoc = await PDFDocument.load(pdfBytes);
       pdfDoc.setTitle('');
@@ -634,6 +662,7 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
       if (files.length === 0) return;
       setIsProcessing(true);
       try {
+          const { PDFDocument } = await loadPdfLib();
           const pdfBytes = await files[0].arrayBuffer();
           const pdfDoc = await PDFDocument.load(pdfBytes);
           const form = pdfDoc.getForm();
@@ -648,6 +677,8 @@ const PdfTools = ({ onResultChange, toolId, onSubtoolChange }) => {
       if (files.length === 0) return;
       setIsProcessing(true);
       try {
+          const pdfjsLib = await loadPdfJs();
+          const { PDFDocument } = await loadPdfLib();
           const arrayBuffer = await files[0].arrayBuffer();
           const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
           const newPdf = await PDFDocument.create();

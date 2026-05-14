@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { parquetRead } from 'hyparquet';
+import ResultActionBar from './ResultActionBar';
 
 const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const tabs = [
@@ -12,7 +13,9 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'profiling', label: 'Data Profiling' },
     { id: 'anonymizer', label: 'Anonymizer' },
     { id: 'json-csv', label: 'JSON ↔ CSV' },
-    { id: 'mock', label: 'Mock Data Gen' }
+    { id: 'mock', label: 'Mock Data Gen' },
+    { id: 'correlation', label: 'Correlation' },
+    { id: 'normalization', label: 'Normalize' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('viewer');
@@ -67,6 +70,8 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         {activeTab === 'anonymizer' && <DataAnonymizer onResultChange={onResultChange} />}
         {activeTab === 'json-csv' && <JsonCsvConverter onResultChange={onResultChange} />}
         {activeTab === 'mock' && <MockDataGenerator onResultChange={onResultChange} />}
+        {activeTab === 'correlation' && <CorrelationTool onResultChange={onResultChange} data={uploadedData} />}
+        {activeTab === 'normalization' && <NormalizationTool onResultChange={onResultChange} data={uploadedData} />}
       </div>
     </div>
   );
@@ -97,6 +102,7 @@ const MockDataGenerator = ({ onResultChange }) => {
 
     return (
         <div className="card p-20 text-center">
+                <ResultActionBar result={format === 'json' ? {text: res, filename: 'mock_data.json'} : {text: res, filename: 'mock_data.csv'}} />
             <div className="grid grid-2 gap-10 mb-20">
                 <div className="form-group">
                     <label>Rows</label>
@@ -411,16 +417,39 @@ const DataScienceTool = ({ onResultChange }) => {
     const [res, setRes] = useState(null);
     const calc = () => {
         try {
-            const pairs = data.split('\n').map(l => l.split(',').map(Number));
+            const pairs = data.split('\n').map(l => l.split(',').map(Number)).filter(p => p.length === 2 && !isNaN(p[0]) && !isNaN(p[1]));
             const n = pairs.length;
+            if (n < 2) throw new Error("At least 2 points needed");
             let sx=0, sy=0, sxy=0, sx2=0;
             for(const [x,y] of pairs) { sx+=x; sy+=y; sxy+=x*y; sx2+=x*x; }
             const slope = (n*sxy - sx*sy) / (n*sx2 - sx*sx);
             const intercept = (sy - slope*sx) / n;
-            setRes({ slope, intercept });
+            setRes({ slope, intercept, pairs });
             onResultChange({ text: `y = ${slope.toFixed(2)}x + ${intercept.toFixed(2)}`, filename: 'regression.txt' });
-        } catch(e) { alert("Invalid format"); }
+        } catch(e) { alert(e.message || "Invalid format"); }
     };
+
+    const renderChart = () => {
+        if (!res) return null;
+        const max_x = Math.max(...res.pairs.map(p => p[0]));
+        const max_y = Math.max(...res.pairs.map(p => p[1]));
+        const scale_x = 200 / (max_x || 1);
+        const scale_y = 100 / (max_y || 1);
+
+        return (
+            <div className="mt-20 p-10 bg-white rounded-12 border">
+                <svg viewBox="0 0 220 120" className="w-full h-auto">
+                    <line x1="10" y1="10" x2="10" y2="110" stroke="#ccc" strokeWidth="1" />
+                    <line x1="10" y1="110" x2="210" y2="110" stroke="#ccc" strokeWidth="1" />
+                    {res.pairs.map((p, i) => (
+                        <circle key={i} cx={10 + p[0]*scale_x} cy={110 - p[1]*scale_y} r="2" fill="var(--primary)" />
+                    ))}
+                    <line x1={10} y1={110 - res.intercept*scale_y} x2={210} y2={110 - (res.slope*(200/scale_x)+res.intercept)*scale_y} stroke="var(--danger)" strokeWidth="1" strokeDasharray="2" />
+                </svg>
+            </div>
+        );
+    };
+
     return (
         <div className="grid gap-15 card p-20">
             <div className="form-group">
@@ -431,7 +460,105 @@ const DataScienceTool = ({ onResultChange }) => {
                 <span className="material-icons mr-10">trending_up</span>
                 Calculate Linear Regression
             </button>
-            {res && <div className="tool-result text-center font-bold" style={{background: 'var(--primary-glow)'}}>y = {res.slope.toFixed(3)}x + {res.intercept.toFixed(3)}</div>}
+            {res && (
+                <>
+                    <div className="tool-result text-center font-bold" style={{background: 'var(--primary-glow)'}}>y = {res.slope.toFixed(3)}x + {res.intercept.toFixed(3)}</div>
+                    {renderChart()}
+                </>
+            )}
+        </div>
+    );
+};
+
+const CorrelationTool = ({ data, onResultChange }) => {
+    const [cols, setCols] = useState(['', '']);
+    const [matrix, setMatrix] = useState(null);
+
+    const calculate = () => {
+        if (!data || data.length < 2) return;
+        const available = Object.keys(data[0]);
+        const numeric = available.filter(k => !isNaN(Number(data[0][k])));
+
+        const res = {};
+        numeric.forEach(c1 => {
+            res[c1] = {};
+            numeric.forEach(c2 => {
+                const x = data.map(d => Number(d[c1]));
+                const y = data.map(d => Number(d[c2]));
+                const n = x.length;
+                const sumX = x.reduce((a,b)=>a+b,0), sumY = y.reduce((a,b)=>a+b,0);
+                const sumXY = x.reduce((a,v,i)=>a+v*y[i],0);
+                const sumX2 = x.reduce((a,b)=>a+b*b,0), sumY2 = y.reduce((a,b)=>a+b*b,0);
+                const corr = (n*sumXY - sumX*sumY) / Math.sqrt((n*sumX2 - sumX*sumX) * (n*sumY2 - sumY*sumY));
+                res[c1][c2] = corr.toFixed(3);
+            });
+        });
+        setMatrix(res);
+        onResultChange({ text: JSON.stringify(res, null, 2), filename: 'correlation.json' });
+    };
+
+    if (!data) return <div className="card p-20 opacity-6 text-center">Upload data in Viewer first.</div>;
+
+    return (
+        <div className="card p-20 grid gap-15">
+            <button className="btn-primary" onClick={calculate}>Compute Correlation Matrix</button>
+            {matrix && (
+                <div className="overflow-auto">
+                    <table className="w-full small font-mono">
+                        <thead><tr><th></th>{Object.keys(matrix).map(k=><th key={k}>{k}</th>)}</tr></thead>
+                        <tbody>
+                            {Object.entries(matrix).map(([k, row]) => (
+                                <tr key={k}>
+                                    <td className="font-bold">{k}</td>
+                                    {Object.values(row).map((v, i) => (
+                                        <td key={i} style={{background: `rgba(var(--primary-rgb), ${Math.abs(v)})`, color: Math.abs(v) > 0.5 ? 'white' : 'inherit'}}>{v}</td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+    );
+};
+
+const NormalizationTool = ({ data, onResultChange }) => {
+    const [method, setMethod] = useState('minmax');
+    const [res, setRes] = useState(null);
+
+    const apply = () => {
+        if (!data) return;
+        const columns = Object.keys(data[0]).filter(k => !isNaN(Number(data[0][k])));
+        const normalized = data.map(row => {
+            const newRow = { ...row };
+            columns.forEach(col => {
+                const vals = data.map(d => Number(d[col]));
+                const min = Math.min(...vals), max = Math.max(...vals);
+                const mean = vals.reduce((a,b)=>a+b)/vals.length;
+                const std = Math.sqrt(vals.map(v=>Math.pow(v-mean,2)).reduce((a,b)=>a+b)/vals.length);
+
+                if (method === 'minmax') newRow[col] = ((Number(row[col]) - min) / (max - min || 1)).toFixed(4);
+                else newRow[col] = ((Number(row[col]) - mean) / (std || 1)).toFixed(4);
+            });
+            return newRow;
+        });
+        setRes(normalized);
+        onResultChange({ text: Papa.unparse(normalized), filename: 'normalized.csv' });
+    };
+
+    if (!data) return <div className="card p-20 opacity-6 text-center">Upload data in Viewer first.</div>;
+
+    return (
+        <div className="card p-20 grid gap-15">
+            <div className="flex-gap">
+                <select className="pill flex-1" value={method} onChange={e=>setMethod(e.target.value)}>
+                    <option value="minmax">Min-Max Scaling (0 to 1)</option>
+                    <option value="zscore">Z-Score (Standardization)</option>
+                </select>
+                <button className="btn-primary" onClick={apply}>Apply</button>
+            </div>
+            {res && <div className="tool-result font-mono text-xs">Normalized {res.length} rows. Ready for export.</div>}
         </div>
     );
 };

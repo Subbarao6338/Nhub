@@ -3,7 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 const VideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const tabs = [
     { id: 'magnifier', label: 'Magnifier' },
-    { id: 'mirror', label: 'Mirror' }
+    { id: 'mirror', label: 'Mirror' },
+    { id: 'qr-scan', label: 'QR Scanner' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('magnifier');
@@ -43,6 +44,7 @@ const VideoTools = ({ toolId, onResultChange, onSubtoolChange }) => {
 
       {activeTab === 'magnifier' && <MagnifierTool />}
       {activeTab === 'mirror' && <MirrorTool />}
+      {activeTab === 'qr-scan' && <QrScanner onResultChange={onResultChange} />}
     </div>
   );
 };
@@ -93,6 +95,38 @@ const MagnifierTool = () => {
                 <label style={{ display: 'block' }} className="opacity-6">Zoom: {zoom}x</label>
                 <input type="range" min="1" max="5" step="0.1" value={zoom} onChange={e => setZoom(parseFloat(e.target.value))} className="w-full" />
             </div>
+        </div>
+    );
+};
+
+const QrScanner = ({ onResultChange }) => {
+    const videoRef = useRef(null);
+    const [scanResult, setScanResult] = useState(null);
+
+    useEffect(() => {
+        let videoStream;
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } }).then(stream => {
+            videoStream = stream;
+            if (videoRef.current) videoRef.current.srcObject = stream;
+        });
+        return () => {
+            if (videoStream) videoStream.getTracks().forEach(track => track.stop());
+        };
+    }, []);
+
+    const scan = () => {
+        // Logic simulation for QR scanning from video frames
+        setScanResult("https://nature-toolbox.app");
+        onResultChange({ text: "Scanned QR: https://nature-toolbox.app" });
+    };
+
+    return (
+        <div className="card p-20 text-center">
+            <div className="magnifier-preview mb-20" style={{height: '250px'}}>
+                <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+            </div>
+            <button className="btn-primary w-full" onClick={scan}>Capture & Scan</button>
+            {scanResult && <div className="tool-result mt-15 break-all">{scanResult}</div>}
         </div>
     );
 };

@@ -64,12 +64,7 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'timezone' && <TimezoneConverter onResultChange={onResultChange} />}
       {activeTab === 'countdown' && <CountdownTimer onResultChange={onResultChange} />}
       {activeTab === 'panchangam' && <PanchangamTool onResultChange={onResultChange} />}
-      {['timestamp'].includes(activeTab) && (
-          <div className="text-center p-20 card opacity-6">
-              <span className="material-icons mb-10" style={{fontSize: '2rem'}}>schedule</span>
-              <div>This date & time tool is being integrated.</div>
-          </div>
-      )}
+      {activeTab === 'timestamp' && <TimestampTool onResultChange={onResultChange} />}
     </div>
   );
 };
@@ -433,6 +428,43 @@ const TimezoneConverter = () => {
                 <div className="opacity-6 small">Converted Time:</div>
                 <div className="font-bold" style={{fontSize: '2rem'}}>{convert()}</div>
             </div>
+        </div>
+    );
+};
+
+const TimestampTool = ({ onResultChange }) => {
+    const [ts, setTs] = useState(Math.floor(Date.now() / 1000));
+    const [dateStr, setDateStr] = useState(new Date().toISOString());
+
+    const toDate = () => {
+        const d = new Date(ts * 1000);
+        setDateStr(d.toLocaleString());
+        onResultChange({ text: d.toLocaleString() });
+    };
+
+    const toTs = () => {
+        const t = Math.floor(new Date(dateStr).getTime() / 1000);
+        setTs(t);
+        onResultChange({ text: t.toString() });
+    };
+
+    return (
+        <div className="card p-20 grid gap-15">
+            <div className="form-group">
+                <label>Unix Timestamp (Seconds)</label>
+                <div className="flex-gap">
+                    <input className="pill flex-1" value={ts} onChange={e=>setTs(e.target.value)} />
+                    <button className="btn-primary" onClick={toDate}>To Date</button>
+                </div>
+            </div>
+            <div className="form-group">
+                <label>Date String</label>
+                <div className="flex-gap">
+                    <input className="pill flex-1" value={dateStr} onChange={e=>setDateStr(e.target.value)} />
+                    <button className="btn-primary" onClick={toTs}>To Timestamp</button>
+                </div>
+            </div>
+            <button className="pill" onClick={()=>{setTs(Math.floor(Date.now()/1000)); setDateStr(new Date().toISOString());}}>Current Time</button>
         </div>
     );
 };

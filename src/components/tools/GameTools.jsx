@@ -67,7 +67,8 @@ const GameTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       {activeTab === 'sudoku' && <SudokuGame />}
       {activeTab === 'tictactoe' && <TicTacToe />}
       {activeTab === 'dino' && <DinoJump />}
-      {['chess', 'carrom', 'cricket', 'ludo', 'bouncer', 'tetris'].includes(activeTab) && (
+      {activeTab === 'tetris' && <TetrisGame />}
+      {['chess', 'carrom', 'cricket', 'ludo', 'bouncer'].includes(activeTab) && (
           <div className="text-center p-20 card opacity-6">
               <span className="material-icons mb-10" style={{fontSize: '2rem'}}>casino</span>
               <div>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} game is being integrated.</div>
@@ -263,19 +264,60 @@ const SnakeGame = () => {
     );
 };
 
-const SudokuGame = () => (
-    <div className="card p-20 text-center">
-        <div className="grid gap-2 m-auto" style={{gridTemplateColumns: 'repeat(9, 1fr)', width: '300px', background: 'var(--on-surface)', border: '2px solid var(--on-surface)'}}>
-            {Array(81).fill(0).map((_, i) => (
-                <div key={i} className="bg-white flex-center" style={{height: '32px', fontSize: '0.8rem', border: '1px solid #eee'}}>
-                    {Math.random() > 0.7 ? Math.floor(Math.random()*9)+1 : ''}
-                </div>
-            ))}
+const SudokuGame = () => {
+    const [grid, setGrid] = useState(Array(81).fill(0));
+    const [initial, setInitial] = useState(Array(81).fill(false));
+    const [selected, setSelected] = useState(null);
+
+    const generate = () => {
+        const newGrid = Array(81).fill(0);
+        const isInit = Array(81).fill(false);
+        for(let i=0; i<81; i++) {
+            if(Math.random() > 0.75) {
+                newGrid[i] = Math.floor(Math.random()*9)+1;
+                isInit[i] = true;
+            }
+        }
+        setGrid(newGrid);
+        setInitial(isInit);
+    };
+
+    useEffect(() => { generate(); }, []);
+
+    const setVal = (n) => {
+        if (selected === null || initial[selected]) return;
+        const next = [...grid];
+        next[selected] = n;
+        setGrid(next);
+    };
+
+    return (
+        <div className="card p-20 text-center">
+            <div className="grid gap-2 m-auto mb-20" style={{gridTemplateColumns: 'repeat(9, 1fr)', width: '270px', background: 'var(--on-surface)', border: '2px solid var(--on-surface)'}}>
+                {grid.map((v, i) => (
+                    <div key={i}
+                        className={`flex-center cursor-pointer ${selected === i ? 'active' : 'bg-white'}`}
+                        style={{
+                            height: '30px', fontSize: '0.8rem', border: '1px solid #eee',
+                            fontWeight: initial[i] ? '800' : 'normal',
+                            color: initial[i] ? 'var(--primary)' : 'inherit',
+                            backgroundColor: selected === i ? 'var(--primary-glow)' : 'white'
+                        }}
+                        onClick={() => setSelected(i)}
+                    >
+                        {v || ''}
+                    </div>
+                ))}
+            </div>
+            <div className="flex-center gap-5 flex-wrap mb-20">
+                {[1,2,3,4,5,6,7,8,9,0].map(n => (
+                    <button key={n} className="pill" style={{padding: '8px 12px', minWidth: '40px'}} onClick={()=>setVal(n)}>{n === 0 ? 'X' : n}</button>
+                ))}
+            </div>
+            <button className="btn-primary w-full" onClick={generate}>Generate New</button>
         </div>
-        <div className="mt-15 opacity-6 small">Complete the grid with numbers 1-9.</div>
-        <button className="btn-primary mt-10">New Puzzle</button>
-    </div>
-);
+    );
+};
 
 const DinoJump = () => {
     const canvasRef = useRef(null);
@@ -385,6 +427,57 @@ const TicTacToe = () => {
                 ))}
             </div>
             {(winner || board.every(b=>b)) && <button className="btn-primary mt-15" onClick={() => setBoard(Array(9).fill(null))}>New Game</button>}
+        </div>
+    );
+};
+
+const TetrisGame = () => {
+    const canvasRef = useRef(null);
+    const [score, setScore] = useState(0);
+    const [gameOver, setGameOver] = useState(false);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas || gameOver) return;
+        const ctx = canvas.getContext('2d');
+        const COLS = 10, ROWS = 20, SIZE = 20;
+        let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+        let piece = { x: 3, y: 0, shape: [[1, 1], [1, 1]] };
+
+        const draw = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            board.forEach((row, y) => row.forEach((v, x) => {
+                if (v) { ctx.fillStyle = 'var(--nature-moss)'; ctx.fillRect(x*SIZE, y*SIZE, SIZE-1, SIZE-1); }
+            }));
+            ctx.fillStyle = 'var(--primary)';
+            piece.shape.forEach((row, y) => row.forEach((v, x) => {
+                if (v) ctx.fillRect((piece.x+x)*SIZE, (piece.y+y)*SIZE, SIZE-1, SIZE-1);
+            }));
+        };
+
+        const move = () => {
+            piece.y++;
+            if (piece.y + piece.shape.length > ROWS) {
+                piece.y--;
+                piece.shape.forEach((row, dy) => row.forEach((v, dx) => {
+                    if (v) board[piece.y+dy][piece.x+dx] = 1;
+                }));
+                piece = { x: 3, y: 0, shape: [[1,1,1,1]] };
+                if (piece.y + piece.shape.length > ROWS) setGameOver(true);
+                setScore(s => s + 10);
+            }
+            draw();
+        };
+
+        const it = setInterval(move, 500);
+        return () => clearInterval(it);
+    }, [gameOver]);
+
+    return (
+        <div className="card p-15 text-center">
+            <div className="flex-between mb-10"><span>Score: {score}</span></div>
+            <canvas ref={canvasRef} width="200" height="400" style={{background: '#000', margin: '0 auto', display: 'block'}} />
+            {gameOver && <button className="btn-primary mt-10" onClick={()=>setGameOver(false)}>Restart</button>}
         </div>
     );
 };
