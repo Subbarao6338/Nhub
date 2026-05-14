@@ -26,13 +26,13 @@ function App() {
   const [hideToolbox, setHideToolbox] = useState(storage.getBoolean('hub_hide_toolbox', false));
   const [showProjectsTab, setShowProjectsTab] = useState(storage.getBoolean('hub_show_projects_tab', false));
 
-  const setTab = (tab, skipHistory = false) => {
+  const setTab = React.useCallback((tab, skipHistory = false) => {
     setCurrentTab(tab);
-    if ('vibrate' in navigator) navigator.vibrate(5);
+    if ('vibrate' in navigator) navigator.vibrate([10, 5, 10]);
     if (!skipHistory) {
       window.history.pushState({ tab }, '', `?tab=${tab}`);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const handlePopState = (event) => {
@@ -350,7 +350,7 @@ function App() {
     setSearchActive(false);
   };
 
-  const togglePin = (link) => {
+  const togglePin = React.useCallback((link) => {
     const newPinnedStatus = !link.is_pinned;
     fetch(`${API_BASE}/links/${link.id}`, {
       method: 'PUT',
@@ -376,9 +376,9 @@ function App() {
       }
     })
     .catch(err => console.error("Failed to toggle pin:", err));
-  };
+  }, []);
 
-  const deleteLink = (id) => {
+  const deleteLink = React.useCallback((id) => {
     if (!confirmDelete || window.confirm("Are you sure you want to delete this bookmark?")) {
       fetch(`${API_BASE}/links/${id}`, { method: 'DELETE' })
         .then(async (res) => {
@@ -400,7 +400,7 @@ function App() {
           }
         });
     }
-  };
+  }, [confirmDelete]);
 
   return (
     <div className="app-layout">

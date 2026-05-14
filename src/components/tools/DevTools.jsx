@@ -236,7 +236,33 @@ const DiffViewer = ({ onResultChange }) => {
                     <textarea className="pill font-mono" rows="8" value={newText} onChange={e=>setNewText(e.target.value)} />
                 </div>
             </div>
+            <div className="grid grid-2-cols gap-10">
+                <div className="card p-15 font-mono glass-card overflow-auto" style={{fontSize: '0.75rem', height: '300px'}}>
+                    <div className="mb-10 opacity-5 uppercase smallest">Old Text (Removed in red)</div>
+                    {diff.map((part, i) => !part.added && (
+                        <div key={i} style={{
+                            backgroundColor: part.removed ? 'rgba(var(--red-rgb), 0.1)' : 'transparent',
+                            color: part.removed ? 'var(--danger)' : 'inherit',
+                            textDecoration: part.removed ? 'line-through' : 'none'
+                        }}>
+                            {part.value}
+                        </div>
+                    ))}
+                </div>
+                <div className="card p-15 font-mono glass-card overflow-auto" style={{fontSize: '0.75rem', height: '300px'}}>
+                    <div className="mb-10 opacity-5 uppercase smallest">New Text (Added in green)</div>
+                    {diff.map((part, i) => !part.removed && (
+                        <div key={i} style={{
+                            backgroundColor: part.added ? 'rgba(var(--green-rgb), 0.1)' : 'transparent',
+                            color: part.added ? 'var(--nature-moss)' : 'inherit'
+                        }}>
+                            {part.value}
+                        </div>
+                    ))}
+                </div>
+            </div>
             <div className="card p-20 font-mono glass-card" style={{fontSize: '0.85rem', whiteSpace: 'pre-wrap'}}>
+                <div className="mb-10 opacity-5 uppercase smallest">Unified Diff</div>
                 {diff.map((part, i) => (
                     <div key={i} style={{
                         backgroundColor: part.added ? 'rgba(var(--green-rgb), 0.15)' : part.removed ? 'rgba(var(--red-rgb), 0.15)' : 'transparent',
@@ -244,7 +270,7 @@ const DiffViewer = ({ onResultChange }) => {
                         padding: '2px 5px',
                         borderLeft: part.added ? '4px solid var(--nature-moss)' : part.removed ? '4px solid var(--danger)' : 'none'
                     }}>
-                        {part.value}
+                        {part.added ? '+ ' : part.removed ? '- ' : '  '}{part.value}
                     </div>
                 ))}
             </div>

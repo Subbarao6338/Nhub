@@ -19,16 +19,29 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     if (onSubtoolChange) onSubtoolChange(labels[activeTab]);
   }, [activeTab]);
 
-  const runLocalAnalysis = () => {
-    const text = input.toLowerCase();
-    const positive = ['good', 'great', 'awesome', 'amazing', 'happy', 'love', 'excellent', 'fantastic', 'wonderful', 'perfect', 'epic'];
-    const negative = ['bad', 'terrible', 'awful', 'sad', 'hate', 'poor', 'worst', 'horrible', 'annoying', 'broken', 'failure'];
-
-    let score = 0;
-    positive.forEach(w => { if(text.includes(w)) score++; });
-    negative.forEach(w => { if(text.includes(w)) score--; });
-
-    setLocalSentiment(score > 0 ? 'Positive' : (score < 0 ? 'Negative' : 'Neutral'));
+  const runLocalAnalysis = async () => {
+    setLoading(true);
+    try {
+        const response = await fetch(`${API_BASE}/text/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: input })
+        });
+        const data = await response.json();
+        setLocalSentiment(data.sentiment.charAt(0).toUpperCase() + data.sentiment.slice(1));
+        onResultChange({ text: `Sentiment: ${data.sentiment}\nPos: ${data.positive_score}\nNeg: ${data.negative_score}`, filename: 'sentiment.txt' });
+    } catch (e) {
+        // Fallback to local logic if API fails
+        const text = input.toLowerCase();
+        const positive = ['good', 'great', 'awesome', 'amazing', 'happy', 'love', 'excellent', 'fantastic', 'wonderful', 'perfect', 'epic'];
+        const negative = ['bad', 'terrible', 'awful', 'sad', 'hate', 'poor', 'worst', 'horrible', 'annoying', 'broken', 'failure'];
+        let score = 0;
+        positive.forEach(w => { if(text.includes(w)) score++; });
+        negative.forEach(w => { if(text.includes(w)) score--; });
+        setLocalSentiment(score > 0 ? 'Positive' : (score < 0 ? 'Negative' : 'Neutral'));
+    } finally {
+        setLoading(false);
+    }
   };
 
   const generateImage = async () => {
@@ -148,7 +161,11 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
                   <div className="card p-15 overflow-auto" style={{ height: '400px', display: 'flex', flexDirection: 'column', gap: '10px', borderRadius: 'var(--radius-lg)' }}>
                       {chat.length === 0 && <div className="text-center opacity-5 m-auto">Ask me anything...<br/><span className="material-icons" style={{fontSize: '3rem'}}>forum</span></div>}
                       {chat.map((m, i) => (
-                          <div key={i} className={`p-15 rounded-16 ${m.role === 'user' ? 'bg-primary color-white ml-20' : 'bg-surface border mr-20 shadow-sm'}`} style={{borderRadius: m.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px'}}>
+                          <div key={i} className={`p-15 rounded-16 animate-slide-up ${m.role === 'user' ? 'bg-primary color-white ml-40' : 'bg-surface border mr-40 shadow-sm'}`} style={{
+                              borderRadius: m.role === 'user' ? '24px 24px 4px 24px' : '24px 24px 24px 4px',
+                              alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
+                              maxWidth: '85%'
+                          }}>
                               {m.content}
                           </div>
                       ))}

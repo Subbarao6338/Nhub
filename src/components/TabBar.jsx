@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 
-const TabBar = ({ currentTab, setTab, onAddClick, onBookmarksLongPress, onSettingsClick, onSearchClick, searchActive, enableProfiles, hideBookmarks, hideToolbox, showProjectsTab }) => {
+const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onSettingsClick, onSearchClick, searchActive, enableProfiles, hideBookmarks, hideToolbox, showProjectsTab }) => {
   const [pressTimer, setPressTimer] = useState(null);
   const isLongPress = useRef(false);
 
@@ -25,7 +25,13 @@ const TabBar = ({ currentTab, setTab, onAddClick, onBookmarksLongPress, onSettin
       isLongPress.current = false;
       return;
     }
+    if ('vibrate' in navigator) navigator.vibrate([10, 5, 10]);
     setTab('bookmarks');
+  };
+
+  const handleTabClick = (tab) => {
+    if ('vibrate' in navigator) navigator.vibrate([10, 5, 10]);
+    setTab(tab);
   };
 
   return (
@@ -35,7 +41,7 @@ const TabBar = ({ currentTab, setTab, onAddClick, onBookmarksLongPress, onSettin
           <div
             id="tab-toolbox"
             className={`tab-item ${currentTab === 'toolbox' ? 'active' : ''}`}
-            onClick={() => setTab('toolbox')}
+            onClick={() => handleTabClick('toolbox')}
             title="Toolbox"
           >
             <span className="material-icons">handyman</span>
@@ -65,7 +71,7 @@ const TabBar = ({ currentTab, setTab, onAddClick, onBookmarksLongPress, onSettin
           <div
             id="tab-projects"
             className={`tab-item ${currentTab === 'projects' ? 'active' : ''}`}
-            onClick={() => setTab('projects')}
+            onClick={() => handleTabClick('projects')}
             title="Projects"
           >
             <span className="material-icons">architecture</span>
@@ -94,6 +100,6 @@ const TabBar = ({ currentTab, setTab, onAddClick, onBookmarksLongPress, onSettin
       </div>
     </nav>
   );
-};
+});
 
 export default TabBar;

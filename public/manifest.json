@@ -1,13 +1,19 @@
 {
-  "name": "Nature Toolbox Hub",
-  "short_name": "Nature Hub",
-  "description": "A comprehensive nature-inspired toolbox with 100+ utilities for developers, students, and professionals.",
+  "name": "Epic Toolbox",
+  "short_name": "EpicToolbox",
+  "description": "A serene, nature-inspired dashboard with 100+ professional utility tools for developers and students.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#fdfbf7",
   "theme_color": "#2d6a4f",
   "categories": ["productivity", "utilities", "developer", "education", "finance", "health"],
   "shortcuts": [
+    {
+      "name": "AI Assistant",
+      "short_name": "AI",
+      "url": "/?tab=toolbox&tool=ai-main",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
     {
       "name": "Developer Hub",
       "short_name": "Dev",
