@@ -5,27 +5,12 @@ import NatureEmptyState from './NatureEmptyState';
 import { highlightText } from '../utils/helpers';
 
 // Consolidated Lazy Loaded Hubs
-const PdfTools = lazy(() => import('./tools/PdfTools'));
 const DocTools = lazy(() => import('./tools/DocTools'));
-const AudioVideoTools = lazy(() => import('./tools/AudioVideoTools'));
-const VideoTools = lazy(() => import('./tools/VideoTools'));
-const ImageTools = lazy(() => import('./tools/ImageTools'));
-const ColorTools = lazy(() => import('./tools/ColorTools'));
 const NetworkTools = lazy(() => import('./tools/NetworkTools'));
-const EducationTools = lazy(() => import('./tools/EducationTools'));
-const GameTools = lazy(() => import('./tools/GameTools'));
-const DeviceTools = lazy(() => import('./tools/DeviceTools'));
 const DataTools = lazy(() => import('./tools/DataTools'));
 const DateTimeTools = lazy(() => import('./tools/DateTimeTools'));
 const DevTools = lazy(() => import('./tools/DevTools'));
-const HealthTools = lazy(() => import('./tools/HealthTools'));
-const TextTools = lazy(() => import('./tools/TextTools'));
 const WebTools = lazy(() => import('./tools/WebTools'));
-const PrivacySecurityTools = lazy(() => import('./tools/PrivacySecurityTools'));
-const FinanceTools = lazy(() => import('./tools/FinanceTools'));
-const WeatherTools = lazy(() => import('./tools/WeatherTools'));
-const TravelTools = lazy(() => import('./tools/TravelTools'));
-const UnitConverterTools = lazy(() => import('./tools/UnitConverterTools'));
 const AiTools = lazy(() => import('./tools/AiTools'));
 
 const TOOLS = [
@@ -37,29 +22,12 @@ const TOOLS = [
     // Developer & Docs
     { id: 'dev-main', title: 'Dev Hub', icon: 'terminal', category: 'Developer', component: DevTools, subTools: ['json-formatter', 'jwt-decoder', 'sql-formatter', 'diff-viewer', 'regex-tester'] },
     { id: 'doc-main', title: 'Document Tools', icon: 'description', category: 'Developer', component: DocTools, subTools: ['md-editor', 'doc-translator'] },
-    { id: 'pdf-main', title: 'PDF Hub', icon: 'picture_as_pdf', category: 'Developer', component: PdfTools, subTools: ['pdf-merge', 'pdf-split', 'pdf-lock', 'img-to-pdf'] },
-
-    // Media & Creative
-    { id: 'image-main', title: 'Image Tools', icon: 'image', category: 'Media', component: ImageTools, subTools: ['image-compress', 'image-crop', 'image-filter'] },
-    { id: 'color-main', title: 'Color Hub', icon: 'palette', category: 'Media', component: ColorTools, subTools: ['color-picker', 'palette-gen', 'gradient-gen'] },
-    { id: 'audio-main', title: 'Audio Hub', icon: 'audiotrack', category: 'Media', component: AudioVideoTools, subTools: ['audio-trim', 'audio-conv'] },
 
     // Math & Science
     { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['csv-viewer', 'data-visualizer', 'anomaly-detect', 'stat-calc', 'data-quality', 'data-profiling', 'data-anonymizer', 'json-csv', 'mock-gen'] },
-    { id: 'finance-main', title: 'Finance Tools', icon: 'payments', category: 'Productivity', component: FinanceTools, subTools: ['loan-calc', 'investment-calc', 'tax-calc'] },
-    { id: 'unit-main', title: 'Unit Converter', icon: 'straighten', category: 'Productivity', component: UnitConverterTools },
 
-    // Productivity & Health
+    // Productivity
     { id: 'time-main', title: 'Date & Time Tools', icon: 'schedule', category: 'Productivity', component: DateTimeTools, subTools: ['stopwatch', 'pomodoro', 'worldclock', 'age', 'timestamp', 'panchangam', 'datediff', 'countdown'] },
-    { id: 'health-main', title: 'Health Hub', icon: 'monitor_heart', category: 'Health', component: HealthTools, subTools: ['bmi-calc', 'water-track', 'calorie-calc'] },
-    { id: 'edu-main', title: 'Education Hub', icon: 'school', category: 'Education', component: EducationTools },
-
-    // System & Hardware
-    { id: 'device-main', title: 'Device Hub', icon: 'important_devices', category: 'Sensors', component: DeviceTools, subTools: ['battery-info', 'screen-info', 'vibrate-test'] },
-    { id: 'privacy-main', title: 'Privacy Hub', icon: 'security', category: 'Security', component: PrivacySecurityTools, subTools: ['pass-gen', 'hash-gen'] },
-
-    // Games & Fun
-    { id: 'game-main', title: 'Games Hub', icon: 'sports_esports', category: 'Games', component: GameTools, subTools: ['snake', '2048', 'sudoku'] },
 ];
 
 const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRecentTools, hideRecentTools }) => {

@@ -192,12 +192,13 @@ const UrlToPdf = ({ onResultChange }) => {
 
     const convert = async () => {
         setLoading(true);
+        let container = null;
         try {
             const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
             const data = await res.json();
             const html = data.contents;
 
-            const container = document.createElement('div');
+            container = document.createElement('div');
             container.style.padding = '40px';
             container.style.width = '1000px';
             container.style.background = 'white';
@@ -213,7 +214,6 @@ const UrlToPdf = ({ onResultChange }) => {
                 allowTaint: true,
                 scale: 1.5
             });
-            document.body.removeChild(container);
 
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('p', 'mm', 'a4');
@@ -225,6 +225,9 @@ const UrlToPdf = ({ onResultChange }) => {
         } catch(e) {
             alert("Failed to convert URL to PDF: " + e.message);
         } finally {
+            if (container && container.parentNode) {
+                document.body.removeChild(container);
+            }
             setLoading(false);
         }
     };

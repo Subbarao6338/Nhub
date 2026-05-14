@@ -30,9 +30,10 @@ const DocTranslator = ({ onResultChange }) => {
             }
 
             const data = await response.json();
-            setResult(data.translated_text);
+            const translatedText = data.translated_text || '';
+            setResult(translatedText);
 
-            const blob = new Blob([data.translated_text], { type: 'text/plain' });
+            const blob = new Blob([translatedText], { type: 'text/plain' });
             onResultChange({
                 text: 'Translation complete',
                 blob,

@@ -132,7 +132,7 @@ const PingTool = ({ onResultChange }) => {
     try {
       const res = await fetch(`${API_BASE}/networking/ping?host=${host}`);
       const data = await res.json();
-      if (res.ok) setResults(data.output.split('\n'));
+      if (res.ok) setResults(data.output?.split('\n') || []);
       else {
         const start = Date.now(); await fetch(`https://${host}`, { mode: 'no-cors' });
         const end = Date.now(); setResults([`Pinging ${host} [Fallback]`, `Reply from ${host}: time=${end - start}ms`]);
@@ -298,7 +298,13 @@ const BluetoothTool = () => (
     <div className="card p-20 text-center">
         <span className="material-icons" style={{fontSize: '3rem', color: 'var(--primary)'}}>bluetooth</span>
         <div className="mt-15 opacity-6">Web Bluetooth requires secure context and user interaction.</div>
-        <button className="btn-primary mt-15" onClick={async () => { try { await navigator.bluetooth.requestDevice({acceptAllDevices: true}); } catch(e) { alert("Access denied or unsupported."); }}}>Scan</button>
+        <button className="btn-primary mt-15" onClick={async () => {
+            if (!navigator.bluetooth) {
+                alert("Web Bluetooth is not supported in this browser.");
+                return;
+            }
+            try { await navigator.bluetooth.requestDevice({acceptAllDevices: true}); } catch(e) { alert("Access denied or unsupported."); }
+        }}>Scan</button>
     </div>
 );
 

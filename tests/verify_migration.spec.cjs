@@ -1,36 +1,56 @@
 const { test, expect } = require('@playwright/test');
 
-test('Verify PDF Tools migration', async ({ page }) => {
+test('Verify Tool Hub Pruning', async ({ page }) => {
   await page.goto('http://localhost:5173/?tab=toolbox');
 
-  // Check PDF Tools card
-  const pdfCard = page.locator('#card-pdf-main');
-  await expect(pdfCard).toBeVisible();
-  await pdfCard.click();
-
-  // Check sub-tools in PDF Hub
-  const expectedSubTools = [
-    'Merge PDF', 'Split PDF', 'Delete Pages', 'Rearrange', 'Rotate', 'Sign', 'Watermark',
-    'Numbers', 'Crop', 'Lock', 'Unlock', 'Metadata', 'Compress', 'Grayscale',
-    'Flatten', 'Img to PDF', 'PDF to Img', 'Word to PDF', 'Excel to PDF',
-    'PDF to Word', 'PDF to Text', 'PDF to ZIP', 'Extract Assets', 'Scan PDF (OCR)'
+  // Allowed Hub IDs
+  const allowedHubs = [
+    'web-main',
+    'network-main',
+    'ai-main',
+    'dev-main',
+    'doc-main',
+    'data-main',
+    'time-main'
   ];
 
-  for (const label of expectedSubTools) {
-    // Wait for at least one to be visible to ensure Hub loaded
-    await page.waitForSelector('.pill');
-    await expect(page.locator(`button.pill:has-text("${label}")`).first()).toBeVisible();
+  // Removed Hub IDs (samples)
+  const removedHubs = [
+    'pdf-main',
+    'image-main',
+    'color-main',
+    'audio-main',
+    'finance-main',
+    'unit-main',
+    'health-main',
+    'edu-main',
+    'device-main',
+    'privacy-main',
+    'game-main'
+  ];
+
+  // Check allowed hubs are visible
+  for (const id of allowedHubs) {
+    await expect(page.locator(`#card-${id}`)).toBeVisible();
   }
+
+  // Check removed hubs are not present
+  for (const id of removedHubs) {
+    await expect(page.locator(`#card-${id}`)).not.toBeVisible();
+  }
+
+  // Verify Network Hub sub-tools (Stability Check)
+  await page.locator('#card-network-main').click();
+  await page.waitForSelector('.pill');
+  await expect(page.locator('button.pill:has-text("IP Info")')).toBeVisible();
+  await expect(page.locator('button.pill:has-text("Ping")')).toBeVisible();
 
   // Go back to Toolbox
   await page.locator('div.breadcrumb-item').filter({ hasText: 'Toolbox' }).first().click();
 
-  // Check Doc Tools hub
-  const docCard = page.locator('#card-doc-main');
-  await expect(docCard).toBeVisible();
-  await docCard.click();
-
-  // Doc hub should only have Markdown Editor now
-  await expect(page.locator('button.pill:has-text("Markdown Editor")')).toBeVisible();
-  await expect(page.locator('button.pill:has-text("PDF to Word")')).not.toBeVisible();
+  // Verify AI Hub sub-tools (Stability Check)
+  await page.locator('#card-ai-main').click();
+  await page.waitForSelector('.pill');
+  await expect(page.locator('button.pill:has-text("Image Gen")')).toBeVisible();
+  await expect(page.locator('button.pill:has-text("Chat")')).toBeVisible();
 });
