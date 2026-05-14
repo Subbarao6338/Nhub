@@ -31,19 +31,19 @@
   --sidebar-bg: rgba(255, 255, 255, 0.5);
   --glass-blur: 16px;
 
-  /* Pebble Design Language v6 - Harmony & Flow */
+  /* Pebble Design Language v7 - Organic Flow */
   --radius-full: 9999px;
-  --radius-xl: 40px;  /* More organic Pebble shape */
-  --radius-lg: 28px;
-  --radius-md: 20px;
-  --radius-sm: 12px;
+  --radius-xl: clamp(32px, 5vw, 48px);
+  --radius-lg: clamp(24px, 4vw, 32px);
+  --radius-md: clamp(16px, 3vw, 24px);
+  --radius-sm: clamp(8px, 2vw, 16px);
 
   --shadow-sm: 0 4px 12px -2px rgba(27, 67, 50, 0.08);
-  --shadow-md: 0 16px 32px -12px rgba(27, 67, 50, 0.16);
-  --shadow-lg: 0 32px 64px -16px rgba(27, 67, 50, 0.2);
-  --shadow-ambient: 0 0 40px rgba(var(--primary-rgb), 0.08);
+  --shadow-md: 0 16px 32px -12px rgba(27, 67, 50, 0.12);
+  --shadow-lg: 0 32px 64px -16px rgba(27, 67, 50, 0.18);
+  --shadow-ambient: 0 0 40px rgba(var(--primary-rgb), 0.06);
 
-  --transition-speed: 0.4s;
+  --transition-speed: 0.35s;
   --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --on-primary: #ffffff;
   --danger: #bc4749;
@@ -381,9 +381,10 @@ body {
   background-attachment: fixed;
   color: var(--on-surface);
   transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
-  padding: 1.5rem;
+  padding: clamp(0.5rem, 3vw, 1.5rem);
   position: relative;
-  overscroll-behavior-y: none; /* Prevent pull-to-refresh / content hiding on touch */
+  overscroll-behavior-y: none;
+  font-size: clamp(14px, 1.1vw, 16px);
 }
 
 /* Layout */
@@ -399,8 +400,8 @@ body {
 
 /* Top Bar */
 .top-bar {
-  height: 72px;
-  padding: 0 2rem;
+  height: clamp(64px, 10vh, 80px);
+  padding: 0 clamp(1rem, 4vw, 2.5rem);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -409,8 +410,9 @@ body {
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md), 0 0 20px rgba(var(--primary-rgb), 0.05);
+  box-shadow: var(--shadow-md), var(--shadow-ambient);
   z-index: 2000;
+  transition: all var(--transition-speed) ease;
 }
 
 .logo-container {
@@ -494,15 +496,16 @@ body {
   overflow-y: auto;
   overscroll-behavior-y: contain;
   touch-action: pan-y;
-  padding: 2.5rem;
+  padding: clamp(1rem, 5vw, 3rem);
   background: var(--surface);
   backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md), 0 0 20px rgba(var(--primary-rgb), 0.05);
+  box-shadow: var(--shadow-md), var(--shadow-ambient);
   scrollbar-width: thin;
   scrollbar-color: var(--nature-moss) transparent;
-  transition: padding 0.3s ease;
+  transition: all 0.3s ease;
+  container-type: inline-size;
 }
 
 /* Custom Pebble Scrollbar */
@@ -545,8 +548,8 @@ body {
 /* Category Grid & Cards */
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(clamp(260px, 25cqw, 350px), 1fr));
+  gap: clamp(1rem, 2vw, 2rem);
   transition: all var(--transition-speed) ease;
 }
 

@@ -270,30 +270,48 @@ const UnitCircle = () => {
 const ScientificCalculator = () => {
     const [expr, setExpr] = useState('');
     const [res, setRes] = useState('');
+    const [history, setHistory] = useState([]);
+
     const calc = () => {
-        try { setRes(evaluate(expr).toString()); } catch(e) { setRes('Error'); }
+        try {
+            const result = evaluate(expr).toString();
+            setRes(result);
+            setHistory(prev => [{expr, result}, ...prev].slice(0, 5));
+        } catch(e) { setRes('Error'); }
     };
     const btns = [
-        'sin(', 'cos(', 'tan(', 'log(',
-        'sqrt(', 'pow(', 'pi', 'e',
-        '7', '8', '9', '/',
-        '4', '5', '6', '*',
-        '1', '2', '3', '-',
-        '0', '.', '(', ')',
-        'C', '='
+        ['sin(', 'cos(', 'tan(', 'log('],
+        ['sqrt(', 'pow(', 'pi', 'e'],
+        ['(', ')', '!', '^'],
+        ['7', '8', '9', '/'],
+        ['4', '5', '6', '*'],
+        ['1', '2', '3', '-'],
+        ['0', '.', 'C', '+'],
+        ['=']
     ];
     return (
-        <div className="card p-20">
-            <input className="pill text-right mb-10 font-mono" style={{fontSize: '1.5rem'}} value={expr} onChange={e=>setExpr(e.target.value)} />
-            <div className="text-right color-primary font-bold mb-20" style={{fontSize: '2rem', height: '2.5rem'}}>{res}</div>
-            <div className="grid grid-4 gap-10">
-                {btns.map(b => (
-                    <button key={b} className={`pill ${['C','='].includes(b) ? 'active' : ''}`} onClick={()=>{
-                        if(b === '=') calc();
-                        else if(b === 'C') { setExpr(''); setRes(''); }
-                        else setExpr(prev => prev + b);
-                    }} style={{ padding: '10px' }}>{b}</button>
-                ))}
+        <div className="grid gap-15">
+            <div className="card p-20 glass-card">
+                <div className="history mb-10 text-right opacity-5 smallest font-mono">
+                    {history.map((h, i) => <div key={i}>{h.expr} = {h.result}</div>)}
+                </div>
+                <input className="pill text-right mb-10 font-mono" style={{fontSize: '2rem', border: 'none', background: 'transparent'}} value={expr} onChange={e=>setExpr(e.target.value)} />
+                <div className="text-right color-primary font-bold mb-10" style={{fontSize: '2.5rem', height: '3rem'}}>{res}</div>
+                <div className="grid gap-5">
+                    {btns.map((row, ri) => (
+                        <div key={ri} className={`grid grid-${row.length === 1 ? '1' : '4'} gap-5`}>
+                            {row.map(b => (
+                                <button key={b} className={`pill ${['C','='].includes(b) ? 'active' : ''}`}
+                                    onClick={()=>{
+                                        if(b === '=') calc();
+                                        else if(b === 'C') { setExpr(''); setRes(''); }
+                                        else setExpr(prev => prev + b);
+                                    }}
+                                    style={{ padding: '12px 5px', fontSize: '0.9rem' }}>{b}</button>
+                            ))}
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
@@ -404,8 +422,12 @@ const PhysicsConstants = () => {
     { name: 'Gravitational Constant', symbol: 'G', value: '6.674 × 10⁻¹¹ m³⋅kg⁻¹⋅s⁻²' },
     { name: 'Planck Constant', symbol: 'h', value: '6.626 × 10⁻³⁴ J⋅s' },
     { name: 'Boltzmann Constant', symbol: 'k', value: '1.380 × 10⁻²³ J/K' },
+    { name: 'Avogadro Constant', symbol: 'N_A', value: '6.022 × 10²³ mol⁻¹' },
+    { name: 'Universal Gas Constant', symbol: 'R', value: '8.314 J/(mol⋅K)' },
     { name: 'Electron Charge', symbol: 'e', value: '1.602 × 10⁻¹⁹ C' },
-    { name: 'Proton Mass', symbol: 'm_p', value: '1.672 × 10⁻²⁷ kg' }
+    { name: 'Electron Mass', symbol: 'm_e', value: '9.109 × 10⁻³¹ kg' },
+    { name: 'Proton Mass', symbol: 'm_p', value: '1.672 × 10⁻²⁷ kg' },
+    { name: 'Standard Gravity', symbol: 'g', value: '9.80665 m/s²' }
   ];
 
   return (

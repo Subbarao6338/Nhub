@@ -7,7 +7,9 @@ const HealthTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     { id: 'calories', label: 'Calories' },
     { id: 'macros', label: 'Macros' },
     { id: 'water', label: 'Water' },
-    { id: 'sleep', label: 'Sleep' }
+    { id: 'sleep', label: 'Sleep' },
+    { id: 'steps', label: 'Steps' },
+    { id: 'workout', label: 'Workout' }
   ];
 
   const [activeTab, setActiveTab] = useState('bmr');
@@ -53,6 +55,8 @@ const HealthTools = ({ onResultChange, toolId, onSubtoolChange }) => {
       {activeTab === 'macros' && <MacroTool onResultChange={onResultChange} />}
       {activeTab === 'water' && <WaterTracker onResultChange={onResultChange} />}
       {activeTab === 'sleep' && <SleepTool onResultChange={onResultChange} />}
+      {activeTab === 'steps' && <StepCounter onResultChange={onResultChange} />}
+      {activeTab === 'workout' && <WorkoutTimer onResultChange={onResultChange} />}
     </div>
   );
 };
@@ -238,6 +242,73 @@ const BmrTool = ({ onResultChange }) => {
       )}
     </div>
   );
+};
+
+const StepCounter = ({ onResultChange }) => {
+    const [steps, setSteps] = useState(0);
+    const [active, setActive] = useState(false);
+
+    useEffect(() => {
+        if (!active) return;
+        const handle = (e) => {
+            const acc = e.accelerationIncludingGravity;
+            if (acc) {
+                const magnitude = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
+                if (magnitude > 12) setSteps(s => s + 1);
+            }
+        };
+        window.addEventListener('devicemotion', handle);
+        return () => window.removeEventListener('devicemotion', handle);
+    }, [active]);
+
+    useEffect(() => {
+        onResultChange({ text: `Steps: ${steps}`, filename: 'steps.txt' });
+    }, [steps]);
+
+    return (
+        <div className="card p-30 text-center">
+            <div className="opacity-6 smallest uppercase font-bold mb-10">Pedometer (Beta)</div>
+            <div style={{fontSize: '5rem', fontWeight: 800, color: 'var(--primary)'}} className="mb-20">{steps}</div>
+            <button className={`btn-primary w-full ${active ? 'danger' : ''}`} onClick={()=>setActive(!active)}>
+                {active ? 'Stop Tracking' : 'Start Counting'}
+            </button>
+            <p className="smallest opacity-5 mt-15">Requires device motion permissions. Place phone in pocket for best results.</p>
+        </div>
+    );
+};
+
+const WorkoutTimer = () => {
+    const [seconds, setSeconds] = useState(30);
+    const [active, setActive] = useState(false);
+    const [type, setType] = useState('Work'); // Work, Rest
+
+    useEffect(() => {
+        if (!active || seconds === 0) return;
+        const it = setInterval(() => setSeconds(s => s - 1), 1000);
+        return () => clearInterval(it);
+    }, [active, seconds]);
+
+    useEffect(() => {
+        if (seconds === 0) {
+            if ('vibrate' in navigator) navigator.vibrate([300, 100, 300]);
+            setActive(false);
+            alert(`${type} period over!`);
+        }
+    }, [seconds]);
+
+    return (
+        <div className="card p-30 text-center">
+            <div className="pill-group mb-20 scrollable-x">
+                <button className={`pill ${type === 'Work' ? 'active' : ''}`} onClick={()=>{setType('Work'); setSeconds(30);}}>Work (30s)</button>
+                <button className={`pill ${type === 'Rest' ? 'active' : ''}`} onClick={()=>{setType('Rest'); setSeconds(10);}}>Rest (10s)</button>
+            </div>
+            <div style={{fontSize: '6rem', fontWeight: 800, fontFamily: 'monospace'}} className="mb-20 color-primary">{seconds}s</div>
+            <div className="flex-gap">
+                <button className="btn-primary flex-1" onClick={()=>setActive(!active)}>{active ? 'Pause' : 'Start'}</button>
+                <button className="pill" onClick={()=>{setActive(false); setSeconds(30);}}>Reset</button>
+            </div>
+        </div>
+    );
 };
 
 const CalorieTool = ({ onResultChange }) => {

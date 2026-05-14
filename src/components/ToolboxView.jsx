@@ -27,6 +27,7 @@ const WeatherTools = lazy(() => import('./tools/WeatherTools'));
 const TravelTools = lazy(() => import('./tools/TravelTools'));
 const UnitConverterTools = lazy(() => import('./tools/UnitConverterTools'));
 const AiTools = lazy(() => import('./tools/AiTools'));
+const GifTools = lazy(() => import('./tools/GifTools'));
 
 const TOOLS = [
     // Communication & Web
@@ -41,6 +42,7 @@ const TOOLS = [
 
     // Media & Creative
     { id: 'image-main', title: 'Image Tools', icon: 'image', category: 'Media', component: ImageTools, subTools: ['image-compress', 'image-crop', 'image-filter'] },
+    { id: 'gif-main', title: 'GIF Tools', icon: 'gif', category: 'Media', component: GifTools, subTools: ['vid-to-gif', 'img-to-gif', 'gif-extract', 'gif-optimize'] },
     { id: 'color-main', title: 'Color Hub', icon: 'palette', category: 'Media', component: ColorTools, subTools: ['color-picker', 'palette-gen', 'gradient-gen'] },
     { id: 'audio-main', title: 'Audio Hub', icon: 'audiotrack', category: 'Media', component: AudioVideoTools, subTools: ['audio-trim', 'audio-conv'] },
 
@@ -55,11 +57,17 @@ const TOOLS = [
     { id: 'edu-main', title: 'Education Hub', icon: 'school', category: 'Education', component: EducationTools },
 
     // System & Hardware
-    { id: 'device-main', title: 'Device Hub', icon: 'important_devices', category: 'Sensors', component: DeviceTools, subTools: ['battery-info', 'screen-info', 'vibrate-test'] },
-    { id: 'privacy-main', title: 'Privacy Hub', icon: 'security', category: 'Security', component: PrivacySecurityTools, subTools: ['pass-gen', 'hash-gen'] },
+    { id: 'device-main', title: 'Device Hub', icon: 'important_devices', category: 'Sensors', component: DeviceTools, subTools: ['battery-info', 'screen-info', 'vibrate-test', 'luxmeter', 'soundmeter'] },
+    { id: 'privacy-main', title: 'Privacy Hub', icon: 'security', category: 'Security', component: PrivacySecurityTools, subTools: ['pass-gen', 'hash-gen', 'rsa-gen', 'aes-encrypt'] },
+
+    // Communication & Utilities
+    { id: 'text-main', title: 'Text Tools', icon: 'translate', category: 'Utility', component: TextTools, subTools: ['case-converter', 'word-counter', 'lorem-ipsum'] },
+    { id: 'weather-main', title: 'Weather', icon: 'wb_sunny', category: 'Utility', component: WeatherTools },
+    { id: 'travel-main', title: 'Travel Hub', icon: 'flight', category: 'Utility', component: TravelTools, subTools: ['world-clock', 'timezone-conv', 'packing-list'] },
+    { id: 'video-main', title: 'Video Tools', icon: 'videocam', category: 'Media', component: VideoTools, subTools: ['magnifier', 'mirror'] },
 
     // Games & Fun
-    { id: 'game-main', title: 'Games Hub', icon: 'sports_esports', category: 'Games', component: GameTools, subTools: ['snake', '2048', 'sudoku'] },
+    { id: 'game-main', title: 'Games Hub', icon: 'sports_esports', category: 'Games', component: GameTools, subTools: ['snake', '2048', 'sudoku', 'tetris', 'tictactoe'] },
 ];
 
 const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRecentTools, hideRecentTools }) => {
@@ -140,23 +148,35 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     else { navigator.clipboard.writeText(url); alert("Link copied!"); }
   };
 
-  const filteredTools = useMemo(() => TOOLS.filter(t => {
-    let matchesSearch = true, matchesCat = true;
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      if (query.startsWith('cat:')) matchesCat = t.category.toLowerCase().includes(query.replace('cat:', '').trim());
-      else {
-          matchesSearch = t.title.toLowerCase().includes(query) ||
-                         t.category.toLowerCase().includes(query) ||
-                         t.subTools?.some(st => st.toLowerCase().includes(query));
+  const filteredToolsData = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    const matchedSubtoolsMap = {};
+
+    const filtered = TOOLS.filter(t => {
+      let matchesSearch = true, matchesCat = true;
+      if (searchQuery) {
+        if (query.startsWith('cat:')) {
+          matchesCat = t.category.toLowerCase().includes(query.replace('cat:', '').trim());
+        } else {
+            const titleMatch = t.title.toLowerCase().includes(query);
+            const catMatch = t.category.toLowerCase().includes(query);
+            const matchedSub = t.subTools?.filter(st => st.toLowerCase().includes(query)) || [];
+
+            if (matchedSub.length > 0) matchedSubtoolsMap[t.id] = matchedSub;
+            matchesSearch = titleMatch || catMatch || matchedSub.length > 0;
+        }
       }
-    }
-    if (!searchQuery || !searchQuery.toLowerCase().startsWith('cat:')) {
-      if (activeCategory === 'Pinned') matchesCat = pinnedTools.includes(t.id);
-      else if (activeCategory !== 'All') matchesCat = t.category === activeCategory;
-    }
-    return matchesSearch && matchesCat;
-  }).sort((a, b) => a.title.localeCompare(b.title)), [searchQuery, activeCategory, pinnedTools]);
+      if (!searchQuery || !query.startsWith('cat:')) {
+        if (activeCategory === 'Pinned') matchesCat = pinnedTools.includes(t.id);
+        else if (activeCategory !== 'All') matchesCat = t.category === activeCategory;
+      }
+      return matchesSearch && matchesCat;
+    }).sort((a, b) => a.title.localeCompare(b.title));
+
+    return { filtered, matchedSubtoolsMap };
+  }, [searchQuery, activeCategory, pinnedTools]);
+
+  const filteredTools = filteredToolsData.filtered;
 
   const toolboxCategories = useMemo(() => {
     const cats = {};
@@ -271,6 +291,24 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
 
   return (
     <>
+      {searchQuery && filteredToolsData.matchedSubtoolsMap && Object.keys(filteredToolsData.matchedSubtoolsMap).length > 0 && (
+          <div className="search-subtools-suggestion p-15 mb-20 animate-fadeIn" style={{background: 'var(--primary-glow)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--primary)'}}>
+              <div className="flex-start gap-10 mb-10 opacity-6 uppercase smallest font-bold">
+                  <span className="material-icons" style={{fontSize: '1rem'}}>auto_awesome</span>
+                  Matched Sub-tools
+              </div>
+              <div className="flex-gap flex-wrap">
+                  {Object.entries(filteredToolsData.matchedSubtoolsMap).map(([id, subs]) =>
+                      subs.map(s => (
+                          <button key={`${id}-${s}`} className="pill active" onClick={() => openTool(id)} style={{fontSize: '0.8rem', padding: '6px 12px'}}>
+                              {s}
+                          </button>
+                      ))
+                  )}
+              </div>
+          </div>
+      )}
+
       <CategoryNav
         categories={toolboxCategories}
         activeCategory={activeCategory}
@@ -291,7 +329,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
             </h3>
             <div className="category-grid">
               {TOOLS.filter(t => pinnedTools.includes(t.id)).map((tool, idx) => (
-                <ToolCard key={`pinned-${tool.id}`} tool={tool} idx={idx} isPinned={true} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} />
+                <ToolCard key={`pinned-${tool.id}`} tool={tool} idx={idx} isPinned={true} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} matchedSubtools={[]} />
               ))}
             </div>
           </div>
@@ -312,7 +350,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
       {!groupedTools ? (
         <div className="category-grid p-0-10">
           {filteredTools.map((tool, idx) => (
-            <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} />
+            <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} matchedSubtools={filteredToolsData.matchedSubtoolsMap[tool.id]} />
           ))}
         </div>
       ) : (
@@ -328,7 +366,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
             </div>
             <div className="category-grid">
               {groupedTools[cat].map((tool, idx) => (
-                <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} />
+                <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} matchedSubtools={filteredToolsData.matchedSubtoolsMap[tool.id]} />
               ))}
             </div>
           </div>
@@ -338,7 +376,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
   );
 };
 
-const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, searchQuery, highlightText, noAnimation }) => {
+const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, searchQuery, highlightText, noAnimation, matchedSubtools }) => {
     const onKeyDown = React.useCallback(e => {
         if (e.key === 'Enter') openTool(tool.id);
     }, [openTool, tool.id]);
@@ -353,10 +391,17 @@ const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, 
                     <span className="material-icons">share</span>
                 </button>
            </div>
-           <div className="card-header">
+           <div className="card-header" style={{ marginBottom: matchedSubtools?.length > 0 ? '0.5rem' : '1rem' }}>
                 <div className="card-icon flex-center" style={{ background: 'var(--bg)' }}><span className="material-icons">{tool.icon}</span></div>
                 <div className="card-title" dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
             </div>
+            {matchedSubtools?.length > 0 && (
+                <div className="flex-gap flex-wrap mb-10">
+                    {matchedSubtools.map(s => (
+                        <span key={s} className="pill smallest active" style={{padding: '2px 8px', fontSize: '0.65rem'}}>{s}</span>
+                    ))}
+                </div>
+            )}
         </div>
     );
 });

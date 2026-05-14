@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nature-hub-v21';
+const CACHE_NAME = 'epic-toolbox-v22';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -10,10 +10,11 @@ const ASSETS_TO_CACHE = [
   'https://fonts.googleapis.com/icon?family=Material+Icons'
 ];
 
-// Install Event
+// Install Event - Pre-cache core assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
+      console.log('Service Worker: Pre-caching core assets');
       return cache.addAll(ASSETS_TO_CACHE);
     }).catch(err => {
       console.error('Service Worker: Cache addition failed during installation:', err);
@@ -22,7 +23,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate Event
+// Activate Event - Clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -39,21 +40,21 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch Event - Network First for API, Stale-While-Revalidate for Assets
+// Fetch Event - Strategic Caching
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
   const isLocal = url.origin === self.location.origin;
   const isApi = url.pathname.startsWith('/api/');
+  const isExternalImage = event.request.destination === 'image' && !isLocal;
   const isFont = url.origin.includes('fonts.googleapis.com') ||
                  url.origin.includes('fonts.gstatic.com') ||
                  url.pathname.endsWith('.woff2') ||
                  url.pathname.endsWith('.woff') ||
                  url.pathname.endsWith('.ttf');
-  const isCachable = (isLocal && !isApi) || isFont;
 
-  // Network First strategy for API GET requests
+  // API Strategy: Network First, then Cache
   if (isLocal && isApi) {
     event.respondWith(
       fetch(event.request)
@@ -73,7 +74,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-First strategy for Fonts and Icons
+  // Fonts/Icons: Cache First, then Network
   if (isFont) {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
@@ -89,11 +90,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stale-while-revalidate for other cachable assets
-  if (isCachable) {
+  // Static Assets & Local Images: Stale-While-Revalidate
+  if (isLocal || isExternalImage) {
     event.respondWith(
       caches.open(CACHE_NAME).then((cache) => {
-        const matchOptions = isLocal ? { ignoreSearch: true } : {};
+        const matchOptions = { ignoreSearch: true };
         return cache.match(event.request, matchOptions).then((cachedResponse) => {
           const fetchPromise = fetch(event.request).then((networkResponse) => {
             if (networkResponse.ok) {
@@ -102,31 +103,13 @@ self.addEventListener('fetch', (event) => {
             return networkResponse;
           }).catch((err) => {
             console.log("Fetch failed, returning cached response if available", err);
+            // Fallback for missing images
             if (event.request.destination === 'image') {
-              return cachedResponse || caches.match('./assets/favicon.svg');
+              return cachedResponse || caches.match('./assets/urlhub.png');
             }
             return cachedResponse;
           });
           return cachedResponse || fetchPromise;
-        });
-      })
-    );
-    return;
-  }
-
-  // Fallback for non-cachable images (like external favicons)
-  if (event.request.destination === 'image') {
-    event.respondWith(
-      caches.match(event.request).then((cached) => {
-        return cached || fetch(event.request).then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          }
-          return response;
-        }).catch(() => {
-          // If offline and image not in cache, try local assets
-          return caches.match('./assets/urlhub.png') || caches.match('./assets/favicon.svg');
         });
       })
     );

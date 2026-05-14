@@ -5,7 +5,7 @@ const ColorTools = ({ toolId, onSubtoolChange }) => {
   const [color, setColor] = useState('#3b82f6');
 
   useEffect(() => {
-    const labels = { 'picker': 'Color Picker', 'converter': 'Converter', 'harmonies': 'Harmonies', 'blender': 'Blender', 'contrast': 'Contrast Checker' };
+    const labels = { 'picker': 'Color Picker', 'converter': 'Converter', 'harmonies': 'Harmonies', 'blender': 'Blender', 'contrast': 'Contrast Checker', 'palette': 'Palette Gen' };
     if (onSubtoolChange) onSubtoolChange(labels[activeTab]);
   }, [activeTab]);
 
@@ -31,6 +31,7 @@ const ColorTools = ({ toolId, onSubtoolChange }) => {
           <button className={`pill ${activeTab === 'harmonies' ? 'active' : ''}`} onClick={() => setActiveTab('harmonies')}>Harmonies</button>
           <button className={`pill ${activeTab === 'blender' ? 'active' : ''}`} onClick={() => setActiveTab('blender')}>Blender</button>
           <button className={`pill ${activeTab === 'contrast' ? 'active' : ''}`} onClick={() => setActiveTab('contrast')}>Contrast</button>
+          <button className={`pill ${activeTab === 'palette' ? 'active' : ''}`} onClick={() => setActiveTab('palette')}>Palette</button>
         </div>
       )}
 
@@ -46,6 +47,7 @@ const ColorTools = ({ toolId, onSubtoolChange }) => {
       {activeTab === 'harmonies' && <ColorHarmonies color={color} />}
       {activeTab === 'blender' && <ColorBlender colorA={color} />}
       {activeTab === 'contrast' && <ContrastChecker color={color} />}
+      {activeTab === 'palette' && <PaletteGenerator baseColor={color} />}
     </div>
   );
 };
@@ -215,6 +217,29 @@ const ContrastChecker = ({ color }) => {
                     <div className="smallest">WCAG AAA</div>
                     <div className="font-bold">{passesAAA ? 'PASS' : 'FAIL'}</div>
                 </div>
+            </div>
+        </div>
+    );
+};
+
+const PaletteGenerator = ({ baseColor }) => {
+    const generate = () => {
+        const res = [];
+        for(let i=0; i<5; i++) {
+            res.push(baseColor + (i*20).toString(16).padStart(2, '0')); // Simple mock palette
+        }
+        return res;
+    };
+    const palette = generate();
+    return (
+        <div className="card p-20 text-center">
+            <div className="flex-center gap-10 flex-wrap">
+                {palette.map((c, i) => (
+                    <div key={i} className="flex-column gap-5">
+                        <div style={{width: '60px', height: '60px', background: baseColor, opacity: 1 - (i*0.2), borderRadius: '12px'}} />
+                        <span className="smallest font-mono">{i*20}%</span>
+                    </div>
+                ))}
             </div>
         </div>
     );

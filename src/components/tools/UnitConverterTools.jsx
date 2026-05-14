@@ -5,7 +5,9 @@ const UnitConverterTools = ({ onResultChange, toolId, onSubtoolChange }) => {
     { id: 'length-conv', label: 'Length' },
     { id: 'weight-conv', label: 'Weight' },
     { id: 'temp-conv', label: 'Temperature' },
-    { id: 'data-conv', label: 'Data' }
+    { id: 'data-conv', label: 'Data' },
+    { id: 'area-conv', label: 'Area' },
+    { id: 'volume-conv', label: 'Volume' }
   ];
 
   const [activeTab, setActiveTab] = useState('length-conv');
@@ -89,6 +91,8 @@ const UnitConverterTools = ({ onResultChange, toolId, onSubtoolChange }) => {
               {activeTab === 'weight-conv' && <><option value="kg">Kilograms (kg)</option><option value="lb">Pounds (lb)</option></>}
               {activeTab === 'data-conv' && <><option value="gb">Gigabytes (GB)</option><option value="mb">Megabytes (MB)</option><option value="kb">Kilobytes (KB)</option></>}
               {activeTab === 'temp-conv' && <><option value="c">Celsius (°C)</option><option value="f">Fahrenheit (°F)</option><option value="k">Kelvin (K)</option></>}
+      {activeTab === 'area-conv' && <><option value="sqm">Sq Meters</option><option value="sqkm">Sq Km</option><option value="acre">Acres</option></>}
+      {activeTab === 'volume-conv' && <><option value="l">Liters</option><option value="ml">Milliliters</option><option value="gal">Gallons</option></>}
             </select>
             <span className="material-icons opacity-4">swap_horiz</span>
             <select className="pill flex-1" value={toUnit} onChange={e=>setToUnit(e.target.value)}>
@@ -96,6 +100,8 @@ const UnitConverterTools = ({ onResultChange, toolId, onSubtoolChange }) => {
                 {activeTab === 'weight-conv' && <><option value="lb">Pounds (lb)</option><option value="kg">Kilograms (kg)</option></>}
                 {activeTab === 'data-conv' && <><option value="mb">Megabytes (MB)</option><option value="gb">Gigabytes (GB)</option><option value="kb">Kilobytes (KB)</option></>}
                 {activeTab === 'temp-conv' && <><option value="f">Fahrenheit (°F)</option><option value="c">Celsius (°C)</option><option value="k">Kelvin (K)</option></>}
+        {activeTab === 'area-conv' && <><option value="acre">Acres</option><option value="sqm">Sq Meters</option><option value="sqkm">Sq Km</option></>}
+        {activeTab === 'volume-conv' && <><option value="gal">Gallons</option><option value="l">Liters</option><option value="ml">Milliliters</option></>}
             </select>
           </div>
           <div className="tool-result text-center">

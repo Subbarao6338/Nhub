@@ -10,7 +10,9 @@ const FinanceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'cagr', label: 'CAGR' },
     { id: 'dcf', label: 'DCF' },
     { id: 'tip', label: 'Tip & Split' },
-    { id: 'investment', label: 'Investment' }
+    { id: 'investment', label: 'Investment' },
+    { id: 'tax', label: 'Tax Estimator' },
+    { id: 'crypto', label: 'Crypto ROI' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('currency');
@@ -57,6 +59,8 @@ const FinanceTools = ({ toolId, onResultChange, onSubtoolChange }) => {
 
       {activeTab === 'currency' && <CurrencyTool onResultChange={onResultChange} />}
       {activeTab === 'tip' && <TipTool onResultChange={onResultChange} />}
+      {activeTab === 'tax' && <TaxEstimator onResultChange={onResultChange} />}
+      {activeTab === 'crypto' && <CryptoRoi onResultChange={onResultChange} />}
       {activeTab === 'compound' && <CompoundInterestTool onResultChange={onResultChange} />}
       {activeTab === 'loan' && <LoanCalculator onResultChange={onResultChange} />}
       {activeTab === 'investment' && <InvestmentCalculator onResultChange={onResultChange} />}
@@ -264,6 +268,56 @@ const DcfCalculator = ({ onResultChange }) => {
             <div className="tool-result text-center">
                 <div className="opacity-6 mb-5">Present Value:</div>
                 <div style={{fontSize: '2rem', fontWeight: 800}}>{calc()}</div>
+            </div>
+        </div>
+    );
+};
+
+const TaxEstimator = ({ onResultChange }) => {
+    const [income, setIncome] = useState(50000);
+    const [rate, setRate] = useState(20);
+    const tax = (income * rate) / 100;
+    useEffect(() => {
+        onResultChange({ text: `Income: ${income}, Tax (${rate}%): ${tax}, Take Home: ${income - tax}`, filename: 'tax.txt' });
+    }, [income, rate]);
+    return (
+        <div className="card p-20 grid gap-15">
+            <div className="form-group">
+                <label>Annual Income</label>
+                <input type="number" className="pill" value={income} onChange={e=>setIncome(e.target.value)} />
+            </div>
+            <div className="form-group">
+                <label>Effective Tax Rate (%)</label>
+                <input type="number" className="pill" value={rate} onChange={e=>setRate(e.target.value)} />
+            </div>
+            <div className="tool-result text-center">
+                <div className="opacity-6 smallest">Estimated Tax</div>
+                <div style={{fontSize: '2rem', fontWeight: 800}} className="color-primary">{tax.toFixed(2)}</div>
+                <div className="mt-10">Monthly Net: <b>{((income - tax) / 12).toFixed(2)}</b></div>
+            </div>
+        </div>
+    );
+};
+
+const CryptoRoi = ({ onResultChange }) => {
+    const [inv, setInv] = useState(1000);
+    const [buy, setBuy] = useState(30000);
+    const [sell, setSell] = useState(60000);
+    const profit = (inv / buy) * (sell - buy);
+    const roi = (profit / inv) * 100;
+
+    useEffect(() => {
+        onResultChange({ text: `Crypto ROI: ${roi.toFixed(2)}%, Profit: ${profit.toFixed(2)}`, filename: 'crypto.txt' });
+    }, [inv, buy, sell]);
+
+    return (
+        <div className="card p-20 grid gap-15">
+            <input type="number" placeholder="Investment Amount" className="pill" value={inv} onChange={e=>setInv(e.target.value)} />
+            <input type="number" placeholder="Buy Price" className="pill" value={buy} onChange={e=>setBuy(e.target.value)} />
+            <input type="number" placeholder="Sell Price" className="pill" value={sell} onChange={e=>setSell(e.target.value)} />
+            <div className="tool-result text-center">
+                <div style={{fontSize: '2rem', fontWeight: 800}} className={profit >= 0 ? 'color-primary' : 'color-danger'}>{profit.toFixed(2)}</div>
+                <div className="opacity-6 font-bold">{roi.toFixed(1)}% ROI</div>
             </div>
         </div>
     );

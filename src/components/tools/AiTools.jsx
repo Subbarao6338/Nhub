@@ -8,6 +8,11 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const [chat, setChat] = useState([]);
   const [style, setStyle] = useState('natural');
   const [localSentiment, setLocalSentiment] = useState(null);
+  const [history, setHistory] = useState(() => JSON.parse(localStorage.getItem('hub_ai_history') || '[]'));
+
+  useEffect(() => {
+    localStorage.setItem('hub_ai_history', JSON.stringify(history));
+  }, [history]);
 
   useEffect(() => {
     const labels = {
@@ -50,6 +55,7 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
         const prompt = style === 'natural' ? input : `${input} in ${style} style`;
         const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=512&height=512&seed=${Math.floor(Math.random()*1000)}&model=flux`;
         setRes(url);
+        setHistory(prev => [{type: 'image', prompt: input, res: url}, ...prev].slice(0, 10));
         onResultChange({ text: `AI Image for: ${input} (${style})`, filename: 'ai_image.png', url });
     } catch (e) {
         setRes('AI Image generation failed.');
@@ -103,6 +109,7 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
         <button className={`pill ${activeTab === 'text-gen' ? 'active' : ''}`} onClick={() => {setActiveTab('text-gen'); setRes('');}}>Story Gen</button>
         <button className={`pill ${activeTab === 'chat' ? 'active' : ''}`} onClick={() => {setActiveTab('chat'); setRes('');}}>Chat</button>
         <button className={`pill ${activeTab === 'local' ? 'active' : ''}`} onClick={() => {setActiveTab('local'); setRes('');}}>Local Tools</button>
+        <button className={`pill ${activeTab === 'history' ? 'active' : ''}`} onClick={() => {setActiveTab('history'); setRes('');}}>History</button>
       </div>
 
       {activeTab === 'image-gen' && (
@@ -116,7 +123,7 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
       )}
 
       <div className="hub-content animate-fadeIn">
-          {activeTab === 'local' ? (
+          {activeTab === 'local' && (
               <div className="card p-20 grid gap-15">
                   <div className="form-group">
                     <label>Text for Local Analysis</label>
@@ -132,7 +139,9 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
                       </div>
                   )}
               </div>
-          ) : activeTab !== 'chat' ? (
+          )}
+
+          {(activeTab === 'image-gen' || activeTab === 'text-gen') && (
               <div className="grid gap-20">
                 <div className="card p-20 grid gap-15">
                     <div className="form-group">
@@ -156,7 +165,9 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
                     </div>
                 )}
               </div>
-          ) : (
+          )}
+
+          {activeTab === 'chat' && (
               <div className="grid gap-15">
                   <div className="card p-15 overflow-auto" style={{ height: '400px', display: 'flex', flexDirection: 'column', gap: '10px', borderRadius: 'var(--radius-lg)' }}>
                       {chat.length === 0 && <div className="text-center opacity-5 m-auto">Ask me anything...<br/><span className="material-icons" style={{fontSize: '3rem'}}>forum</span></div>}
@@ -176,6 +187,21 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
                         <span className="material-icons">{loading ? 'sync' : 'send'}</span>
                       </button>
                   </div>
+              </div>
+          )}
+
+          {activeTab === 'history' && (
+              <div className="grid gap-10">
+                  {history.map((h, i) => (
+                      <div key={i} className="card p-15 flex-between no-animation">
+                          <div className="flex-column">
+                              <span className="smallest opacity-5 uppercase font-bold">{h.type}</span>
+                              <span className="font-bold">{h.prompt}</span>
+                          </div>
+                          {h.type === 'image' && <img src={h.res} style={{width: '40px', borderRadius: '4px'}} />}
+                      </div>
+                  ))}
+                  {history.length === 0 && <div className="text-center p-20 opacity-5">No generation history.</div>}
               </div>
           )}
       </div>
