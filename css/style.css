@@ -36,10 +36,10 @@
   --radius-xl: 40px;  /* More organic Pebble shape */
   --radius-lg: 28px;
   --radius-md: 20px;
-  --radius-sm: 12px;
+  --radius-sm: 14px;
 
-  --shadow-sm: 0 4px 12px -2px rgba(27, 67, 50, 0.08);
-  --shadow-md: 0 16px 32px -12px rgba(27, 67, 50, 0.16);
+  --shadow-sm: 0 8px 16px -4px rgba(27, 67, 50, 0.08);
+  --shadow-md: 0 20px 40px -12px rgba(27, 67, 50, 0.12);
   --shadow-lg: 0 32px 64px -16px rgba(27, 67, 50, 0.2);
   --shadow-ambient: 0 0 40px rgba(var(--primary-rgb), 0.08);
 

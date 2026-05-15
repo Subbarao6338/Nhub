@@ -1,91 +1,44 @@
-# Epic Toolbox 🌿 — Harmony & Flow Update
+# Epic Toolbox 🌿 — Harmony & Flow (Pruned & Polished)
 
-![Epic Toolbox Screenshot](toolbox_hubs.png)
+![Epic Toolbox](toolbox_hubs.png)
 
-Epic Toolbox is a premium, nature-inspired utility hub designed to harmonize your digital workflow. Following the **Nature Design Mandate v6 ("Harmony & Flow")**, it merges professional-grade tools with a serene, organic interface.
+Epic Toolbox is a premium, nature-inspired utility hub following the **Nature Design Mandate v6 ("Harmony & Flow")**. This version features a streamlined architecture with **7 high-performance hubs** designed for developers, students, and digital creators.
 
-## ✨ About the Project
+## ✨ The 7 Core Hubs
 
-In an era of cluttered interfaces and fragmented tools, **Epic Toolbox** provides a unified, serene environment for your daily digital tasks. Whether you're a developer needing a quick Regex test, a student looking for a scientific calculator, or just someone who wants a beautiful place to organize their bookmarks, Epic Toolbox is built for you.
-
-The "Nature Design Mandate" isn't just about aesthetics; it's about a **calm workflow**. We use pebble-shaped UI elements, staggered leaf-entry animations, and a palette inspired by the natural world (Forest, Earth, Ocean, and Sunset) to reduce "interface fatigue."
-
----
-
-## 🚀 Key Features
-
-### 🛠 The Toolbox Hub
-A massive collection of consolidated tools organized into 21 category Hubs:
-- **AI Hub**: Multi-turn Chat Assistant, Image Generation (Anime, Cyberpunk, etc.), and Story Generation.
-- **Data Tools**: High-performance viewers for CSV, JSON, Excel, and Parquet. Includes quality analysis and anonymization.
-- **Developer Utilities**: JSON/SQL Formatters, Diff Viewer, UUID Generator, Regex Tester, and Code Converters.
-- **Media & Graphics**: PDF Editor, Image Compressor, QR/Barcode Scanner, and Color Palette Hub.
-- **Networking**: Real-time Ping, DNS Lookup, SSL Certificate Checker, and IP Info.
-- **Games & Fun**: Classic games like Snake, 2048, Sudoku, and Tic-Tac-Toe (Minimax AI).
-- **System & Hardware**: Battery status, Sensors (Vibrometer, Sound Meter), and Storage Estimator.
-
-### 🔖 Bookmark Management
-- **Multi-Profile Support**: Keep your life organized with **Default**, **Private**, and **Personal** (combined) profiles.
-- **Dynamic Categories**: Group links with custom icons and real-time filtering.
-- **Smart Search**: Navigate thousands of links and tools instantly using category prefixes (e.g., `cat:dev`).
-
-### 🎨 Personalization & UX
-- **Harmony & Flow (v6)**: Refined pebble geometry, leaf-sway animations, and ambient shadows.
-- **Epic Theme Engine**: 40+ nature-inspired accent colors with adaptive dark mode.
-- **Visual Harmony**: Toggle glassmorphism, reduced motion, and compact modes.
-- **Offline Superiority**: Advanced PWA v19 with intelligent caching and multi-shortcut support.
-- **Haptic Feedback**: Responsive vibration sequences for a tactile mobile experience.
+1.  **Web & Social Tools**: Professional media downloader, URL to Markdown/MHTML/PDF converters, and sanitized web scraping.
+2.  **Network Hub**: Real-time IP discovery, SSL certificate auditing (issuer/expiry), Speed Test, and Subnet calculator.
+3.  **AI Hub**: Persistent Chat Assistant, multi-style Image Generation (Cinematic, Cyberpunk, etc.), and local sentiment analysis.
+4.  **Dev Hub**: Comprehensive developer suite including JSON/SQL formatters, JWT decoders, Security tools (AES/RSA/Pass Gen), and Unit converters.
+5.  **Document Tools**: Unified hub for PDF merging/splitting/OCR, Markdown editing with live preview, and Document Translation.
+6.  **Data Science**: High-performance CSV/JSON viewer, Z-Score anomaly detection, detailed data profiling (mean/std), and Finance calculators (SIP/Loan/CAGR).
+7.  **Date & Time Tools**: Advanced Stopwatch, Pomodoro timer, Unix Timestamp converter, and Telugu Panchangam calculations.
 
 ---
 
-## 🛠 Technical Architecture
+## 🚀 Key Improvements
 
-### Frontend (The SPA)
-- **Framework**: React 18 with Vite for lightning-fast builds.
-- **Styling**: Pure CSS following a strict token-based system for themes and animations.
-- **Optimization**: All 21 tool hubs are **lazy-loaded** to keep the initial bundle small (~200KB gzipped).
-- **Security**: Strict Sanitization with `DOMPurify` for all user-generated and searched content.
+- **Consolidated Architecture**: 21+ tools merged into 7 focused hubs for better navigation and performance.
+- **Harmony & Flow UI**: Refined Pebble geometry (40px radius), organic animations (`leaf-entry`, `leaf-sway`), and ambient shadows.
+- **Optimized PWA v25**: Advanced service worker with intelligent caching and multi-hub shortcuts.
+- **Enhanced Stability**: Strict sanitization with `DOMPurify` and defensive error handling across all tool inputs.
+- **Performance**: 100% lazy-loaded hubs with optimized bundle sizes.
 
-### Backend (The API)
-- **Framework**: FastAPI (Python 3.9+) providing a robust RESTful interface.
-- **Database**: SQLite for local persistence, with automatic JSON-to-SQL migration logic.
-- **Edge-Ready**: Optimized for Vercel Serverless Functions with ephemeral filesystem handling.
+---
 
-### Core Libraries
-- **Mathematics**: `mathjs` for the advanced calculator.
-- **Documents**: `pdf-lib`, `jspdf`, and `marked`.
-- **Data**: `papaparse` (CSV), `xlsx` (Excel), and `hyparquet`.
-- **UI**: `canvas-confetti` and `html2canvas`.
+## 🛠 Tech Stack
+
+- **Frontend**: React 18, Vite, Pure CSS (Token-based).
+- **Libraries**: `pdf-lib`, `jspdf`, `papaparse`, `mathjs`, `tesseract.js`, `marked`, `DOMPurify`.
+- **Backend**: FastAPI (Python 3.9+), SQLite, SQLite-to-JSON migration logic.
 
 ---
 
 ## 📖 Getting Started
 
-### Prerequisites
-- **Node.js** (v18+)
-- **Python** (3.9+)
-
-### Installation
-1. **Clone the repo**:
-   ```bash
-   git clone https://github.com/your-repo/nature-toolbox.git
-   cd nature-toolbox
-   ```
-2. **Setup Backend**:
-   ```bash
-   pip install -r requirements.txt
-   python3 scripts/setup_db.py
-   ```
-3. **Setup Frontend**:
-   ```bash
-   npm install
-   ```
-
-### Running Locally
-- **Backend**: `uvicorn api.index:app --port 8000`
-- **Frontend**: `npm run dev -- --port 3001`
+1. **Backend**: `uvicorn api.index:app --port 8000`
+2. **Frontend**: `npm run dev`
+3. **Tests**: `npx playwright test`
 
 ---
-
-## 📜 License
 MIT © 2024 Epic Toolbox Team

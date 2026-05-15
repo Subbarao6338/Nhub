@@ -27,7 +27,7 @@ const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         'web-mhtml': 'mhtml',
         'url-to-pdf': 'url-pdf'
       };
-      if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
+      if (mapping[toolId]) setActiveTab(mapping[toolId]);
     }
   }, [toolId]);
 
@@ -50,7 +50,7 @@ const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       )}
 
       <div className="hub-content animate-fadeIn">
-        {activeTab === 'social' && <SocialTools toolId={toolId} />}
+        {activeTab === 'social' && <SocialTools onResultChange={onResultChange} />}
         {activeTab === 'web-md' && <WebToMarkdown onResultChange={onResultChange} />}
         {activeTab === 'mhtml' && <WebToMhtml onResultChange={onResultChange} />}
         {activeTab === 'url-pdf' && <UrlToPdf onResultChange={onResultChange} />}
@@ -59,11 +59,20 @@ const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   );
 };
 
-const SocialTools = ({ toolId }) => {
+const SocialTools = ({ onResultChange }) => {
   const [url, setUrl] = useState('');
   const [type, setType] = useState('auto');
   const [status, setStatus] = useState('idle');
+  const [error, setError] = useState('');
+
+  const isValidUrl = (string) => {
+    try { new URL(string); return true; }
+    catch (_) { return false; }
+  };
+
   const handleDownload = async () => {
+    if (!isValidUrl(url)) { setError('Please enter a valid URL.'); return; }
+    setError('');
     setStatus('downloading');
     try {
       const response = await fetch(`${API_BASE}/social/download`, {
@@ -75,30 +84,36 @@ const SocialTools = ({ toolId }) => {
       const blob = await response.blob();
       const link = document.createElement('a');
       link.href = window.URL.createObjectURL(blob);
-      link.setAttribute('download', `social_media.zip`);
+      link.setAttribute('download', `media_${Date.now()}.zip`);
       link.click();
+      onResultChange({ text: `Successfully processed: ${url}`, filename: 'media_info.txt' });
       setStatus('idle');
-    } catch (err) { setStatus('error'); }
+    } catch (err) {
+        setStatus('error');
+        setError(err.message || 'Processing failed.');
+    }
   };
+
   return (
-    <div className="grid gap-12 card p-20">
+    <div className="grid gap-12 card p-20 glass-card">
       <div className="form-group">
         <label>Media URL</label>
-        <input type="text" value={url} onChange={e => setUrl(e.target.value)} placeholder="YouTube, Twitter, Instagram URL..." className="pill w-full" />
+        <input type="text" value={url} onChange={e => { setUrl(e.target.value); setError(''); }} placeholder="YouTube, Twitter, Instagram URL..." className="pill w-full" />
       </div>
       <div className="form-group">
         <label>Download Type</label>
         <div className="flex-gap">
-            <button className={`pill flex-1 ${type === 'auto' ? 'active' : ''}`} onClick={() => setType('auto')}>Auto</button>
-            <button className={`pill flex-1 ${type === 'video' ? 'active' : ''}`} onClick={() => setType('video')}>Video</button>
-            <button className={`pill flex-1 ${type === 'audio' ? 'active' : ''}`} onClick={() => setType('audio')}>Audio</button>
+            {['auto', 'video', 'audio'].map(t => (
+                <button key={t} className={`pill flex-1 capitalize ${type === t ? 'active' : ''}`} onClick={() => setType(t)}>{t}</button>
+            ))}
         </div>
       </div>
       <button className="btn-primary w-full" onClick={handleDownload} disabled={status === 'downloading' || !url} style={{marginTop: '10px'}}>
         <span className="material-icons mr-10">{status === 'downloading' ? 'sync' : 'download'}</span>
         {status === 'downloading' ? 'Processing...' : 'Download Media ZIP'}
       </button>
-      {status === 'error' && <div className="danger-box text-center mt-10">Download failed. Please check the URL.</div>}
+      {error && <div className="danger-box text-center mt-10 animate-shake">{error}</div>}
+      <div className="opacity-5 smallest text-center mt-10">All downloads are sanitized and bundled as ZIP.</div>
     </div>
   );
 };
@@ -109,7 +124,8 @@ const WebToMarkdown = ({ onResultChange }) => {
   const [loading, setLoading] = useState(false);
 
   const convert = (content) => {
-    const doc = new DOMParser().parseFromString(content || html, 'text/html');
+    const sanitized = DOMPurify.sanitize(content || html);
+    const doc = new DOMParser().parseFromString(sanitized, 'text/html');
     let md = "";
     const walk = (node) => {
         if (node.nodeType === 3) md += node.nodeValue;
@@ -121,7 +137,7 @@ const WebToMarkdown = ({ onResultChange }) => {
         node.childNodes.forEach(walk);
     };
     walk(doc.body);
-    onResultChange({ text: md, filename: 'web.md' });
+    onResultChange({ text: md.trim(), filename: 'web.md' });
   };
 
   const fetchUrl = async () => {
@@ -131,12 +147,12 @@ const WebToMarkdown = ({ onResultChange }) => {
       const data = await res.json();
       setHtml(data.contents);
       convert(data.contents);
-    } catch(e) { alert("Failed to fetch URL"); }
+    } catch(e) { alert("Failed to fetch URL: " + e.message); }
     finally { setLoading(false); }
   };
 
   return (
-    <div className="card p-20 grid gap-15">
+    <div className="card p-20 grid gap-15 glass-card">
       <div className="form-group">
         <label>Fetch from URL</label>
         <div className="flex-gap">
@@ -168,12 +184,12 @@ const WebToMhtml = ({ onResultChange }) => {
             const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
             const data = await res.json();
             const blob = new Blob([data.contents], { type: 'application/x-mimearchive' });
-            onResultChange({ text: 'Web Archive (MHTML) successfully created.', blob, filename: 'web.mhtml' });
+            onResultChange({ text: `Web Archive (MHTML) created for ${url}`, blob, filename: 'web.mhtml' });
         } catch(e) { alert("Failed to fetch page"); }
         finally { setLoading(false); }
     };
     return (
-        <div className="card p-20 grid gap-15">
+        <div className="card p-20 grid gap-15 glass-card">
             <div className="form-group">
                 <label>Target URL</label>
                 <input className="pill w-full" placeholder="https://example.com" value={url} onChange={e=>setUrl(e.target.value)} />
@@ -199,41 +215,28 @@ const UrlToPdf = ({ onResultChange }) => {
             const html = data.contents;
 
             container = document.createElement('div');
-            container.style.padding = '40px';
-            container.style.width = '1000px';
-            container.style.background = 'white';
-            container.style.position = 'absolute';
-            container.style.left = '-9999px';
-
-            // Sanitize HTML to prevent XSS before injecting into DOM
+            container.style.cssText = 'padding:40px;width:1000px;background:white;position:absolute;left:-9999px;';
             container.innerHTML = DOMPurify.sanitize(html);
             document.body.appendChild(container);
 
-            const canvas = await html2canvas(container, {
-                useCORS: true,
-                allowTaint: true,
-                scale: 1.5
-            });
-
+            const canvas = await html2canvas(container, { useCORS: true, allowTaint: true, scale: 1.5 });
             const imgData = canvas.toDataURL('image/png');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
             pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            onResultChange({ text: 'Successfully converted URL to PDF.', blob: pdf.output('blob'), filename: 'webpage.pdf' });
+            onResultChange({ text: `URL converted to PDF: ${url}`, blob: pdf.output('blob'), filename: 'webpage.pdf' });
         } catch(e) {
-            alert("Failed to convert URL to PDF: " + e.message);
+            alert("Failed to convert: " + e.message);
         } finally {
-            if (container && container.parentNode) {
-                document.body.removeChild(container);
-            }
+            if (container && container.parentNode) document.body.removeChild(container);
             setLoading(false);
         }
     };
 
     return (
-        <div className="card p-20 grid gap-15">
+        <div className="card p-20 grid gap-15 glass-card">
             <div className="form-group">
                 <label>Target URL</label>
                 <input className="pill w-full" placeholder="https://example.com" value={url} onChange={e=>setUrl(e.target.value)} />
