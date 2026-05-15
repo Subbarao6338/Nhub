@@ -1,65 +1,53 @@
 {
   "name": "Epic Toolbox",
   "short_name": "EpicToolbox",
-  "description": "A serene, nature-inspired dashboard with 100+ professional utility tools for developers and students.",
+  "description": "A serene, nature-inspired dashboard with professional utility hubs for developers, students, and digital creators.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#fdfbf7",
   "theme_color": "#2d6a4f",
-  "categories": ["productivity", "utilities", "developer", "education", "finance", "health"],
+  "categories": ["productivity", "utilities", "developer", "education", "data", "web"],
   "shortcuts": [
     {
-      "name": "AI Assistant",
+      "name": "Web & Social",
+      "short_name": "Web",
+      "url": "/?tab=toolbox&tool=web-main",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "Network Hub",
+      "short_name": "Net",
+      "url": "/?tab=toolbox&tool=network-main",
+      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
+    },
+    {
+      "name": "AI Hub",
       "short_name": "AI",
       "url": "/?tab=toolbox&tool=ai-main",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
-      "name": "Developer Hub",
+      "name": "Dev Hub",
       "short_name": "Dev",
       "url": "/?tab=toolbox&tool=dev-main",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
-      "name": "Finance Tools",
-      "short_name": "Finance",
-      "url": "/?tab=toolbox&tool=finance-main",
+      "name": "Document Tools",
+      "short_name": "Docs",
+      "url": "/?tab=toolbox&tool=doc-main",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
-      "name": "Education Hub",
-      "short_name": "Edu",
-      "url": "/?tab=toolbox&tool=edu-main",
+      "name": "Data Science",
+      "short_name": "Data",
+      "url": "/?tab=toolbox&tool=data-main",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     },
     {
-      "name": "Security Hub",
-      "short_name": "Security",
-      "url": "/?tab=toolbox&tool=security-main",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "Media Tools",
-      "short_name": "Media",
-      "url": "/?tab=toolbox&tool=pdf-main",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "QR Scanner",
-      "short_name": "Scan",
-      "url": "/?tab=toolbox&tool=qr-scan",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "World Clock",
-      "short_name": "Clock",
-      "url": "/?tab=toolbox&tool=world-clock",
-      "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
-    },
-    {
-      "name": "Health Hub",
-      "short_name": "Health",
-      "url": "/?tab=toolbox&tool=health-main",
+      "name": "Date & Time",
+      "short_name": "Time",
+      "url": "/?tab=toolbox&tool=time-main",
       "icons": [{ "src": "assets/favicon.svg", "sizes": "any" }]
     }
   ],

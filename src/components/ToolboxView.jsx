@@ -20,14 +20,14 @@ const TOOLS = [
     { id: 'ai-main', title: 'AI Hub', icon: 'auto_awesome', category: 'Web', component: AiTools, subTools: ['ai-chat', 'ai-image', 'ai-text'] },
 
     // Developer & Docs
-    { id: 'dev-main', title: 'Dev Hub', icon: 'terminal', category: 'Developer', component: DevTools, subTools: ['json-formatter', 'jwt-decoder', 'sql-formatter', 'diff-viewer', 'regex-tester'] },
-    { id: 'doc-main', title: 'Document Tools', icon: 'description', category: 'Developer', component: DocTools, subTools: ['md-editor', 'doc-translator'] },
+    { id: 'dev-main', title: 'Dev Hub', icon: 'terminal', category: 'Developer', component: DevTools, subTools: ['json-formatter', 'jwt-decoder', 'sql-formatter', 'diff-viewer', 'regex-tester', 'cron-helper', 'base64', 'markdown-preview', 'uuid-gen', 'url-tool', 'yaml-conv', 'minify', 'xml-json', 'xml-fmt', 'json-ts', 'color-picker', 'color-conv', 'color-harm', 'color-blend', 'color-contrast', 'password-gen', 'hash-gen', 'rsa-gen', 'hmac-calc', 'aes-encrypt', 'aes-decrypt', 'password-strength', 'privacy-audit', 'length-conv', 'weight-conv', 'temp-conv', 'data-conv'] },
+    { id: 'doc-main', title: 'Document Tools', icon: 'description', category: 'Developer', component: DocTools, subTools: ['md-editor', 'doc-translator', 'pdf-merge', 'pdf-split', 'pdf-delete', 'pdf-rearrange', 'pdf-rotate', 'pdf-sign', 'pdf-watermark', 'pdf-numbers', 'pdf-crop', 'pdf-lock', 'pdf-unlock', 'pdf-metadata', 'pdf-compress', 'pdf-grayscale', 'pdf-flatten', 'img-to-pdf', 'pdf-to-img', 'word-to-pdf', 'excel-to-pdf', 'pdf-to-word', 'pdf-to-text', 'pdf-to-zip', 'pdf-extract', 'pdf-scan', 'pdf-translate', 'case-converter', 'word-counter', 'lorem-ipsum', 'text-cleaner', 'remove-duplicates', 'list-sorter', 'find-replace', 'extract-pii', 'html-entities', 'word-rank', 'img-format', 'img-resize', 'img-blur', 'img-meta', 'img-bw', 'img-sepia', 'img-invert', 'img-crop', 'img-filters', 'img-b64'] },
 
     // Math & Science
-    { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['csv-viewer', 'data-visualizer', 'anomaly-detect', 'stat-calc', 'data-quality', 'data-profiling', 'data-anonymizer', 'json-csv', 'mock-gen'] },
+    { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['csv-viewer', 'data-visualizer', 'anomaly-detect', 'stat-calc', 'data-quality', 'data-profiling', 'data-anonymizer', 'json-csv', 'mock-gen', 'currency-conv', 'vat-calc', 'inflation', 'loan-calc', 'compound-int', 'cagr', 'dcf', 'tip-split', 'investment-calc'] },
 
     // Productivity
-    { id: 'time-main', title: 'Date & Time Tools', icon: 'schedule', category: 'Productivity', component: DateTimeTools, subTools: ['stopwatch', 'pomodoro', 'worldclock', 'age', 'timestamp', 'panchangam', 'datediff', 'countdown'] },
+    { id: 'time-main', title: 'Date & Time Tools', icon: 'schedule', category: 'Productivity', component: DateTimeTools, subTools: ['stopwatch', 'pomodoro', 'worldclock', 'age', 'timestamp', 'panchangam', 'datediff', 'countdown', 'timezone-conv'] },
 ];
 
 const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRecentTools, hideRecentTools }) => {
