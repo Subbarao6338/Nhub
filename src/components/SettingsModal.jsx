@@ -86,9 +86,9 @@ const CollapsibleSection = ({ id, title, icon, isOpen, onToggle, children }) => 
 };
 
 const THEME_COLORS = [
-  'indigo', 'blue', 'sky', 'cyan', 'teal', 'green', 'lime', 'yellow', 'amber', 'orange', 'deep-orange', 'red', 'pink', 'rose', 'purple', 'violet', 'slate', 'grey', 'brown', 'black', 'white',
-  'nature', 'forest', 'ocean', 'earth', 'mountain', 'desert', 'sunset', 'winter', 'autumn', 'lavender', 'spring', 'galaxy', 'blackhole',
-  'midnight', 'blossom', 'canyon', 'glacier', 'meadow', 'sunlight', 'breeze', 'seedling', 'mist'
+  'indigo', 'blue', 'sky', 'cyan', 'teal', 'green', 'nature', 'forest', 'spring', 'meadow', 'seedling', 'lime', 'yellow', 'amber', 'orange', 'deep-orange', 'red', 'pink', 'rose', 'blossom', 'purple', 'violet', 'lavender', 'slate', 'grey', 'brown', 'black', 'white',
+  'ocean', 'earth', 'mountain', 'desert', 'sunset', 'winter', 'autumn', 'galaxy', 'blackhole',
+  'midnight', 'canyon', 'glacier', 'sunlight', 'breeze', 'mist'
 ];
 
 const SettingsModal = ({
@@ -119,7 +119,7 @@ const SettingsModal = ({
   onClose,
   resetData
 }) => {
-  const [openSections, setOpenSections] = useState([]);
+  const [openSections, setOpenSections] = useState(['global']);
   const [tempApiBase, setTempApiBase] = useState(getApiBase());
 
   const toggleSection = (id) => {
@@ -139,7 +139,7 @@ const SettingsModal = ({
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `hub_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `nature_hub_backup_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
   };
 
@@ -166,8 +166,8 @@ const SettingsModal = ({
   };
 
   return (
-    <div className="modal" style={{display: 'block', padding: '1.5rem'}}>
-      <h2 style={{marginTop: 0, marginBottom: '1.5rem', fontSize: '1.5rem'}}>Settings</h2>
+    <div className="modal glass-card" style={{display: 'block'}}>
+      <h2 style={{marginTop: 0, marginBottom: '2rem', fontSize: '2rem', fontWeight: 900}}>Settings</h2>
 
       <div className="settings-container">
         <CollapsibleSection
@@ -190,18 +190,19 @@ const SettingsModal = ({
                   }
                 }}
               >
-                <span className="material-icons">download_for_offline</span>
-                <span>Install Epic Toolbox</span>
+                <span className="material-icons mr-10">download_for_offline</span>
+                Install Nature Hub
               </button>
             </div>
           )}
           <div className="form-group">
-            <label>App Name</label>
+            <label>Application Name</label>
             <input
               type="text"
+              className="pill"
               value={appName}
               onChange={(e) => setAppName(e.target.value)}
-              placeholder="Epic Toolbox"
+              placeholder="Nature Hub"
             />
           </div>
           <div className="form-group">
@@ -221,279 +222,68 @@ const SettingsModal = ({
               })}
             </div>
           </div>
-          <div className="form-group">
-            <label>Tab Visibility</label>
-            <div className="pill-group">
-              <button className={`pill ${hideBookmarks ? 'active' : ''}`} onClick={() => setHideBookmarks(!hideBookmarks)}>
-                <span className="material-icons">{hideBookmarks ? 'bookmarks' : 'bookmark_border'}</span>
-                <span>Hide Bookmarks</span>
-              </button>
-              <button className={`pill ${hideToolbox ? 'active' : ''}`} onClick={() => setHideToolbox(!hideToolbox)}>
-                <span className="material-icons">{hideToolbox ? 'handyman' : 'handyman'}</span>
-                <span>Hide Toolbox</span>
-              </button>
-              <button className={`pill ${showProjectsTab ? 'active' : ''}`} onClick={() => setShowProjectsTab(!showProjectsTab)}>
-                <span className="material-icons">{showProjectsTab ? 'architecture' : 'architecture'}</span>
-                <span>Show Projects</span>
-              </button>
-            </div>
-          </div>
-          <div className="form-group">
-            <label>Navigation</label>
-            <div className="pill-group">
-              <button className={`pill ${autoFocusSearch ? 'active' : ''}`} onClick={() => setAutoFocusSearch(!autoFocusSearch)}>
-                <span className="material-icons">center_focus_strong</span>
-                <span>Auto-focus Search</span>
-              </button>
-              <button className={`pill ${openInNewTab ? 'active' : ''}`} onClick={() => setOpenInNewTab(!openInNewTab)}>
-                <span className="material-icons">open_in_new</span>
-                <span>Open in New Tab</span>
-              </button>
-            </div>
-          </div>
         </CollapsibleSection>
 
         <CollapsibleSection
           id="themes"
-          title="Themes & Appearance"
+          title="Appearance"
           icon="palette"
           isOpen={openSections.includes('themes')}
           onToggle={toggleSection}
         >
           <div className="form-group">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-              <label style={{ margin: 0 }}>Color Theme</label>
-              <button
-                className="pill"
-                style={{ padding: '4px 12px', fontSize: '0.75rem' }}
-                onClick={() => {
-                  const themes = ['light', 'dark', 'system'];
-                  const randomTheme = themes[Math.floor(Math.random() * themes.length)];
-                  setTheme(randomTheme);
-                  const randomColor = THEME_COLORS[Math.floor(Math.random() * THEME_COLORS.length)];
-                  setAccentColor(randomColor);
-                }}
-              >
-                <span className="material-icons" style={{ fontSize: '1rem' }}>shuffle</span> Random
-              </button>
-            </div>
+            <label>Color Mode</label>
             <div className="pill-group">
-              {['light', 'dark', 'system'].map(t => {
-                const icons = {
-                  light: 'light_mode', dark: 'dark_mode', system: 'settings_brightness'
-                };
-                return (
-                  <button
-                    key={t}
-                    className={`pill ${theme === t ? 'active' : ''}`}
-                    onClick={() => setTheme(t)}
-                  >
-                    <span className="material-icons">{icons[t] || 'palette'}</span>
-                    <span>{t.charAt(0).toUpperCase() + t.slice(1)}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div className="form-group">
-            <label>Accent Color</label>
-            <div className="pill-group">
-              {THEME_COLORS.map(color => (
+              {['light', 'dark', 'system'].map(t => (
                 <button
-                  key={color}
-                  className={`color-pill ${accentColor === color ? 'active' : ''}`}
-                  style={{background: getHex(color)}}
-                  onClick={() => setAccentColor(color)}
-                  title={color}
-                />
+                  key={t}
+                  className={`pill ${theme === t ? 'active' : ''}`}
+                  onClick={() => setTheme(t)}
+                >
+                  <span className="material-icons mr-10">{t === 'light' ? 'light_mode' : t === 'dark' ? 'dark_mode' : 'settings_brightness'}</span>
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </button>
               ))}
             </div>
           </div>
           <div className="form-group">
-            <label>Visual Effects</label>
-            <div className="pill-group">
-              <button className={`pill ${isCompact ? 'active' : ''}`} onClick={() => setIsCompact(!isCompact)}>
-                <span className="material-icons">view_module</span>
-                <span>Compact Mode</span>
-              </button>
-              <button className={`pill ${!disableGlass ? 'active' : ''}`} onClick={() => setDisableGlass(!disableGlass)}>
-                <span className="material-icons">{!disableGlass ? 'blur_on' : 'blur_off'}</span>
-                <span>Glass Effect</span>
-              </button>
-              <button className={`pill ${disableAnimations ? 'active' : ''}`} onClick={() => setDisableAnimations(!disableAnimations)}>
-                <span className="material-icons">animation</span>
-                <span>Remove Animations</span>
-              </button>
-              <button className={`pill ${reducedMotion ? 'active' : ''}`} onClick={() => setReducedMotion(!reducedMotion)}>
-                <span className="material-icons">motion_photos_off</span>
-                <span>Reduced Motion</span>
-              </button>
-              <button className={`pill ${enableHoverEffects ? 'active' : ''}`} onClick={() => setEnableHoverEffects(!enableHoverEffects)}>
-                <span className="material-icons">auto_fix_high</span>
-                <span>Hover Effects</span>
-              </button>
+            <label>Accent Color</label>
+            <div className="scrollable-x" style={{padding: '10px 0'}}>
+              <div className="flex-gap">
+                {THEME_COLORS.map(color => (
+                    <button
+                    key={color}
+                    className={`color-pill ${accentColor === color ? 'active' : ''}`}
+                    style={{background: getHex(color), minWidth: '40px', height: '40px', borderRadius: '50%', border: accentColor === color ? '3px solid var(--on-surface)' : 'none'}}
+                    onClick={() => setAccentColor(color)}
+                    title={color}
+                    />
+                ))}
+              </div>
             </div>
-          </div>
-        </CollapsibleSection>
-
-        <CollapsibleSection
-          id="bookmarks"
-          title="Bookmarks"
-          icon="bookmarks"
-          isOpen={openSections.includes('bookmarks')}
-          onToggle={toggleSection}
-        >
-          <div className="form-group">
-            <label>Manage Bookmarks</label>
-            <button className="pill" style={{background: 'var(--primary)', color: 'white', border: 'none'}} onClick={() => { onAddBookmark(); onClose(); }}>
-              <span className="material-icons">add_link</span>
-              <span>Add New Bookmark</span>
-            </button>
-          </div>
-          <div className="pill-group">
-            <button className={`pill ${enableProfiles ? 'active' : ''}`} onClick={() => setEnableProfiles(!enableProfiles)}>
-              <span className="material-icons">{enableProfiles ? 'account_circle' : 'no_accounts'}</span>
-              <span>Enable Profiles</span>
-            </button>
-            <button className={`pill ${hideUrls ? 'active' : ''}`} onClick={() => setHideUrls(!hideUrls)}>
-              <span className="material-icons">link_off</span>
-              <span>Hide URLs</span>
-            </button>
-            <button className={`pill ${hideIcons ? 'active' : ''}`} onClick={() => setHideIcons(!hideIcons)}>
-              <span className="material-icons">hide_image</span>
-              <span>Hide Icons</span>
-            </button>
-            <button className={`pill ${showStats ? 'active' : ''}`} onClick={() => setShowStats(!showStats)}>
-              <span className="material-icons">analytics</span>
-              <span>Show Stats</span>
-            </button>
-            <button className={`pill ${confirmDelete ? 'active' : ''}`} onClick={() => setConfirmDelete(!confirmDelete)}>
-              <span className="material-icons">delete_sweep</span>
-              <span>Confirm Deletion</span>
-            </button>
-          </div>
-        </CollapsibleSection>
-
-
-        <CollapsibleSection
-          id="toolbox"
-          title="Toolbox"
-          icon="handyman"
-          isOpen={openSections.includes('toolbox')}
-          onToggle={toggleSection}
-        >
-          <div className="pill-group">
-            <button className={`pill ${groupToolbox ? 'active' : ''}`} onClick={() => setGroupToolbox(!groupToolbox)}>
-              <span className="material-icons">reorder</span>
-              <span>Group Toolbox</span>
-            </button>
-            <button className={`pill ${hideRecentTools ? 'active' : ''}`} onClick={() => setHideRecentTools(!hideRecentTools)}>
-              <span className="material-icons">{hideRecentTools ? 'visibility_off' : 'visibility'}</span>
-              <span>Hide Recents</span>
-            </button>
-            <button className={`pill ${showStats ? 'active' : ''}`} onClick={() => setShowStats(!showStats)}>
-              <span className="material-icons">analytics</span>
-              <span>Show Counts</span>
-            </button>
-            <button className="pill" onClick={() => { if(window.confirm("Clear recent tools history?")) clearRecentTools(); }}>
-              <span className="material-icons">history</span>
-              <span>Clear Recents</span>
-            </button>
           </div>
         </CollapsibleSection>
 
         <CollapsibleSection
           id="data"
-          title="Data Management"
+          title="Maintenance"
           icon="storage"
           isOpen={openSections.includes('data')}
           onToggle={toggleSection}
         >
-          <div className="pill-group">
-            <button className="pill" onClick={handleExport}>
-              <span className="material-icons">download</span> Export Backup
+          <div className="grid gap-10">
+            <button className="btn-primary" onClick={handleExport}>
+              <span className="material-icons mr-10">download</span> Export Backup
             </button>
-            <label className="pill" style={{ cursor: 'pointer' }}>
-              <span className="material-icons">upload</span> Import Backup
-              <input type="file" accept="application/json" onChange={handleImport} style={{ display: 'none' }} />
-            </label>
-            <button className="pill" style={{color: '#ef4444'}} onClick={resetData}>
-              <span className="material-icons">refresh</span> Reset Local Data
-            </button>
-            <button className="pill" style={{color: 'var(--primary)'}} onClick={() => {
-              if (window.confirm("This will refresh the database with latest entries from source files. Existing links will NOT be deleted. Continue?")) {
-                fetch(`${getApiBase()}/refresh-db`, { method: 'POST' })
-                  .then(res => res.ok ? alert("Database refreshed successfully") : alert("Failed to refresh database"))
-                  .then(() => window.location.reload());
-              }
-            }}>
-              <span className="material-icons">sync</span> Refresh Database
+            <button className="pill" style={{color: 'var(--danger)'}} onClick={resetData}>
+              <span className="material-icons mr-10">delete_forever</span> Reset Application
             </button>
           </div>
         </CollapsibleSection>
-
-        <CollapsibleSection
-          id="advanced"
-          title="Advanced"
-          icon="code"
-          isOpen={openSections.includes('advanced')}
-          onToggle={toggleSection}
-        >
-          <div className="form-group">
-            <label>API Base URL</label>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <input
-                type="text"
-                value={tempApiBase}
-                onChange={(e) => setTempApiBase(e.target.value)}
-                placeholder="/api or https://your-vercel-app.vercel.app/api"
-                style={{ flex: 1 }}
-              />
-              <button className="pill active" onClick={() => {
-                setApiBase(tempApiBase);
-                alert("API Base URL updated. App will reload.");
-                window.location.reload();
-              }}>Save</button>
-            </div>
-            <p style={{ fontSize: '0.75rem', opacity: 0.6, marginTop: '8px' }}>
-              Default: <code>/api</code>. For APK builds, set this to your hosted backend URL.
-            </p>
-          </div>
-        </CollapsibleSection>
-
-        <CollapsibleSection
-          id="about"
-          title="About"
-          icon="info"
-          isOpen={openSections.includes('about')}
-          onToggle={toggleSection}
-        >
-          <AboutTab onClose={onClose} />
-        </CollapsibleSection>
       </div>
 
-      <div className="form-actions" style={{marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border)'}}>
-        <button type="button" className="btn-primary" onClick={onClose}>Close</button>
-      </div>
-    </div>
-  );
-};
-
-const AboutTab = () => {
-  const [content, setContent] = useState('Loading...');
-  useEffect(() => {
-    fetch('/README.md')
-      .then(res => res.text())
-      .then(text => setContent(markdownToHTML(text)))
-      .catch(() => setContent('Failed to load README.md'));
-  }, []);
-
-  return (
-    <div className="about-content-wrapper">
-      <div className="about-content" dangerouslySetInnerHTML={{ __html: content }} />
-      <div style={{ marginTop: '2rem', textAlign: 'center', opacity: 0.5, fontSize: '0.8rem' }}>
-        <p>Epic Toolbox &bull; Version 2.0.0</p>
-        <p>&copy; {new Date().getFullYear()} Epic Toolbox Team</p>
+      <div className="form-actions" style={{marginTop: '2rem'}}>
+        <button type="button" className="btn-primary w-full" onClick={onClose}>Close</button>
       </div>
     </div>
   );
@@ -502,9 +292,6 @@ const AboutTab = () => {
 const getHex = (color) => {
     const map = {
         indigo: '#6366f1', blue: '#3b82f6', sky: '#0ea5e9', cyan: '#06b6d4', teal: '#14b8a6', green: '#10b981',
-        lime: '#84cc16', yellow: '#eab308', amber: '#f59e0b', orange: '#f97316', 'deep-orange': '#ff5722',
-        red: '#ef4444', pink: '#ec4899', rose: '#f43f5e', purple: '#8b5cf6', violet: '#7c3aed',
-        slate: '#475569', grey: '#9e9e9e', brown: '#795548', black: '#000000', white: '#ffffff',
         nature: '#2d6a4f', forest: '#1b4332', ocean: '#0077b6', earth: '#78350f',
         mountain: '#475569', desert: '#dda15e', sunset: '#fb8500', winter: '#0369a1',
         autumn: '#bc4749', lavender: '#7c3aed', spring: '#166534', galaxy: '#c084fc',

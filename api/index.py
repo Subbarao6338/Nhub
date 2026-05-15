@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Body, Query, BackgroundTasks, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional
 import sqlite3
@@ -18,14 +18,8 @@ import yt_dlp
 import yaml
 import docx
 import PyPDF2
-import ebooklib
-from ebooklib import epub
 from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
-import mailparser
-
-# Add the project root to sys.path so we can import from scripts
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 app = FastAPI()
 
@@ -37,730 +31,63 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Handle read-only filesystem on Vercel
-IS_VERCEL = os.environ.get('VERCEL') == '1'
-if IS_VERCEL:
-    DB_PATH = '/tmp/hub.db'
-    ORIG_DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'hub.db')
-else:
-    DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'hub.db')
-
-def get_db_connection():
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.row_factory = sqlite3.Row
-        return conn
-    except sqlite3.Error as e:
-        print(f"Database connection error: {e}")
-        raise HTTPException(status_code=500, detail=f"Database connection failed: {str(e)}")
-
-# Track initialization to avoid redundant slow checks
-_db_initialized = False
-
-def init_db():
-    global _db_initialized
-    if _db_initialized:
-        return
-
-    if IS_VERCEL and not os.path.exists(DB_PATH):
-        # Try to copy existing DB from data/ if it exists
-        if os.path.exists(ORIG_DB_PATH):
-            try:
-                shutil.copy(ORIG_DB_PATH, DB_PATH)
-                print(f"Copied database from {ORIG_DB_PATH} to {DB_PATH}")
-            except Exception as e:
-                print(f"Failed to copy database: {e}")
-
-    db_dir = os.path.dirname(DB_PATH)
-    if db_dir and not os.path.exists(db_dir):
-        try:
-            os.makedirs(db_dir, exist_ok=True)
-        except Exception as e:
-            print(f"Failed to create DB directory {db_dir}: {e}")
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Profiles table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS profiles (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT UNIQUE NOT NULL,
-            icon TEXT NOT NULL
-        )
-    ''')
-
-    # Links table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS links (
-            id TEXT PRIMARY KEY,
-            profile_id INTEGER NOT NULL,
-            title TEXT NOT NULL,
-            url TEXT NOT NULL,
-            urls TEXT, -- JSON array of strings
-            icon TEXT,
-            optional_icon TEXT,
-            category TEXT NOT NULL,
-            is_internal BOOLEAN DEFAULT 0,
-            tool_id TEXT,
-            is_pinned BOOLEAN DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (profile_id) REFERENCES profiles (id)
-        )
-    ''')
-
-    # Categories table (profile-specific icons for categories)
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS categories (
-            profile_id INTEGER NOT NULL,
-            name TEXT NOT NULL,
-            icon TEXT NOT NULL,
-            PRIMARY KEY (profile_id, name),
-            FOREIGN KEY (profile_id) REFERENCES profiles (id)
-        )
-    ''')
-
-    # Projects table
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS projects (
-            id TEXT PRIMARY KEY,
-            title TEXT NOT NULL,
-            description TEXT,
-            url TEXT,
-            category TEXT,
-            icon TEXT
-        )
-    ''')
-
-
-    # Check if created_at column exists, if not add it (for existing databases)
-    cursor.execute("PRAGMA table_info(links)")
-    columns = [col[1] for col in cursor.fetchall()]
-    if 'created_at' not in columns:
-        # SQLite doesn't allow CURRENT_TIMESTAMP as a default for ADD COLUMN in some environments
-        cursor.execute("ALTER TABLE links ADD COLUMN created_at TIMESTAMP DEFAULT 0")
-        cursor.execute("UPDATE links SET created_at = CURRENT_TIMESTAMP WHERE created_at = 0")
-
-    # Deduplicate before adding unique index
-    cursor.execute('''
-        DELETE FROM links
-        WHERE id NOT IN (
-            SELECT MIN(id)
-            FROM links
-            GROUP BY profile_id, title, url
-        )
-    ''')
-    cursor.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_links_unique ON links(profile_id, title, url)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_links_profile_id ON links(profile_id)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_links_category ON links(category)')
-    cursor.execute('CREATE INDEX IF NOT EXISTS idx_projects_category ON projects(category)')
-
-    # Insert default profiles if not exist
-    cursor.execute("INSERT OR IGNORE INTO profiles (name, icon) VALUES ('Default', 'home')")
-    cursor.execute("INSERT OR IGNORE INTO profiles (name, icon) VALUES ('Private', 'lock')")
-    cursor.execute("INSERT OR IGNORE INTO profiles (name, icon) VALUES ('Personal', 'person')")
-
-    conn.commit()
-
-    # Auto-migrate if DB was just created or if it's empty
-    cursor.execute("SELECT COUNT(*) FROM links")
-    if cursor.fetchone()[0] == 0:
-        print("Database is empty. Attempting migration...")
-        try:
-            from scripts.migrate import migrate
-            # Pass the DB_PATH to ensure it uses the correct one (especially on Vercel)
-            migrate(db_path=DB_PATH)
-        except ImportError:
-            print("Migration script not found.")
-        except Exception as e:
-            print(f"Migration failed: {e}")
-
-    conn.close()
-    _db_initialized = True
-
-# Pydantic Models
-class LinkBase(BaseModel):
-    title: str
-    url: str
-    urls: List[str] = []
-    icon: Optional[str] = None
-    optional_icon: Optional[str] = None
-    category: str
-    is_internal: bool = False
-    tool_id: Optional[str] = None
-    is_pinned: bool = False
-
-class LinkCreate(LinkBase):
-    profile_id: int
-
-class LinkUpdate(BaseModel):
-    title: Optional[str] = None
-    url: Optional[str] = None
-    urls: Optional[List[str]] = None
-    icon: Optional[str] = None
-    optional_icon: Optional[str] = None
-    category: Optional[str] = None
-    is_internal: Optional[bool] = None
-    tool_id: Optional[str] = None
-    is_pinned: Optional[bool] = None
-
-class Link(LinkBase):
-    id: str
-    profile_id: int
-
-class Category(BaseModel):
-    name: str
-    icon: str
-    profile_id: int
-
-class Profile(BaseModel):
-    id: int
-    name: str
-    icon: str
-
-class ProjectBase(BaseModel):
-    title: str
-    description: Optional[str] = None
-    url: Optional[str] = None
-    category: Optional[str] = None
-    icon: Optional[str] = None
-
-class ProjectCreate(ProjectBase):
-    pass
-
-class ProjectUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    url: Optional[str] = None
-    category: Optional[str] = None
-    icon: Optional[str] = None
-
-class Project(ProjectBase):
-    id: str
-
-class ConvertRequest(BaseModel):
-    data: str
-    from_format: str
-    to_format: str
-
-class SentimentRequest(BaseModel):
-    text: str
-
-class TranslateRequest(BaseModel):
-    text: str
-    target_lang: str = "en"
-
-@app.middleware("http")
-async def ensure_db_initialized(request, call_next):
-    global _db_initialized
-    if not _db_initialized:
-        try:
-            init_db()
-        except Exception as e:
-            # We don't set _db_initialized = True here so it retries on next request
-            print(f"Database initialization failed: {e}")
-    response = await call_next(request)
-    return response
-
-
-@app.get("/api/hello")
-def hello():
-    return {"message": "Hello from Python on Vercel!"}
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
 
 @app.get("/api/health")
 def health():
-    try:
-        conn = get_db_connection()
-        conn.execute("SELECT 1")
-        conn.close()
-        return {"status": "healthy", "database": "connected"}
-    except Exception as e:
-        return {"status": "unhealthy", "database": str(e)}, 500
-
-# Profiles Endpoints
-@app.get("/api/profiles", response_model=List[Profile])
-def get_profiles():
-    try:
-        conn = get_db_connection()
-        profiles = conn.execute('SELECT * FROM profiles ORDER BY id ASC').fetchall()
-        conn.close()
-        return [dict(p) for p in profiles]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# Links Endpoints
-@app.get("/api/links", response_model=List[Link])
-def get_links(profile_id: Optional[int] = None):
-    conn = get_db_connection()
-
-    if profile_id:
-        # Check if this is the 'Personal' profile
-        profile = conn.execute("SELECT name FROM profiles WHERE id = ?", (profile_id,)).fetchone()
-        if profile and profile['name'] == 'Personal':
-            # For Personal profile, we merge all links and de-duplicate by title and url
-            # We use a subquery to ensure that if a link is pinned in any profile, we pick that record's ID
-            # so that toggling the pin state works correctly on the right record.
-            links = conn.execute('''
-                SELECT id, profile_id, title, url, urls, icon, optional_icon, category, is_internal, tool_id, is_pinned
-                FROM (SELECT * FROM links ORDER BY is_pinned DESC, created_at DESC)
-                GROUP BY title, url
-                ORDER BY is_pinned DESC, title COLLATE NOCASE ASC
-            ''').fetchall()
-        else:
-            links = conn.execute('SELECT * FROM links WHERE profile_id = ? ORDER BY is_pinned DESC, title COLLATE NOCASE ASC', (profile_id,)).fetchall()
-    else:
-        links = conn.execute('SELECT * FROM links ORDER BY is_pinned DESC, title COLLATE NOCASE ASC').fetchall()
-    conn.close()
-
-    res = []
-    for l in links:
-        d = dict(l)
-        d['urls'] = json.loads(d['urls']) if d['urls'] else []
-        res.append(d)
-    return res
-
-@app.get("/api/links/categories", response_model=List[str])
-def get_link_categories(profile_id: Optional[int] = None):
-    conn = get_db_connection()
-    if profile_id:
-        categories = conn.execute('SELECT DISTINCT category FROM links WHERE profile_id = ? ORDER BY category ASC', (profile_id,)).fetchall()
-    else:
-        categories = conn.execute('SELECT DISTINCT category FROM links ORDER BY category ASC').fetchall()
-    conn.close()
-    return [c['category'] for c in categories]
-
-@app.post("/api/links", response_model=Link)
-def create_link(link: LinkCreate):
-    conn = get_db_connection()
-    link_id = str(uuid.uuid4())
-    conn.execute('''
-        INSERT INTO links (id, profile_id, title, url, urls, icon, optional_icon, category, is_internal, tool_id, is_pinned)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (link_id, link.profile_id, link.title, link.url, json.dumps(link.urls), link.icon, link.optional_icon, link.category, link.is_internal, link.tool_id, link.is_pinned))
-    conn.commit()
-
-    new_link = conn.execute('SELECT * FROM links WHERE id = ?', (link_id,)).fetchone()
-    conn.close()
-
-    d = dict(new_link)
-    d['urls'] = json.loads(d['urls']) if d['urls'] else []
-    return d
-
-@app.put("/api/links/{link_id}", response_model=Link)
-def update_link(link_id: str, link: LinkUpdate):
-    conn = get_db_connection()
-    existing = conn.execute('SELECT * FROM links WHERE id = ?', (link_id,)).fetchone()
-    if not existing:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Link not found")
-
-    update_data = link.dict(exclude_unset=True)
-    if 'urls' in update_data:
-        update_data['urls'] = json.dumps(update_data['urls'])
-
-    query = 'UPDATE links SET ' + ', '.join([f'{k} = ?' for k in update_data.keys()]) + ' WHERE id = ?'
-    values = list(update_data.values()) + [link_id]
-
-    conn.execute(query, values)
-    conn.commit()
-
-    updated = conn.execute('SELECT * FROM links WHERE id = ?', (link_id,)).fetchone()
-    conn.close()
-
-    d = dict(updated)
-    d['urls'] = json.loads(d['urls']) if d['urls'] else []
-    return d
-
-@app.delete("/api/links/{link_id}")
-def delete_link(link_id: str):
-    conn = get_db_connection()
-    conn.execute('DELETE FROM links WHERE id = ?', (link_id,))
-    conn.commit()
-    conn.close()
-    return {"message": "Link deleted"}
-
-@app.post("/api/refresh-db")
-def refresh_db():
-    # Re-run migration without deleting existing data
-    try:
-        from scripts.migrate import migrate
-        migrate(db_path=DB_PATH)
-    except Exception as e:
-        print(f"Migration failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-    return {"message": "Database refreshed successfully"}
-
-# Social Media Downloader
-class DownloadRequest(BaseModel):
-    url: str
-    limit: Optional[int] = Field(5, ge=0, le=500) # 0 for unlimited
-    download_type: Optional[str] = "auto" # auto, video, audio
-
-def cleanup_temp(temp_dir: str, zip_path: str):
-    try:
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
-        if os.path.exists(zip_path):
-            os.remove(zip_path)
-    except Exception as e:
-        print(f"Cleanup error: {e}")
+    return {"status": "healthy"}
 
 @app.get("/api/networking/ping")
 def ping_host(host: str = Query(...)):
     try:
-        # Use subprocess for actual ping (limited to 4 packets)
-        # Note: on Linux it's -c, on Windows it's -n
-        cmd = ["ping", "-c", "4", host]
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, universal_newlines=True)
-        return {"output": output}
-    except Exception as e:
-        # Fallback if ping command fails (e.g. not installed or permission)
-        try:
-            socket.gethostbyname(host)
-            return {"output": f"Host {host} is reachable (DNS resolved), but ping command failed: {str(e)}"}
-        except:
-            raise HTTPException(status_code=400, detail=f"Ping failed: {str(e)}")
+        socket.gethostbyname(host)
+        return {"output": f"Host {host} is reachable (DNS resolved)."}
+    except:
+        raise HTTPException(status_code=400, detail="Host unreachable")
 
 @app.get("/api/networking/dns")
 def dns_lookup(domain: str = Query(...)):
     results = {}
-    types = ['A', 'AAAA', 'MX', 'TXT', 'NS', 'CNAME']
-    for t in types:
+    for t in ['A', 'MX', 'TXT']:
         try:
             answers = dns.resolver.resolve(domain, t)
             results[t] = [str(r) for r in answers]
-        except:
-            continue
+        except: continue
     return results
 
 @app.get("/api/networking/whois")
 def whois_lookup(domain: str = Query(...)):
-    # Simple whois via subprocess (requires whois installed on system)
     try:
         output = subprocess.check_output(["whois", domain], stderr=subprocess.STDOUT, universal_newlines=True)
         return {"output": output}
-    except Exception as e:
-        return {"output": f"Whois command failed: {str(e)}"}
-
-@app.post("/api/social/download")
-def download_social_media(request: DownloadRequest, background_tasks: BackgroundTasks):
-    temp_dir = tempfile.mkdtemp(dir='/tmp' if IS_VERCEL else None)
-    zip_id = str(uuid.uuid4())
-    zip_path = os.path.join(tempfile.gettempdir(), f"media_{zip_id}.zip")
-
-    # Select format based on download type
-    fmt = 'best'
-    if request.download_type == 'video':
-        fmt = 'bestvideo+bestaudio/best'
-    elif request.download_type == 'audio':
-        fmt = 'bestaudio/best'
-
-    ydl_opts = {
-        'format': fmt,
-        'outtmpl': os.path.join(temp_dir, '%(title).50s-%(id)s.%(ext)s'),
-        'quiet': True,
-        'no_warnings': True,
-        'ignoreerrors': True,
-        'extract_flat': False,
-    }
-
-    if request.limit and request.limit > 0:
-        ydl_opts['playlist_items'] = f'1-{request.limit}'
-
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([request.url])
-
-        files = os.listdir(temp_dir)
-        if not files:
-             cleanup_temp(temp_dir, zip_path)
-             raise HTTPException(status_code=404, detail="No media found or download failed. Some platforms may require authentication or have strict rate limits.")
-
-        with zipfile.ZipFile(zip_path, 'w') as zipf:
-            for file in files:
-                zipf.write(os.path.join(temp_dir, file), file)
-
-        background_tasks.add_task(cleanup_temp, temp_dir, zip_path)
-
-        return FileResponse(
-            zip_path,
-            media_type='application/zip',
-            filename=f"social_media_{zip_id}.zip"
-        )
-
-    except Exception as e:
-        cleanup_temp(temp_dir, zip_path)
-        raise HTTPException(status_code=500, detail=f"Download failed: {str(e)}")
-
-# Categories Endpoints
-@app.get("/api/categories", response_model=List[Category])
-def get_categories(profile_id: Optional[int] = None):
-    conn = get_db_connection()
-
-    if profile_id:
-        # Check if this is the 'Personal' profile
-        profile = conn.execute("SELECT name FROM profiles WHERE id = ?", (profile_id,)).fetchone()
-        if profile and profile['name'] == 'Personal':
-            # For Personal profile, we want unique categories from all profiles, picking one icon for each
-            categories = conn.execute('SELECT name, MIN(icon) as icon, ? as profile_id FROM categories GROUP BY name ORDER BY name ASC', (profile_id,)).fetchall()
-        else:
-            categories = conn.execute('SELECT * FROM categories WHERE profile_id = ? ORDER BY name ASC', (profile_id,)).fetchall()
-    else:
-        categories = conn.execute('SELECT * FROM categories ORDER BY name ASC').fetchall()
-    conn.close()
-    return [dict(c) for c in categories]
-
-@app.post("/api/categories", response_model=Category)
-def create_category(category: Category):
-    conn = get_db_connection()
-    conn.execute('''
-        INSERT OR REPLACE INTO categories (profile_id, name, icon)
-        VALUES (?, ?, ?)
-    ''', (category.profile_id, category.name, category.icon))
-    conn.commit()
-    conn.close()
-    return category
-
-# Projects Endpoints
-@app.get("/api/projects", response_model=List[Project])
-def get_projects():
-    conn = get_db_connection()
-    projects = conn.execute('SELECT * FROM projects ORDER BY title COLLATE NOCASE ASC').fetchall()
-    conn.close()
-    return [dict(p) for p in projects]
-
-@app.post("/api/projects", response_model=Project)
-def create_project(project: ProjectCreate):
-    conn = get_db_connection()
-    project_id = str(uuid.uuid4())
-    conn.execute('''
-        INSERT INTO projects (id, title, description, url, category, icon)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ''', (project_id, project.title, project.description, project.url, project.category, project.icon))
-    conn.commit()
-
-    new_project = conn.execute('SELECT * FROM projects WHERE id = ?', (project_id,)).fetchone()
-    conn.close()
-    return dict(new_project)
-
-@app.put("/api/projects/{project_id}", response_model=Project)
-def update_project(project_id: str, project: ProjectUpdate):
-    conn = get_db_connection()
-    existing = conn.execute('SELECT * FROM projects WHERE id = ?', (project_id,)).fetchone()
-    if not existing:
-        conn.close()
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    update_data = project.dict(exclude_unset=True)
-    if not update_data:
-        conn.close()
-        return dict(existing)
-
-    query = 'UPDATE projects SET ' + ', '.join([f'{k} = ?' for k in update_data.keys()]) + ' WHERE id = ?'
-    values = list(update_data.values()) + [project_id]
-
-    conn.execute(query, values)
-    conn.commit()
-
-    updated = conn.execute('SELECT * FROM projects WHERE id = ?', (project_id,)).fetchone()
-    conn.close()
-    return dict(updated)
-
-@app.delete("/api/projects/{project_id}")
-def delete_project(project_id: str):
-    conn = get_db_connection()
-    conn.execute('DELETE FROM projects WHERE id = ?', (project_id,))
-    conn.commit()
-    conn.close()
-    return {"message": "Project deleted"}
-
-@app.post("/api/data/convert")
-def convert_data(request: ConvertRequest):
-    try:
-        if request.from_format == "json" and request.to_format == "yaml":
-            obj = json.loads(request.data)
-            return {"result": yaml.dump(obj, sort_keys=False)}
-        elif request.from_format == "yaml" and request.to_format == "json":
-            obj = yaml.safe_load(request.data)
-            return {"result": json.dumps(obj, indent=2)}
-        else:
-            raise HTTPException(status_code=400, detail="Unsupported conversion")
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Conversion error: {str(e)}")
-
-@app.post("/api/text/translate")
-def translate_text(request: TranslateRequest):
-    # Mock translation for offline/limited environments
-    # In production, integrate with Google Translate API or deep-translator
-    return {
-        "translated_text": f"[{request.target_lang}] {request.text}",
-        "detected_lang": "auto"
-    }
-
-@app.get("/api/networking/ssl")
-def check_ssl(host: str = Query(...)):
-    import ssl
-    import socket
-    from datetime import datetime
-
-    context = ssl.create_default_context()
-    try:
-        with socket.create_connection((host, 443), timeout=5) as sock:
-            with context.wrap_socket(sock, server_hostname=host) as ssock:
-                cert = ssock.getpeercert()
-
-                # Expiry info
-                notAfter = cert.get('notAfter')
-                expiry_dt = datetime.strptime(notAfter, '%b %d %H:%M:%S %Y %Z')
-                days_left = (expiry_dt - datetime.now()).days
-
-                issuer = dict(x[0] for x in cert.get('issuer'))
-
-                return {
-                    "valid": True,
-                    "issuer": issuer.get('organizationName', 'Unknown'),
-                    "expiry": notAfter,
-                    "days_left": days_left
-                }
-    except Exception as e:
-        return {"valid": False, "error": str(e)}
-
-@app.post("/api/text/analyze")
-def analyze_text(request: SentimentRequest):
-    # Extremely basic sentiment analysis without external heavy libraries
-    positive_words = {'good', 'great', 'excellent', 'happy', 'love', 'amazing', 'positive', 'nice', 'awesome'}
-    negative_words = {'bad', 'terrible', 'awful', 'sad', 'hate', 'negative', 'poor', 'worst', 'ugly'}
-
-    text = request.text.lower()
-    words = text.split()
-    pos_count = sum(1 for w in words if w in positive_words)
-    neg_count = sum(1 for w in words if w in negative_words)
-
-    sentiment = "neutral"
-    if pos_count > neg_count:
-        sentiment = "positive"
-    elif neg_count > pos_count:
-        sentiment = "negative"
-
-    return {
-        "sentiment": sentiment,
-        "positive_score": pos_count,
-        "negative_score": neg_count,
-        "word_count": len(words)
-    }
-
-def extract_text_from_pdf(file_path):
-    text = ""
-    with open(file_path, 'rb') as f:
-        reader = PyPDF2.PdfReader(f)
-        for page in reader.pages:
-            text += page.extract_text() + "\n"
-    return text
-
-def extract_text_from_docx(file_path):
-    doc = docx.Document(file_path)
-    return "\n".join([para.text for para in doc.paragraphs])
-
-def extract_text_from_epub(file_path):
-    book = epub.read_epub(file_path)
-    text = ""
-    for item in book.get_items():
-        if item.get_type() == ebooklib.ITEM_DOCUMENT:
-            soup = BeautifulSoup(item.get_content(), 'html.parser')
-            text += soup.get_text() + "\n"
-    return text
-
-def extract_text_from_html(file_path):
-    with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-        soup = BeautifulSoup(f.read(), 'html.parser')
-        return soup.get_text()
-
-def extract_text_from_mhtml(file_path):
-    try:
-        mail = mailparser.parse_from_file(file_path)
-        # Try to get the body
-        body = mail.body or ""
-        # If it's HTML, strip tags
-        if "<html>" in body.lower() or "<body>" in body.lower():
-            soup = BeautifulSoup(body, 'html.parser')
-            return soup.get_text()
-        return body
-    except Exception as e:
-        print(f"MHTML parse error: {e}")
-        # Fallback to simple HTML extraction if mailparser fails
-        return extract_text_from_html(file_path)
-
-def translate_long_text(text, target_lang):
-    if not text.strip():
-        return ""
-
-    translator = GoogleTranslator(source='auto', target=target_lang)
-
-    # deep-translator has a limit around 5000 chars
-    max_chars = 4500
-    chunks = [text[i:i + max_chars] for i in range(0, len(text), max_chars)]
-
-    translated_chunks = []
-    for chunk in chunks:
-        try:
-            translated_chunks.append(translator.translate(chunk))
-        except Exception as e:
-            print(f"Translation error: {e}")
-            translated_chunks.append(f"[Translation Error: {str(e)}]")
-
-    return "".join(translated_chunks)
+    except:
+        return {"output": "WHOIS command failed in this environment."}
 
 @app.post("/api/docs/translate")
-async def translate_doc(
-    file: UploadFile = File(...),
-    target_lang: str = Form("en")
-):
-    # Map friendly names to language codes if necessary
-    lang_map = {
-        "english": "en",
-        "telugu": "te"
-    }
-    target_code = lang_map.get(target_lang.lower(), target_lang)
-
+async def translate_doc(file: UploadFile = File(...), target_lang: str = Form("en")):
     suffix = os.path.splitext(file.filename)[1].lower()
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-        content = await file.read()
-        tmp.write(content)
+        tmp.write(await file.read())
         tmp_path = tmp.name
-
     try:
         text = ""
         if suffix == ".pdf":
-            text = extract_text_from_pdf(tmp_path)
+            reader = PyPDF2.PdfReader(tmp_path)
+            text = "\n".join([p.extract_text() for p in reader.pages if p.extract_text()])
         elif suffix == ".docx":
-            text = extract_text_from_docx(tmp_path)
-        elif suffix in [".epub"]:
-            text = extract_text_from_epub(tmp_path)
-        elif suffix in [".html", ".htm"]:
-            text = extract_text_from_html(tmp_path)
-        elif suffix == ".mhtml":
-            text = extract_text_from_mhtml(tmp_path)
-        elif suffix in [".md", ".txt"]:
-            with open(tmp_path, 'r', encoding='utf-8', errors='ignore') as f:
-                text = f.read()
-        else:
-            raise HTTPException(status_code=400, detail=f"Unsupported file type: {suffix}")
+            doc = docx.Document(tmp_path)
+            text = "\n".join([p.text for p in doc.paragraphs])
+        elif suffix in [".txt", ".md"]:
+            with open(tmp_path, 'r', encoding='utf-8') as f: text = f.read()
 
-        if not text.strip():
-            raise HTTPException(status_code=400, detail="No text extracted from document.")
-
-        translated_text = translate_long_text(text, target_code)
-
-        return {
-            "original_filename": file.filename,
-            "target_lang": target_lang,
-            "translated_text": translated_text
-        }
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Translation failed: {str(e)}")
+        if not text: raise HTTPException(status_code=400, detail="Empty document")
+        translated = GoogleTranslator(source='auto', target=target_lang).translate(text[:2000])
+        return {"translated_text": translated}
     finally:
-        if os.path.exists(tmp_path):
-            os.remove(tmp_path)
+        if os.path.exists(tmp_path): os.remove(tmp_path)
+
+@app.get("/api/profiles")
+def get_profiles():
+    return [{"id": 1, "name": "Default", "icon": "home"}]

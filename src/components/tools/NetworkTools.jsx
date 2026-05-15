@@ -24,15 +24,14 @@ const NetworkTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   useEffect(() => {
     if (toolId) {
       const mapping = {
-        'networking-main': 'ip-info',
-        'network-tools': 'ip-info',
+        'ip-info': 'ip-info',
         'ping': 'ping',
         'dns': 'dns',
         'whois': 'whois',
         'speed': 'speed',
         'geo': 'geo',
         'ssl': 'ssl',
-        'subnet-calc': 'subnet',
+        'subnet': 'subnet',
         'bluetooth': 'bluetooth'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
@@ -53,15 +52,17 @@ const NetworkTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         ))}
       </div>
 
-      {activeTab === 'ip-info' && <IpInfoTool onResultChange={onResultChange} />}
-      {activeTab === 'ping' && <PingTool onResultChange={onResultChange} />}
-      {activeTab === 'dns' && <DnsTool onResultChange={onResultChange} />}
-      {activeTab === 'whois' && <WhoisTool onResultChange={onResultChange} />}
-      {activeTab === 'speed' && <SpeedTestTool onResultChange={onResultChange} />}
-      {activeTab === 'geo' && <GeoTool onResultChange={onResultChange} />}
-      {activeTab === 'ssl' && <SslTool onResultChange={onResultChange} />}
-      {activeTab === 'subnet' && <SubnetCalculator onResultChange={onResultChange} />}
-      {activeTab === 'bluetooth' && <BluetoothTool onResultChange={onResultChange} />}
+      <div className="hub-content animate-fadeIn">
+        {activeTab === 'ip-info' && <IpInfoTool onResultChange={onResultChange} />}
+        {activeTab === 'ping' && <PingTool onResultChange={onResultChange} />}
+        {activeTab === 'dns' && <DnsTool onResultChange={onResultChange} />}
+        {activeTab === 'whois' && <WhoisTool onResultChange={onResultChange} />}
+        {activeTab === 'speed' && <SpeedTestTool onResultChange={onResultChange} />}
+        {activeTab === 'geo' && <GeoTool onResultChange={onResultChange} />}
+        {activeTab === 'ssl' && <SslTool onResultChange={onResultChange} />}
+        {activeTab === 'subnet' && <SubnetCalculator onResultChange={onResultChange} />}
+        {activeTab === 'bluetooth' && <BluetoothTool onResultChange={onResultChange} />}
+      </div>
     </div>
   );
 };
@@ -70,7 +71,6 @@ const IpInfoTool = ({ onResultChange }) => {
   const [publicIp, setPublicIp] = useState('Loading...');
   const [localIp, setLocalIp] = useState('Detecting...');
   const [geoInfo, setGeoInfo] = useState(null);
-  const [battery, setBattery] = useState(null);
 
   useEffect(() => {
     fetch('https://ipapi.co/json/').then(res => res.json()).then(data => {
@@ -78,11 +78,6 @@ const IpInfoTool = ({ onResultChange }) => {
       setGeoInfo(data);
     }).catch(() => setPublicIp('Failed to fetch'));
 
-    if ('getBattery' in navigator) {
-        navigator.getBattery().then(batt => {
-            setBattery({ level: batt.level * 100, charging: batt.charging });
-        });
-    }
     const pc = new RTCPeerConnection({ iceServers: [] });
     pc.createDataChannel('');
     pc.createOffer().then(offer => pc.setLocalDescription(offer));
@@ -99,26 +94,28 @@ const IpInfoTool = ({ onResultChange }) => {
       text: `Public IP: ${publicIp}\nLocal IP: ${localIp}\nCity: ${geoInfo?.city || 'N/A'}\nISP: ${geoInfo?.org || 'N/A'}`,
       filename: 'ip_info.txt'
     });
-  }, [publicIp, localIp, geoInfo, onResultChange]);
+  }, [publicIp, localIp, geoInfo]);
 
   return (
     <div className="grid gap-15">
       <div className="grid grid-2 gap-15">
-          <div className="card p-20 text-center">
-             <div style={{ opacity: 0.5, marginBottom: '10px' }}>Connection</div>
-             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--nature-moss)' }}>ESTABLISHED</div>
+        <div className="card p-20 glass-card">
+            <div className="opacity-6 smallest uppercase font-bold mb-10">Public Address</div>
+            <div className="font-mono h2 color-primary text-center">{publicIp}</div>
+        </div>
+        <div className="card p-20 glass-card">
+            <div className="opacity-6 smallest uppercase font-bold mb-10">Local Address</div>
+            <div className="font-mono h2 opacity-8 text-center">{localIp}</div>
+        </div>
+      </div>
+      {geoInfo && (
+          <div className="card p-20 glass-card grid grid-2-cols gap-10">
+              <div>ISP: <b>{geoInfo.org}</b></div>
+              <div>City: <b>{geoInfo.city}</b></div>
+              <div>Country: <b>{geoInfo.country_name}</b></div>
+              <div>Region: <b>{geoInfo.region}</b></div>
           </div>
-          {battery && (
-              <div className="card p-20 text-center">
-                  <div style={{ opacity: 0.5, marginBottom: '10px' }}>Battery</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{Math.round(battery.level)}% {battery.charging ? '⚡' : ''}</div>
-              </div>
-          )}
-      </div>
-      <div className="grid grid-2 gap-15">
-        <div className="card p-15"><h3>Public IP</h3><div className="font-mono text-center color-primary">{publicIp}</div></div>
-        <div className="card p-15"><h3>Local IP</h3><div className="font-mono text-center opacity-8">{localIp}</div></div>
-      </div>
+      )}
     </div>
   );
 };
@@ -133,17 +130,15 @@ const PingTool = ({ onResultChange }) => {
       const res = await fetch(`${API_BASE}/networking/ping?host=${host}`);
       const data = await res.json();
       if (res.ok) setResults(data.output?.split('\n') || []);
-      else {
-        const start = Date.now(); await fetch(`https://${host}`, { mode: 'no-cors' });
-        const end = Date.now(); setResults([`Pinging ${host} [Fallback]`, `Reply from ${host}: time=${end - start}ms`]);
-      }
-    } catch (err) { setResults(['Error: Ping failed.']); }
-    finally { setIsRunning(false); }
+      else throw new Error("Ping command failed");
+    } catch (err) {
+        setResults([`Fallback: Ping ${host}`, 'Request timed out or forbidden by CORS.']);
+    } finally { setIsRunning(false); }
   };
   return (
     <div className="grid gap-15">
-      <div className="flex-gap"><input type="text" value={host} onChange={e => setHost(e.target.value)} className="pill flex-1" /><button className="btn-primary" onClick={runPing} disabled={isRunning}>{isRunning ? '...' : 'Ping'}</button></div>
-      <div className="tool-result font-mono" style={{ background: '#1a1a1a', color: '#00ff00', padding: '15px', borderRadius: '12px' }}>{results.map((r, i) => <div key={i}>{r}</div>)}</div>
+      <div className="flex-gap glass-card card p-10"><input type="text" value={host} onChange={e => setHost(e.target.value)} className="pill flex-1 border-none shadow-none" /><button className="btn-primary" onClick={runPing} disabled={isRunning}>{isRunning ? '...' : 'Ping'}</button></div>
+      <div className="tool-result font-mono" style={{ background: '#1a1a1a', color: '#00ff00' }}>{results.map((r, i) => <div key={i}>{r}</div>)}</div>
     </div>
   );
 };
@@ -167,7 +162,7 @@ const DnsTool = ({ onResultChange }) => {
     };
     return (
         <div className="grid gap-15">
-            <div className="flex-gap"><input type="text" value={domain} onChange={e => setDomain(e.target.value)} className="pill flex-1" /><button className="btn-primary" onClick={lookup}>Lookup</button></div>
+            <div className="flex-gap card p-10 glass-card"><input type="text" value={domain} onChange={e => setDomain(e.target.value)} className="pill flex-1 border-none shadow-none" /><button className="btn-primary" onClick={lookup}>Lookup</button></div>
             {records && <div className="tool-result font-mono">{Object.entries(records).map(([t,v])=>(<div key={t} className="mb-10"><div className="font-bold color-primary">{t}</div>{v.map((val,i)=><div key={i} style={{paddingLeft: '10px'}}>{val}</div>)}</div>))}</div>}
         </div>
     );
@@ -184,13 +179,13 @@ const SpeedTestTool = () => {
             const duration = (Date.now() - start) / 1000;
             const mbps = ((blob.size * 8) / (duration * 1024 * 1024)).toFixed(2);
             setSpeed(mbps);
-        } catch(e) { alert("Failed"); }
+        } catch(e) { alert("Test failed. Check connection."); }
         finally { setLoading(false); }
     };
     return (
-        <div className="card p-20 text-center">
-            <span className="material-icons" style={{fontSize: '3rem', color: 'var(--primary)'}}>speed</span>
-            <div style={{fontSize: '2rem', fontWeight: 800}} className="mv-15">{speed ? `${speed} Mbps` : '---'}</div>
+        <div className="card p-30 text-center glass-card">
+            <span className="material-icons" style={{fontSize: '4rem', color: 'var(--primary)'}}>speed</span>
+            <div style={{fontSize: '3rem', fontWeight: 800}} className="mb-20">{speed ? `${speed} Mbps` : '---'}</div>
             <button className="btn-primary w-full" onClick={run} disabled={loading}>{loading ? 'Testing...' : 'Start Test'}</button>
         </div>
     );
@@ -203,13 +198,13 @@ const WhoisTool = () => {
         try {
             const res = await fetch(`${API_BASE}/networking/whois?domain=${domain}`);
             const data = await res.json();
-            setOut(data.output || 'No data');
-        } catch(e) { setOut('Failed'); }
+            setOut(data.output || 'No records found.');
+        } catch(e) { setOut('WHOIS query failed.'); }
     };
     return (
         <div className="grid gap-15">
-            <div className="flex-gap"><input type="text" value={domain} onChange={e=>setDomain(e.target.value)} className="pill flex-1" /><button className="btn-primary" onClick={run}>Whois</button></div>
-            <pre className="tool-result font-mono" style={{fontSize: '0.7rem', maxHeight: '200px', overflow: 'auto'}}>{out}</pre>
+            <div className="flex-gap card p-10 glass-card"><input type="text" value={domain} onChange={e=>setDomain(e.target.value)} className="pill flex-1 border-none shadow-none" /><button className="btn-primary" onClick={run}>Whois</button></div>
+            <pre className="tool-result font-mono" style={{fontSize: '0.75rem', maxHeight: '300px', overflow: 'auto'}}>{out}</pre>
         </div>
     );
 };
@@ -218,11 +213,11 @@ const GeoTool = () => {
     const [ip, setIp] = useState('');
     const [info, setInfo] = useState(null);
     const run = async () => {
-        try { const res = await fetch(`https://ipapi.co/${ip}/json/`); const data = await res.json(); setInfo(data); } catch(e) {}
+        try { const res = await fetch(`https://ipapi.co/${ip}/json/`); const data = await res.json(); setInfo(data); } catch(e) { alert("Geo lookup failed"); }
     };
     return (
         <div className="grid gap-15">
-            <div className="flex-gap"><input type="text" value={ip} onChange={e=>setIp(e.target.value)} className="pill flex-1" placeholder="IP Address" /><button className="btn-primary" onClick={run}>Locate</button></div>
+            <div className="flex-gap card p-10 glass-card"><input type="text" value={ip} onChange={e=>setIp(e.target.value)} className="pill flex-1 border-none shadow-none" placeholder="IP Address" /><button className="btn-primary" onClick={run}>Locate</button></div>
             {info && <div className="tool-result"><b>{info.city}, {info.country_name}</b><br/>{info.org}</div>}
         </div>
     );
@@ -245,8 +240,8 @@ const SslTool = () => {
 
     return (
         <div className="grid gap-15">
-            <div className="flex-gap">
-                <input className="pill flex-1" value={host} onChange={e=>setHost(e.target.value)} />
+            <div className="flex-gap card p-10 glass-card">
+                <input className="pill flex-1 border-none shadow-none" value={host} onChange={e=>setHost(e.target.value)} />
                 <button className="btn-primary" onClick={check} disabled={loading}>{loading ? '...' : 'Check'}</button>
             </div>
             {info && (
@@ -287,7 +282,7 @@ const SubnetCalculator = () => {
   };
   return (
     <div className="grid gap-15">
-      <div className="flex-gap"><input value={ip} onChange={e=>setIp(e.target.value)} className="pill flex-1" /><input value={mask} onChange={e=>setMask(e.target.value)} className="pill" style={{width: '60px'}} /></div>
+      <div className="flex-gap card p-10 glass-card"><input value={ip} onChange={e=>setIp(e.target.value)} className="pill flex-1 border-none shadow-none" /><input value={mask} onChange={e=>setMask(e.target.value)} className="pill border" style={{width: '80px'}} /></div>
       <button className="btn-primary" onClick={calc}>Calculate</button>
       {res && <div className="tool-result font-mono">Net: {res.net}<br/>Broadcast: {res.br}<br/>Hosts: {res.hosts}</div>}
     </div>
@@ -295,16 +290,16 @@ const SubnetCalculator = () => {
 };
 
 const BluetoothTool = () => (
-    <div className="card p-20 text-center">
-        <span className="material-icons" style={{fontSize: '3rem', color: 'var(--primary)'}}>bluetooth</span>
+    <div className="card p-30 text-center glass-card">
+        <span className="material-icons" style={{fontSize: '4rem', color: 'var(--primary)'}}>bluetooth</span>
         <div className="mt-15 opacity-6">Web Bluetooth requires secure context and user interaction.</div>
-        <button className="btn-primary mt-15" onClick={async () => {
+        <button className="btn-primary mt-20" onClick={async () => {
             if (!navigator.bluetooth) {
                 alert("Web Bluetooth is not supported in this browser.");
                 return;
             }
             try { await navigator.bluetooth.requestDevice({acceptAllDevices: true}); } catch(e) { alert("Access denied or unsupported."); }
-        }}>Scan</button>
+        }}>Scan Devices</button>
     </div>
 );
 

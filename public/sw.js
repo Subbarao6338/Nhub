@@ -1,134 +1,20 @@
-const CACHE_NAME = 'nature-hub-v21';
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './assets/favicon.svg',
-  './assets/urlhub.png',
-  './manifest.json',
-  'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap',
-  'https://fonts.gstatic.com/',
-  'https://fonts.googleapis.com/icon?family=Material+Icons'
+const CACHE_NAME = 'nature-hub-v30';
+const ASSETS = [
+  '/',
+  '/index.html',
+  '/css/style.css',
+  '/src/main.jsx',
+  '/manifest.json'
 ];
 
-// Install Event
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    }).catch(err => {
-      console.error('Service Worker: Cache addition failed during installation:', err);
-    })
-  );
-  self.skipWaiting();
+self.addEventListener('install', (e) => {
+  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
 });
 
-// Activate Event
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('Service Worker: Clearing Old Cache', cache);
-            return caches.delete(cache);
-          }
-        })
-      );
-    })
-  );
-  self.clients.claim();
+self.addEventListener('fetch', (e) => {
+  e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
 });
 
-// Fetch Event - Network First for API, Stale-While-Revalidate for Assets
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-
-  const url = new URL(event.request.url);
-  const isLocal = url.origin === self.location.origin;
-  const isApi = url.pathname.startsWith('/api/');
-  const isFont = url.origin.includes('fonts.googleapis.com') ||
-                 url.origin.includes('fonts.gstatic.com') ||
-                 url.pathname.endsWith('.woff2') ||
-                 url.pathname.endsWith('.woff') ||
-                 url.pathname.endsWith('.ttf');
-  const isCachable = (isLocal && !isApi) || isFont;
-
-  // Network First strategy for API GET requests
-  if (isLocal && isApi) {
-    event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse.ok) {
-            const cacheCopy = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, cacheCopy);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          return caches.match(event.request);
-        })
-    );
-    return;
-  }
-
-  // Cache-First strategy for Fonts and Icons
-  if (isFont) {
-    event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        return cachedResponse || fetch(event.request).then((networkResponse) => {
-          if (networkResponse.ok) {
-            const cacheCopy = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
-          }
-          return networkResponse;
-        });
-      })
-    );
-    return;
-  }
-
-  // Stale-while-revalidate for other cachable assets
-  if (isCachable) {
-    event.respondWith(
-      caches.open(CACHE_NAME).then((cache) => {
-        const matchOptions = isLocal ? { ignoreSearch: true } : {};
-        return cache.match(event.request, matchOptions).then((cachedResponse) => {
-          const fetchPromise = fetch(event.request).then((networkResponse) => {
-            if (networkResponse.ok) {
-              cache.put(event.request, networkResponse.clone());
-            }
-            return networkResponse;
-          }).catch((err) => {
-            console.log("Fetch failed, returning cached response if available", err);
-            if (event.request.destination === 'image') {
-              return cachedResponse || caches.match('./assets/favicon.svg');
-            }
-            return cachedResponse;
-          });
-          return cachedResponse || fetchPromise;
-        });
-      })
-    );
-    return;
-  }
-
-  // Fallback for non-cachable images (like external favicons)
-  if (event.request.destination === 'image') {
-    event.respondWith(
-      caches.match(event.request).then((cached) => {
-        return cached || fetch(event.request).then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          }
-          return response;
-        }).catch(() => {
-          // If offline and image not in cache, try local assets
-          return caches.match('./assets/urlhub.png') || caches.match('./assets/favicon.svg');
-        });
-      })
-    );
-  }
+self.addEventListener('activate', (e) => {
+  e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))));
 });

@@ -1,91 +1,43 @@
-# Epic Toolbox 🌿 — Harmony & Flow Update
+# Nature Hub
 
-![Epic Toolbox Screenshot](toolbox_hubs.png)
+A unified ecosystem of essential tools, designed with the **Nature Design Mandate v6 (Harmony & Flow)**. This application consolidates multiple utility hubs into a single, high-performance interface with organic geometry and fluid interactions.
 
-Epic Toolbox is a premium, nature-inspired utility hub designed to harmonize your digital workflow. Following the **Nature Design Mandate v6 ("Harmony & Flow")**, it merges professional-grade tools with a serene, organic interface.
+## 🌿 Core Hubs
 
-## ✨ About the Project
+1.  **Document Tools**: Integrated PDF, Image, and Text utilities. Edit, convert, and translate documents with ease.
+2.  **Developer Hub**: Essential tools for engineers—JSON formatters, Unit converters, Color pickers, and Security utilities.
+3.  **Data Science**: Statistical analysis, data profiling, mock data generation, and financial calculators.
+4.  **Network Hub**: IP info, DNS lookups, WHOIS, SSL checks, and Subnet calculators.
+5.  **Web & Social Tools**: Media downloaders and web archiving utilities.
+6.  **AI Hub**: Image generation, chat assistants, and local sentiment analysis.
+7.  **Date & Time Tools**: World clocks, Pomodoro timers, Stopwatch, and Timestamp converters.
 
-In an era of cluttered interfaces and fragmented tools, **Epic Toolbox** provides a unified, serene environment for your daily digital tasks. Whether you're a developer needing a quick Regex test, a student looking for a scientific calculator, or just someone who wants a beautiful place to organize their bookmarks, Epic Toolbox is built for you.
+## 🚀 Features
 
-The "Nature Design Mandate" isn't just about aesthetics; it's about a **calm workflow**. We use pebble-shaped UI elements, staggered leaf-entry animations, and a palette inspired by the natural world (Forest, Earth, Ocean, and Sunset) to reduce "interface fatigue."
+*   **Pebble UI**: Organic "Pebble" cards with smooth, physics-based hover effects.
+*   **Performance**: Lazy-loaded hubs and optimized React components for maximum speed.
+*   **PWA Support**: Fully installable with offline capabilities via service workers.
+*   **Customization**: Nature-inspired accent colors and theme modes (Light/Dark/System).
+*   **Privacy First**: Local-first processing for sensitive tools (Hashing, Password Gen, Image Blur).
 
----
+## 🛠 Tech Stack
 
-## 🚀 Key Features
+*   **Frontend**: React 18, Vite, CSS3 (Nature Design Mandate).
+*   **Backend**: Python (FastAPI) for heavy processing (Document translation, YT-DLP).
+*   **Libraries**: jsPDF, pdf-lib, PapaParse, Tesseract.js, Lucide Icons.
 
-### 🛠 The Toolbox Hub
-A massive collection of consolidated tools organized into 21 category Hubs:
-- **AI Hub**: Multi-turn Chat Assistant, Image Generation (Anime, Cyberpunk, etc.), and Story Generation.
-- **Data Tools**: High-performance viewers for CSV, JSON, Excel, and Parquet. Includes quality analysis and anonymization.
-- **Developer Utilities**: JSON/SQL Formatters, Diff Viewer, UUID Generator, Regex Tester, and Code Converters.
-- **Media & Graphics**: PDF Editor, Image Compressor, QR/Barcode Scanner, and Color Palette Hub.
-- **Networking**: Real-time Ping, DNS Lookup, SSL Certificate Checker, and IP Info.
-- **Games & Fun**: Classic games like Snake, 2048, Sudoku, and Tic-Tac-Toe (Minimax AI).
-- **System & Hardware**: Battery status, Sensors (Vibrometer, Sound Meter), and Storage Estimator.
+## 💻 Installation
 
-### 🔖 Bookmark Management
-- **Multi-Profile Support**: Keep your life organized with **Default**, **Private**, and **Personal** (combined) profiles.
-- **Dynamic Categories**: Group links with custom icons and real-time filtering.
-- **Smart Search**: Navigate thousands of links and tools instantly using category prefixes (e.g., `cat:dev`).
+```bash
+# Install dependencies
+npm install
+pip install -r requirements.txt
 
-### 🎨 Personalization & UX
-- **Harmony & Flow (v6)**: Refined pebble geometry, leaf-sway animations, and ambient shadows.
-- **Epic Theme Engine**: 40+ nature-inspired accent colors with adaptive dark mode.
-- **Visual Harmony**: Toggle glassmorphism, reduced motion, and compact modes.
-- **Offline Superiority**: Advanced PWA v19 with intelligent caching and multi-shortcut support.
-- **Haptic Feedback**: Responsive vibration sequences for a tactile mobile experience.
+# Start development server
+npm run dev
 
----
+# Start API server
+python3 -m uvicorn api.index:app --port 8000
+```
 
-## 🛠 Technical Architecture
-
-### Frontend (The SPA)
-- **Framework**: React 18 with Vite for lightning-fast builds.
-- **Styling**: Pure CSS following a strict token-based system for themes and animations.
-- **Optimization**: All 21 tool hubs are **lazy-loaded** to keep the initial bundle small (~200KB gzipped).
-- **Security**: Strict Sanitization with `DOMPurify` for all user-generated and searched content.
-
-### Backend (The API)
-- **Framework**: FastAPI (Python 3.9+) providing a robust RESTful interface.
-- **Database**: SQLite for local persistence, with automatic JSON-to-SQL migration logic.
-- **Edge-Ready**: Optimized for Vercel Serverless Functions with ephemeral filesystem handling.
-
-### Core Libraries
-- **Mathematics**: `mathjs` for the advanced calculator.
-- **Documents**: `pdf-lib`, `jspdf`, and `marked`.
-- **Data**: `papaparse` (CSV), `xlsx` (Excel), and `hyparquet`.
-- **UI**: `canvas-confetti` and `html2canvas`.
-
----
-
-## 📖 Getting Started
-
-### Prerequisites
-- **Node.js** (v18+)
-- **Python** (3.9+)
-
-### Installation
-1. **Clone the repo**:
-   ```bash
-   git clone https://github.com/your-repo/nature-toolbox.git
-   cd nature-toolbox
-   ```
-2. **Setup Backend**:
-   ```bash
-   pip install -r requirements.txt
-   python3 scripts/setup_db.py
-   ```
-3. **Setup Frontend**:
-   ```bash
-   npm install
-   ```
-
-### Running Locally
-- **Backend**: `uvicorn api.index:app --port 8000`
-- **Frontend**: `npm run dev -- --port 3001`
-
----
-
-## 📜 License
-MIT © 2024 Epic Toolbox Team
+Designed with ❤️ and inspired by nature.
