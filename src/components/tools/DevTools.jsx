@@ -92,7 +92,7 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
 
 const JsonToTs = ({ onResultChange }) => {
     const [json, setJson] = useState('{\n  "id": 1,\n  "name": "Nature Tool",\n  "active": true,\n  "tags": ["web", "utility"]\n}');
-    const convert = () => {
+    const res = useMemo(() => {
         try {
             const obj = JSON.parse(json);
             let ts = "interface RootObject {\n";
@@ -106,11 +106,18 @@ const JsonToTs = ({ onResultChange }) => {
                 ts += `  ${key}: ${type};\n`;
             });
             ts += "}";
-            onResultChange({ text: ts, filename: 'interface.ts' });
             return ts;
         } catch(e) { return "Invalid JSON"; }
-    };
-    const res = convert();
+    }, [json]);
+
+    useEffect(() => {
+        if (res !== "Invalid JSON") {
+            onResultChange({ text: res, filename: 'interface.ts' });
+        } else {
+            onResultChange(null);
+        }
+    }, [res, onResultChange]);
+
     return (
         <div className="grid gap-15">
             <textarea className="pill font-mono" rows="8" value={json} onChange={e=>setJson(e.target.value)} />
@@ -123,7 +130,7 @@ const JsonToTs = ({ onResultChange }) => {
 
 const XmlFormatter = ({ onResultChange }) => {
     const [xml, setXml] = useState('<root><item id="1">Hello</item><item id="2">World</item></root>');
-    const format = () => {
+    const res = useMemo(() => {
         let formatted = '';
         let indent = 0;
         const tab = '  ';
@@ -141,11 +148,13 @@ const XmlFormatter = ({ onResultChange }) => {
             }
         });
 
-        const res = formatted.trim();
+        return formatted.trim();
+    }, [xml]);
+
+    useEffect(() => {
         onResultChange({ text: res, filename: 'formatted.xml' });
-        return res;
-    };
-    const res = format();
+    }, [res, onResultChange]);
+
     return (
         <div className="card p-15 grid gap-10">
             <textarea className="pill font-mono" rows="8" value={xml} onChange={e=>setXml(e.target.value)} />
@@ -180,16 +189,19 @@ const XmlJsonConverter = ({ onResultChange }) => {
 
 const MinifierTool = ({ onResultChange }) => {
     const [input, setInput] = useState('');
-    const minify = () => {
-        let res = input;
-        res = res.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
-        res = res.replace(/\s+([{}|:;,])\s+/g, '$1');
-        res = res.replace(/\s+/g, ' ');
-        res = res.trim();
-        onResultChange({ text: res, filename: 'minified.txt' });
-        return res;
-    };
-    const res = minify();
+    const res = useMemo(() => {
+        if (!input) return '';
+        let min = input;
+        min = min.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1');
+        min = min.replace(/\s+([{}|:;,])\s+/g, '$1');
+        min = min.replace(/\s+/g, ' ');
+        return min.trim();
+    }, [input]);
+
+    useEffect(() => {
+        if (res) onResultChange({ text: res, filename: 'minified.txt' });
+    }, [res, onResultChange]);
+
     return (
         <div className="card p-15 grid gap-10">
             <textarea className="pill font-mono" rows="8" value={input} onChange={e=>setInput(e.target.value)} placeholder="CSS/JS code..." />
@@ -201,15 +213,23 @@ const MinifierTool = ({ onResultChange }) => {
 const JsonFormatter = ({ onResultChange }) => {
     const [val, setVal] = useState('{"test": "data", "array": [1,2,3]}');
     const [error, setError] = useState('');
-    const format = () => {
+
+    const res = useMemo(() => {
         try {
-            const res = JSON.stringify(JSON.parse(val), null, 2);
+            return JSON.stringify(JSON.parse(val), null, 2);
+        } catch(e) { return null; }
+    }, [val]);
+
+    useEffect(() => {
+        if (res) {
             setError('');
             onResultChange({ text: res, filename: 'formatted.json' });
-            return res;
-        } catch(e) { setError('Invalid JSON'); return val; }
-    };
-    const res = format();
+        } else {
+            setError('Invalid JSON');
+            onResultChange(null);
+        }
+    }, [res, onResultChange]);
+
     return (
         <div className="grid gap-15 card p-15">
             <textarea className="pill font-mono" rows="8" value={val} onChange={e=>setVal(e.target.value)} />
@@ -357,18 +377,20 @@ const Base64Tool = ({ onResultChange }) => {
 
 const SqlFormatter = ({ onResultChange }) => {
     const [sql, setSql] = useState("SELECT * FROM users WHERE id = 1 AND status = 'active' ORDER BY created_at DESC");
-    const format = () => {
-        let res = sql.replace(/\s+/g, ' ');
+    const res = useMemo(() => {
+        let formatted = sql.replace(/\s+/g, ' ');
         const keywords = ['SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'ORDER BY', 'GROUP BY', 'LIMIT', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'HAVING', 'VALUES', 'UPDATE', 'SET', 'INSERT INTO', 'DELETE FROM'];
         keywords.forEach(key => {
             const regex = new RegExp(`\\s${key}\\s`, 'gi');
-            res = res.replace(regex, `\n${key} `);
+            formatted = formatted.replace(regex, `\n${key} `);
         });
-        const final = res.trim();
-        onResultChange({ text: final, filename: 'formatted.sql' });
-        return final;
-    };
-    const res = format();
+        return formatted.trim();
+    }, [sql]);
+
+    useEffect(() => {
+        onResultChange({ text: res, filename: 'formatted.sql' });
+    }, [res, onResultChange]);
+
     return (
         <div className="grid gap-15 card p-20">
             <textarea className="pill font-mono" rows="8" value={sql} onChange={e=>setSql(e.target.value)} />
