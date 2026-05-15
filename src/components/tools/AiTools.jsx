@@ -1,7 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
+import API_BASE from '../../api';
 
 const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('image-gen');
+
+  useEffect(() => {
+    if (toolId) {
+      const mapping = {
+        'ai-chat': 'chat',
+        'ai-image': 'image-gen',
+        'ai-text': 'text-gen'
+      };
+      if (mapping[toolId]) setActiveTab(mapping[toolId]);
+    }
+  }, [toolId]);
   const [input, setInput] = useState('');
   const [res, setRes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,8 +40,9 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
             body: JSON.stringify({ text: input })
         });
         const data = await response.json();
-        setLocalSentiment(data.sentiment.charAt(0).toUpperCase() + data.sentiment.slice(1));
-        onResultChange({ text: `Sentiment: ${data.sentiment}\nPos: ${data.positive_score}\nNeg: ${data.negative_score}`, filename: 'sentiment.txt' });
+        const sentiment = data.sentiment || 'neutral';
+        setLocalSentiment(sentiment.charAt(0).toUpperCase() + sentiment.slice(1));
+        onResultChange({ text: `Sentiment: ${sentiment}\nPos: ${data.positive_score || 0}\nNeg: ${data.negative_score || 0}`, filename: 'sentiment.txt' });
     } catch (e) {
         // Fallback to local logic if API fails
         const text = input.toLowerCase();

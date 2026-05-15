@@ -122,9 +122,9 @@ const DataViewer = ({ onResultChange, setGlobalData }) => {
     const [loading, setLoading] = useState(false);
 
     const handleFileUpload = (e) => {
-        setLoading(true);
         const file = e.target.files[0];
         if (!file) return;
+        setLoading(true);
         setFileName(file.name);
 
         const reader = new FileReader();
