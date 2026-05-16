@@ -241,11 +241,16 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
             </p>
             <div className="url-list">
               {(selectedLinkForUrls.urls || [selectedLinkForUrls.url]).map((url, i) => (
-                <a key={i} href={url} target={openInNewTab ? '_blank' : '_self'} className="url-btn" onClick={() => setIsUrlModalOpen(false)}>
-                  <span className="material-icons url-btn-icon">link</span>
-                  <span className="url-btn-content">{url}</span>
-                  <span className="material-icons url-btn-arrow">open_in_new</span>
-                </a>
+                <div key={i} className="url-btn-row">
+                  <a href={url} target={openInNewTab ? '_blank' : '_self'} className="url-btn" onClick={() => setIsUrlModalOpen(false)}>
+                    <span className="material-icons url-btn-icon">link</span>
+                    <span className="url-btn-content">{url}</span>
+                    <span className="material-icons url-btn-arrow">open_in_new</span>
+                  </a>
+                  <button className="icon-btn" onClick={() => handleCopy(i, url)} title="Copy URL">
+                    <span className="material-icons">{copiedId === i ? 'check' : 'content_copy'}</span>
+                  </button>
+                </div>
               ))}
             </div>
             <div className="modal-footer-actions">
