@@ -138,6 +138,25 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     return grouped;
   }, [filteredTools, groupToolbox, activeCategory, searchQuery]);
 
+  const matchedSubtools = useMemo(() => {
+    if (!searchQuery || searchQuery.toLowerCase().startsWith('cat:')) return [];
+    const query = searchQuery.toLowerCase();
+    const matches = [];
+    TOOLS.forEach(tool => {
+        tool.subTools?.forEach(sub => {
+            if (sub.toLowerCase().includes(query)) {
+                matches.push({
+                    id: sub,
+                    label: sub.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+                    hubId: tool.id,
+                    hubTitle: tool.title
+                });
+            }
+        });
+    });
+    return matches;
+  }, [searchQuery]);
+
   const handleCopyResult = () => {
     if (!currentResult?.text) return;
     navigator.clipboard.writeText(currentResult.text).then(() => {
@@ -231,6 +250,12 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
 
   const cats = groupedTools ? Object.keys(groupedTools).sort() : [];
 
+  const handleSubtoolClick = (match) => {
+    openTool(match.hubId);
+    // After opening the hub, we might need a small delay or a way to trigger the sub-tool selection
+    // In current implementation, passing toolId to components like DevTools handles it.
+  };
+
   return (
     <>
       <CategoryNav
@@ -244,7 +269,27 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
       />
       <div className="toolbox-page-header">
         {searchQuery ? (
-           <h2>Search Results</h2>
+           <>
+            <h2>Search Results</h2>
+            {matchedSubtools.length > 0 && (
+              <div className="matched-subtools-bar animate-fadeIn">
+                <div className="matched-subtools-label">Matched Sub-tools:</div>
+                <div className="scrollable-x" style={{padding: '5px 0'}}>
+                  {matchedSubtools.map(match => (
+                    <button
+                      key={match.id}
+                      className="pill active"
+                      style={{fontSize: '0.8rem', background: 'var(--brand-accent)', borderColor: 'var(--brand-accent)'}}
+                      onClick={() => handleSubtoolClick(match)}
+                    >
+                      {match.label}
+                      <span style={{opacity: 0.7, fontSize: '0.7rem', marginLeft: '5px'}}>in {match.hubTitle}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+           </>
         ) : (
            <p>Your essential tools, simplified and unified.</p>
         )}
