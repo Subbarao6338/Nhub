@@ -413,7 +413,7 @@ input.pill:focus {
 /* Category & Grid Layouts */
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1.25rem;
   margin-bottom: 2rem;
 }
@@ -756,4 +756,360 @@ input.pill:focus {
   border: none;
   cursor: pointer;
   color: var(--text-muted);
+}
+
+
+/* Compact View & Link Styles */
+.compact .category-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.compact .card {
+  padding: 1rem;
+}
+
+.compact .card-icon {
+  width: 32px;
+  height: 32px;
+  margin-bottom: 0.75rem;
+}
+
+.compact .card-icon span {
+  font-size: 1.25rem !important;
+}
+
+.compact .card-title {
+  font-size: 0.9rem;
+}
+
+.card-url {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Component Fixes */
+.modal-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+#back-to-top {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+  transition: all 0.3s;
+}
+
+#back-to-top.visible {
+  display: flex;
+}
+
+#back-to-top:hover {
+  transform: translateY(-5px);
+  filter: brightness(1.1);
+}
+
+/* Utility & State Classes */
+.mr-10 {
+  margin-right: 10px;
+}
+
+.refresh-indicator {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface-solid);
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 50;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.search-dismiss-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  display: none;
+}
+
+.search-active .search-dismiss-overlay {
+  display: block;
+}
+
+/* Effect Disabling Classes */
+.no-glass .glass-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--surface-solid) !important;
+}
+
+.no-animations *,
+.no-animations *::before,
+.no-animations *::after {
+  transition: none !important;
+  animation: none !important;
+}
+
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+}
+
+.no-hover-effects .card:hover {
+  transform: none !important;
+}
+
+/* Settings UI Improvements */
+.settings-collapsible {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  background: var(--surface-solid);
+  transition: all 0.3s ease;
+}
+
+.settings-collapsible:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.collapsible-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.header-left .material-icons {
+  color: var(--primary);
+  background: var(--primary-glow);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
+
+.settings-row-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill-group .pill {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+}
+
+.color-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.color-circle.active {
+  border-color: var(--on-surface);
+  transform: scale(1.1);
+}
+
+.color-circle:hover {
+  transform: scale(1.15);
+}
+
+/* Scrollable sections within settings */
+.settings-container {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) transparent;
+}
+
+.settings-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-container::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  border-radius: 10px;
+}
+
+/* TabBar Overlay Fix */
+.tab-bar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
+}
+
+
+/* Profile Modal Styles */
+.profile-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.profile-item-row .pill {
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.startup-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.startup-toggle:hover {
+  color: var(--brand-accent);
+  transform: scale(1.1);
+}
+
+.startup-toggle.active {
+  color: var(--brand-accent);
+}
+
+/* Modal UI Consistency */
+.modal-multi-url .url-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 1.5rem 0;
+}
+
+.url-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.url-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--brand-bg-light);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--on-surface);
+  border: 1px solid var(--border);
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.url-btn:hover {
+  border-color: var(--primary);
+  background: var(--surface-solid);
+  transform: translateX(4px);
+}
+
+.url-btn-icon {
+  color: var(--primary);
+}
+
+.url-btn-content {
+  flex: 1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modal-footer-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 1.5rem;
+}
+
+.copy-all-btn {
+  flex: 1;
+  justify-content: center;
+}
+
+.dismiss-btn {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-weight: 600;
 }

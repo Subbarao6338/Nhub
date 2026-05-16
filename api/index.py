@@ -161,7 +161,7 @@ def init_db():
     c.execute("SELECT count(*) FROM profiles")
     if c.fetchone()[0] == 0:
         c.execute("INSERT INTO profiles (name, icon) VALUES (?, ?)", ("Default", "home"))
-        c.execute("INSERT INTO profiles (name, icon) VALUES (?, ?)", ("Work", "business"))
+        c.execute("INSERT INTO profiles (name, icon) VALUES (?, ?)", ("Private", "security"))
         c.execute("INSERT INTO profiles (name, icon) VALUES (?, ?)", ("Personal", "person"))
 
     # Seed Categories

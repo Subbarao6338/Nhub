@@ -12,7 +12,10 @@ const ProfileModal = ({ profiles, currentProfile, onSelect, onCancel }) => {
 
   return (
     <div className="modal">
-      <h2>Select Profile</h2>
+      <div className="modal-header-flex">
+        <h2 style={{margin: 0}}>Select Profile</h2>
+        <button className="icon-btn" onClick={onCancel}><span className="material-icons">close</span></button>
+      </div>
       <div className="profile-list">
         {profiles.map(p => (
           <div key={p.id} className="profile-item-row">

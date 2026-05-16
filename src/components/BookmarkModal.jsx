@@ -89,7 +89,10 @@ const BookmarkModal = ({ link, profileId, profiles, enableProfiles, onClose, onS
 
   return (
     <div className="modal" style={{display: 'block'}}>
-      <h2 style={{marginTop: 0}}>{link ? 'Edit Bookmark' : 'Add Bookmark'}</h2>
+      <div className="modal-header-flex">
+        <h2 style={{margin: 0}}>{link ? 'Edit Bookmark' : 'Add Bookmark'}</h2>
+        <button className="icon-btn" onClick={onClose}><span className="material-icons">close</span></button>
+      </div>
       <form onSubmit={handleSubmit}>
         {enableProfiles && (
           <div className="form-group">
@@ -157,9 +160,6 @@ const BookmarkModal = ({ link, profileId, profiles, enableProfiles, onClose, onS
           <button type="submit" className="btn-primary" style={{width: '100%'}}>Save Bookmark</button>
         </div>
       </form>
-      <div className="form-actions">
-        <button type="button" onClick={onClose}>Close</button>
-      </div>
     </div>
   );
 };
