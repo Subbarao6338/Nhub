@@ -10,14 +10,9 @@ test('Verify Bookmark Card Changes', async ({ page }) => {
   const multiUrlCard = page.locator('.card:has-text("YouTube")').first();
   await expect(multiUrlCard).toBeVisible();
 
-  // Verify badge is at top right
-  const badge = multiUrlCard.locator('.fallback-badge.card-badge-top');
-  await expect(badge).toBeVisible();
-
-  // Verify actions are at top right (using CSS check)
-  const actions = multiUrlCard.locator('.card-actions');
-  const topValue = await actions.evaluate(el => window.getComputedStyle(el).top);
-  expect(topValue).toBe('10px');
+  // Verify pin button in footer
+  const pinBtn = multiUrlCard.locator('.card-footer .pin-btn');
+  await expect(pinBtn).toBeVisible();
 
   // Perform long press (simulated)
   // Playwright's click with delay can simulate long press

@@ -452,10 +452,7 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
           <span className="material-icons">layers</span>
           {link.urls?.length || 1}
         </span>
-      </div>
-
-      <div className="card-actions" style={{ position: 'absolute', top: '10px', right: '10px', opacity: 1, zIndex: 2 }} onClick={e => e.stopPropagation()}>
-        <button className={`pin-btn ${link.is_pinned ? 'active' : ''}`} onClick={() => onPin(link)} title={link.is_pinned ? 'Unpin' : 'Pin to Top'}>
+        <button className={`pin-btn ${link.is_pinned ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); onPin(link); }} title={link.is_pinned ? 'Unpin' : 'Pin to Top'}>
           <span className="material-icons">push_pin</span>
         </button>
       </div>

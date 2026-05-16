@@ -118,17 +118,18 @@ const ProjectsView = ({ searchQuery, openInNewTab }) => {
               <p style={{fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem', flex: 1, minHeight: '3em'}}>
                 <HighlightText text={project.description || ''} query={searchQuery} />
               </p>
-              <div className="card-url" style={{marginTop: 'auto'}}>
-                {(() => {
-                  try {
-                    return project.url ? new URL(project.url).hostname : 'No Link';
-                  } catch(e) {
-                    return project.url || 'No Link';
-                  }
-                })()}
-              </div>
-              <div className="card-actions" onClick={e => e.stopPropagation()}>
-                <button onClick={() => {
+              <div className="card-footer">
+                <div className="card-url">
+                  {(() => {
+                    try {
+                      return project.url ? new URL(project.url).hostname : 'No Link';
+                    } catch(e) {
+                      return project.url || 'No Link';
+                    }
+                  })()}
+                </div>
+                <button className="icon-btn" onClick={(e) => {
+                   e.stopPropagation();
                    if (navigator.share) {
                      navigator.share({ title: project.title, url: project.url });
                    } else {

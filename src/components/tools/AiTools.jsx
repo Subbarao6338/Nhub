@@ -146,16 +146,18 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
               </div>
           ) : (
               <div className="grid gap-15">
-                  <div className="card p-15 overflow-auto glass-card" style={{ height: '400px', display: 'flex', flexDirection: 'column', gap: '10px', borderRadius: 'var(--radius-lg)' }}>
+                  <div className="card p-15 overflow-auto glass-card" style={{ height: '400px', display: 'flex', flexDirection: 'column', gap: '12px', borderRadius: 'var(--radius-xl)' }}>
                       {chat.length === 0 && <div className="text-center opacity-5 m-auto">Ask me anything...<br/><span className="material-icons" style={{fontSize: '3rem'}}>forum</span></div>}
                       {chat.map((m, i) => (
-                          <div key={i} className={`p-15 rounded-16 animate-slide-up ${m.role === 'user' ? 'bg-primary color-white ml-40' : 'bg-surface border mr-40 shadow-sm'}`} style={{
-                              borderRadius: m.role === 'user' ? '24px 24px 4px 24px' : '24px 24px 24px 4px',
+                          <div key={i} className={`p-15 animate-slide-up ${m.role === 'user' ? 'ml-40' : 'mr-40'}`} style={{
+                              borderRadius: m.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
                               alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
                               maxWidth: '85%',
                               background: m.role === 'user' ? 'var(--primary)' : 'var(--primary-container)',
                               color: m.role === 'user' ? 'var(--on-primary)' : 'var(--on-primary-container)',
-                              border: '1px solid var(--border)'
+                              border: '1px solid var(--border)',
+                              boxShadow: 'var(--shadow-sm)',
+                              lineHeight: '1.5'
                           }}>
                               {m.content}
                           </div>
