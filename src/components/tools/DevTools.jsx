@@ -403,6 +403,51 @@ const JwtDecoder = ({ onResultChange }) => {
     );
 };
 
+const RegexTester = ({ onResultChange }) => {
+    const [pattern, setPattern] = useState('[a-z]+');
+    const [flags, setFlags] = useState('gi');
+    const [testString, setTestString] = useState('Epic Toolbox 2024');
+    const [matches, setMatches] = useState([]);
+
+    useEffect(() => {
+        try {
+            const regex = new RegExp(pattern, flags);
+            const found = [...testString.matchAll(regex)];
+            setMatches(found.map(m => m[0]));
+            onResultChange({ text: `Regex matches: ${found.length}\n${found.map(m => m[0]).join(', ')}` });
+        } catch (e) {
+            setMatches([]);
+        }
+    }, [pattern, flags, testString]);
+
+    return (
+        <div className="card p-20 glass-card grid gap-15">
+            <div className="flex-gap">
+                <div className="form-group flex-1">
+                    <label>Regex Pattern</label>
+                    <input className="pill font-mono" value={pattern} onChange={e => setPattern(e.target.value)} placeholder="[a-z]+" />
+                </div>
+                <div className="form-group" style={{ width: '80px' }}>
+                    <label>Flags</label>
+                    <input className="pill font-mono" value={flags} onChange={e => setFlags(e.target.value)} placeholder="gi" />
+                </div>
+            </div>
+            <div className="form-group">
+                <label>Test String</label>
+                <textarea className="pill font-mono" rows="4" value={testString} onChange={e => setTestString(e.target.value)} />
+            </div>
+            <div className="tool-result">
+                <div className="opacity-6 mb-10 small uppercase font-bold">Matches ({matches.length})</div>
+                <div className="flex-gap flex-wrap">
+                    {matches.length > 0 ? matches.map((m, i) => (
+                        <span key={i} className="pill active" style={{ fontSize: '0.8rem' }}>{m}</span>
+                    )) : <span className="opacity-4">No matches found.</span>}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const SecurityHub = ({ onResultChange, subtool }) => {
     const [hashInput, setHashInput] = useState('');
     const [algo, setAlgo] = useState('SHA-256');
@@ -515,7 +560,7 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         {activeTab === 'diff' && <DiffViewer />}
         {activeTab === 'converter' && <UnitConverterHub onResultChange={onResultChange} subtool={toolId} />}
         {activeTab === 'security' && <SecurityHub onResultChange={onResultChange} subtool={toolId} />}
-        {activeTab === 'regex' && <div className="card p-20 glass-card">Regex Tester Integrated.</div>}
+        {activeTab === 'regex' && <RegexTester onResultChange={onResultChange} />}
         {activeTab === 'base64' && <Base64Tool onResultChange={onResultChange} />}
         {activeTab === 'jwt' && <JwtDecoder onResultChange={onResultChange} />}
         {activeTab === 'cron' && <CronHelper onResultChange={onResultChange} />}

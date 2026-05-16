@@ -124,19 +124,45 @@ const PingTool = ({ onResultChange }) => {
   const [host, setHost] = useState('google.com');
   const [results, setResults] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
+
+  const isServerless = API_BASE === 'JSON-MODE';
+
   const runPing = async () => {
     setIsRunning(true); setResults([`Pinging ${host}...`]);
     try {
+      if (isServerless) {
+          setTimeout(() => {
+              setResults([
+                  `PING ${host} (142.250.190.46): 56 data bytes`,
+                  `64 bytes from 142.250.190.46: icmp_seq=0 ttl=117 time=14.2 ms`,
+                  `64 bytes from 142.250.190.46: icmp_seq=1 ttl=117 time=15.1 ms`,
+                  '',
+                  `--- ${host} ping statistics ---`,
+                  '2 packets transmitted, 2 packets received, 0.0% packet loss',
+                  'round-trip min/avg/max/stddev = 14.2/14.6/15.1/0.4 ms',
+                  '',
+                  '[DEMO MODE: Simulated results as no backend is connected]'
+              ]);
+              setIsRunning(false);
+          }, 1000);
+          return;
+      }
       const res = await fetch(`${API_BASE}/networking/ping?host=${host}`);
       const data = await res.json();
       if (res.ok) setResults(data.output?.split('\n') || []);
       else throw new Error("Ping command failed");
     } catch (err) {
         setResults([`Fallback: Ping ${host}`, 'Request timed out or forbidden by CORS.']);
-    } finally { setIsRunning(false); }
+    } finally { if(!isServerless) setIsRunning(false); }
   };
   return (
     <div className="grid gap-15">
+      {isServerless && (
+          <div className="danger-box" style={{ padding: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span className="material-icons" style={{ fontSize: '1.2rem' }}>cloud_off</span>
+              <span><b>Backend Required:</b> Native ping requires a server. Showing simulated results.</span>
+          </div>
+      )}
       <div className="flex-gap glass-card card p-10"><input type="text" value={host} onChange={e => setHost(e.target.value)} className="pill flex-1 border-none shadow-none" /><button className="btn-primary" onClick={runPing} disabled={isRunning}>{isRunning ? '...' : 'Ping'}</button></div>
       <div className="tool-result font-mono" style={{ background: '#1a1a1a', color: '#00ff00' }}>{results.map((r, i) => <div key={i}>{r}</div>)}</div>
     </div>
@@ -194,16 +220,35 @@ const SpeedTestTool = () => {
 const WhoisTool = () => {
     const [domain, setDomain] = useState('example.com');
     const [out, setOut] = useState('');
+    const [isRunning, setIsRunning] = useState(false);
+
+    const isServerless = API_BASE === 'JSON-MODE';
+
     const run = async () => {
+        setIsRunning(true);
         try {
+            if (isServerless) {
+                setTimeout(() => {
+                    setOut(`Domain Name: ${domain.toUpperCase()}\nRegistry Domain ID: 2336796_DOMAIN_COM-VRSN\nRegistrar WHOIS Server: whois.iana.org\nRegistrar: IANA\n\n[DEMO MODE: Simulated WHOIS data]`);
+                    setIsRunning(false);
+                }, 1000);
+                return;
+            }
             const res = await fetch(`${API_BASE}/networking/whois?domain=${domain}`);
             const data = await res.json();
             setOut(data.output || 'No records found.');
         } catch(e) { setOut('WHOIS query failed.'); }
+        finally { if(!isServerless) setIsRunning(false); }
     };
     return (
         <div className="grid gap-15">
-            <div className="flex-gap card p-10 glass-card"><input type="text" value={domain} onChange={e=>setDomain(e.target.value)} className="pill flex-1 border-none shadow-none" /><button className="btn-primary" onClick={run}>Whois</button></div>
+            {isServerless && (
+                <div className="danger-box" style={{ padding: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span className="material-icons" style={{ fontSize: '1.2rem' }}>cloud_off</span>
+                    <span><b>Backend Required:</b> WHOIS protocol requires server-side execution.</span>
+                </div>
+            )}
+            <div className="flex-gap card p-10 glass-card"><input type="text" value={domain} onChange={e=>setDomain(e.target.value)} className="pill flex-1 border-none shadow-none" /><button className="btn-primary" onClick={run} disabled={isRunning}>{isRunning ? '...' : 'Whois'}</button></div>
             <pre className="tool-result font-mono" style={{fontSize: '0.75rem', maxHeight: '300px', overflow: 'auto'}}>{out}</pre>
         </div>
     );
@@ -228,18 +273,38 @@ const SslTool = () => {
     const [info, setInfo] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    const isServerless = API_BASE === 'JSON-MODE';
+
     const check = async () => {
         setLoading(true);
         try {
+            if (isServerless) {
+                setTimeout(() => {
+                    setInfo({
+                        valid: true,
+                        issuer: 'GTS CA 1C3',
+                        expiry: '2024-12-31',
+                        days_left: 120
+                    });
+                    setLoading(false);
+                }, 1000);
+                return;
+            }
             const res = await fetch(`${API_BASE}/networking/ssl?host=${host}`);
             const data = await res.json();
             setInfo(data);
         } catch(e) { alert("SSL Check failed"); }
-        finally { setLoading(false); }
+        finally { if(!isServerless) setLoading(false); }
     };
 
     return (
         <div className="grid gap-15">
+            {isServerless && (
+                <div className="danger-box" style={{ padding: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span className="material-icons" style={{ fontSize: '1.2rem' }}>cloud_off</span>
+                    <span><b>Backend Required:</b> SSL verification requires server-side handshake.</span>
+                </div>
+            )}
             <div className="flex-gap card p-10 glass-card">
                 <input className="pill flex-1 border-none shadow-none" value={host} onChange={e=>setHost(e.target.value)} />
                 <button className="btn-primary" onClick={check} disabled={loading}>{loading ? '...' : 'Check'}</button>
@@ -254,6 +319,7 @@ const SslTool = () => {
                             <div className="mt-10" style={{color: info.days_left < 30 ? 'var(--danger)' : 'var(--green)'}}>
                                 {info.days_left} days remaining
                             </div>
+                            {isServerless && <div className="mt-10 smallest opacity-6">[SIMULATED DATA]</div>}
                         </>
                     ) : (
                         <div>Error: {info.error}</div>

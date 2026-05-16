@@ -597,6 +597,29 @@ const DocTranslator = ({ onResultChange }) => {
         setIsProcessing(true);
         setResult('');
 
+        const isServerless = API_BASE === 'JSON-MODE';
+
+        if (isServerless) {
+            setTimeout(() => {
+                const mockResults = {
+                    'te': 'ఇది ప్రదర్శన ప్రయోజనాల కోసం ఒక నకిలీ అనువాదం.',
+                    'hi': 'यह प्रदर्शन उद्देश्यों के लिए एक नकली अनुवाद है।',
+                    'es': 'Esta es una traducción simulada para fines de demostración.',
+                    'fr': 'Ceci est une fausse traduction à des fins de démonstration.',
+                    'en': 'This is a mock translation for demonstration purposes.'
+                };
+                const translatedText = mockResults[targetLang] || 'Mock translation result.';
+                setResult(translatedText);
+                onResultChange({
+                    text: translatedText,
+                    blob: new Blob([translatedText], { type: 'text/plain' }),
+                    filename: `translated_${file.name}.txt`
+                });
+                setIsProcessing(false);
+            }, 1500);
+            return;
+        }
+
         const formData = new FormData();
         formData.append('file', file);
         formData.append('target_lang', targetLang);
@@ -629,8 +652,16 @@ const DocTranslator = ({ onResultChange }) => {
         }
     };
 
+    const isServerless = API_BASE === 'JSON-MODE';
+
     return (
         <div className="grid gap-15">
+            {isServerless && (
+                <div className="danger-box" style={{ padding: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span className="material-icons" style={{ fontSize: '1.2rem' }}>cloud_off</span>
+                    <span><b>Backend Required:</b> Document translation requires server-side processing. Showing simulated results.</span>
+                </div>
+            )}
             <div className="card no-animation p-20 glass-card grid gap-15">
                 <div className="form-group">
                     <label>Select Document (PDF, DOCX, EPUB, HTML, MD, TXT)</label>
