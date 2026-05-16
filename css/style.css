@@ -180,6 +180,16 @@ body {
   margin-bottom: 0;
 }
 
+.card-footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 0.5rem;
+  min-height: 24px;
+}
+
 /* Glass & Effects */
 .glass-card {
   backdrop-filter: blur(var(--glass-blur));
@@ -352,21 +362,23 @@ body {
   color: var(--on-primary);
 }
 
-.fallback-badge.card-badge-top {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
+.fallback-badge {
   background: var(--primary-glow);
   color: var(--primary);
   padding: 2px 8px;
   border-radius: 12px;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  border: 1px solid var(--primary-border);
-  z-index: 2;
+  border: 1px solid var(--border);
   display: flex;
   align-items: center;
+  gap: 4px;
   box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+.fallback-badge .material-icons {
+  font-size: 0.9rem !important;
 }
 
 .card-title-group {
@@ -901,13 +913,14 @@ input.pill:focus {
 }
 
 .card-url {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   color: var(--text-muted);
-  margin-top: 1px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: 'JetBrains Mono', monospace;
+  opacity: 0.8;
+  flex: 1;
 }
 
 /* Component Fixes */

@@ -435,21 +435,25 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
       onTouchMove={cancelPress}
       onContextMenu={handleContextMenu}
     >
-      <span className="fallback-badge card-badge-top" style={{ position: 'absolute', bottom: '10px', right: '10px' }} title={`This bookmark has ${link.urls?.length || 1} URL(s). Long-press to see all.`}>
-        <span className="material-icons" style={{ fontSize: '0.9rem', marginRight: '2px' }}>layers</span>
-        {link.urls?.length || 1}
-      </span>
       <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: 0 }}>
         {!hideIcons && <BookmarkIcon link={link} categoryIcon={categoryIcon || 'link'} />}
         <div className="card-title-group" style={{ overflow: 'hidden' }}>
           <div className="card-title" style={{ marginBottom: 0 }} dangerouslySetInnerHTML={{ __html: highlightText(link.title, searchQuery) }} />
         </div>
       </div>
-      {!hideUrls && (
-        <div className="card-url" style={{ position: 'absolute', bottom: '10px', left: '1rem', maxWidth: 'calc(100% - 100px)', fontSize: '0.7rem', opacity: 0.7 }}>
-          <span>{hostname}</span>
-        </div>
-      )}
+
+      <div className="card-footer">
+        {!hideUrls && (
+          <div className="card-url">
+            <span>{hostname}</span>
+          </div>
+        )}
+        <span className="fallback-badge" title={`This bookmark has ${link.urls?.length || 1} URL(s). Long-press to see all.`}>
+          <span className="material-icons">layers</span>
+          {link.urls?.length || 1}
+        </span>
+      </div>
+
       <div className="card-actions" style={{ position: 'absolute', top: '10px', right: '10px', opacity: 1, zIndex: 2 }} onClick={e => e.stopPropagation()}>
         <button className={`pin-btn ${link.is_pinned ? 'active' : ''}`} onClick={() => onPin(link)} title={link.is_pinned ? 'Unpin' : 'Pin to Top'}>
           <span className="material-icons">push_pin</span>

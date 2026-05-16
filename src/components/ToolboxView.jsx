@@ -366,12 +366,14 @@ const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, 
                     <div className="card-title" style={{ marginBottom: 0 }} dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
                 </div>
             </div>
-            {tool.subTools && (
-                <span className="fallback-badge card-badge-top" style={{ position: 'absolute', bottom: '10px', right: '10px' }} title={`${tool.subTools.length} sub-tools available`}>
-                    <span className="material-icons" style={{ fontSize: '0.9rem', marginRight: '2px' }}>apps</span>
-                    {tool.subTools.length}
-                </span>
-            )}
+            <div className="card-footer">
+                {tool.subTools && (
+                    <span className="fallback-badge" title={`${tool.subTools.length} sub-tools available`}>
+                        <span className="material-icons">apps</span>
+                        {tool.subTools.length}
+                    </span>
+                )}
+            </div>
         </div>
     );
 });
