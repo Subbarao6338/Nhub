@@ -14,14 +14,10 @@ test('Verify Bookmark Card Changes', async ({ page }) => {
   const badge = multiUrlCard.locator('.fallback-badge.card-badge-top');
   await expect(badge).toBeVisible();
 
-  // Verify actions are at bottom right (using CSS check)
+  // Verify actions are at top right (using CSS check)
   const actions = multiUrlCard.locator('.card-actions');
-  const bottomValue = await actions.evaluate(el => window.getComputedStyle(el).bottom);
-  expect(bottomValue).toBe('10px');
-
   const topValue = await actions.evaluate(el => window.getComputedStyle(el).top);
-  // On desktop it might have a top: auto, but let's check it's not 10px
-  expect(topValue).not.toBe('10px');
+  expect(topValue).toBe('10px');
 
   // Perform long press (simulated)
   // Playwright's click with delay can simulate long press

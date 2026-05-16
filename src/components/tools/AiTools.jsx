@@ -153,8 +153,8 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
                               borderRadius: m.role === 'user' ? '24px 24px 4px 24px' : '24px 24px 24px 4px',
                               alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
                               maxWidth: '85%',
-                              background: m.role === 'user' ? 'var(--primary)' : 'var(--nature-mist)',
-                              color: m.role === 'user' ? 'var(--on-primary)' : 'var(--on-surface)',
+                              background: m.role === 'user' ? 'var(--primary)' : 'var(--primary-container)',
+                              color: m.role === 'user' ? 'var(--on-primary)' : 'var(--on-primary-container)',
                               border: '1px solid var(--border)'
                           }}>
                               {m.content}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import NatureEmptyState from './NatureEmptyState';
+import EmptyState from './EmptyState';
 import API_BASE from '../api';
 
 const HighlightText = ({ text, query }) => {
@@ -87,8 +87,8 @@ const ProjectsView = ({ searchQuery, openInNewTab }) => {
       </div>
 
       {filteredProjects.length === 0 ? (
-        <NatureEmptyState
-          title={searchQuery ? "No matching projects" : "Project garden is quiet"}
+        <EmptyState
+          title={searchQuery ? "No matching projects" : "No projects found"}
           body={searchQuery ? `No projects match "${searchQuery}".` : "Check back later for new projects and contributions."}
         />
       ) : (

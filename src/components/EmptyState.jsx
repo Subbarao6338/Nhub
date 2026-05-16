@@ -1,10 +1,11 @@
 import React from 'react';
 import { STRINGS } from '../strings';
 
-const NatureEmptyState = ({
+const EmptyState = ({
   title = STRINGS.common.emptyStateTitle,
   body = STRINGS.common.emptyStateBody,
-  action
+  action,
+  icon = 'inbox'
 }) => {
   return (
     <div className="empty-state" style={{
@@ -17,23 +18,22 @@ const NatureEmptyState = ({
       animation: 'fadeInUp 0.6s ease-out'
     }}>
       <div className="illustration-container" style={{
-        width: '240px',
-        height: '180px',
         marginBottom: '1.5rem',
-        position: 'relative'
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--primary-glow)',
+        width: '160px',
+        height: '160px',
+        borderRadius: '40px'
       }}>
-        {/* Hand-drawn style forest SVG */}
-        <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-          <path d="M40,120 Q60,80 80,120 Z" fill="var(--nature-primary)" opacity="0.8" />
-          <path d="M70,130 Q90,70 110,130 Z" fill="var(--nature-moss)" opacity="0.6" />
-          <path d="M120,125 Q140,90 160,125 Z" fill="var(--nature-leaf)" opacity="0.7" />
-          <circle cx="150" cy="40" r="15" fill="var(--nature-gold)" opacity="0.3" />
-          <path d="M20,135 L180,135" stroke="var(--nature-earth)" strokeWidth="2" strokeLinecap="round" />
-        </svg>
+        <span className="material-icons-outlined" style={{ fontSize: '80px', color: 'var(--primary)' }}>
+          {icon}
+        </span>
       </div>
 
       <h3 style={{
-        color: 'var(--nature-primary)',
+        color: 'var(--primary)',
         marginBottom: '0.5rem',
         fontSize: '1.25rem'
       }}>
@@ -59,4 +59,4 @@ const NatureEmptyState = ({
   );
 };
 
-export default NatureEmptyState;
+export default EmptyState;

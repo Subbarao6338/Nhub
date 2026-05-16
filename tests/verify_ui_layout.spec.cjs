@@ -7,10 +7,17 @@ test('Verify CSS classes and UI layout', async ({ page }) => {
   const categoryGrid = page.locator('.category-grid').first();
   await expect(categoryGrid).toBeVisible();
 
+  // Check responsive grid (simulated)
+  const gridStyle = await categoryGrid.evaluate(el => window.getComputedStyle(el).display);
+  expect(gridStyle).toBe('grid');
+
   // Check for toolbox-page-header
-  const header = page.locator('.toolbox-page-header');
-  await expect(header).toBeVisible();
-  await expect(header.locator('h2')).toContainText('Epic Toolbox');
+  const toolboxHeader = page.locator('.toolbox-page-header');
+  await expect(toolboxHeader).toBeVisible();
+
+  // Check for App Title in Header
+  const appHeader = page.locator('.top-bar');
+  await expect(appHeader.locator('h1')).toContainText('Epic Toolbox');
 
   // Check for card-actions (hover to make visible)
   const card = page.locator('.card').first();
@@ -35,7 +42,4 @@ test('Verify CSS classes and UI layout', async ({ page }) => {
       await expect(page.locator('.icon-btn[title="Copy Result"]')).toBeVisible();
   }
 
-  // Check responsive grid (simulated)
-  const gridStyle = await categoryGrid.evaluate(el => window.getComputedStyle(el).display);
-  expect(gridStyle).toBe('grid');
 });

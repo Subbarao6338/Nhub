@@ -14,7 +14,7 @@ const SearchOverlay = ({ active, setActive, query, onChange, onClear, currentTab
 
   return (
     <div className={`search-container ${active ? 'active' : 'desktop-only'}`} style={{position: 'relative'}}>
-      <span className="material-icons search-icon">search</span>
+      <span className="material-icons-outlined search-icon">search</span>
       <input
         type="search"
         id="search"

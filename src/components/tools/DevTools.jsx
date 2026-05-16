@@ -84,7 +84,7 @@ const DiffViewer = () => {
             </div>
             <div className="card p-20 glass-card font-mono text-sm">
                 {diff.map((p, i) => (
-                    <div key={i} style={{ color: p.added ? 'var(--nature-moss)' : p.removed ? 'var(--danger)' : 'inherit', background: p.added ? 'rgba(var(--primary-rgb), 0.1)' : p.removed ? 'rgba(188,71,73,0.1)' : 'transparent' }}>
+                    <div key={i} style={{ color: p.added ? 'var(--green)' : p.removed ? 'var(--danger)' : 'inherit', background: p.added ? 'rgba(var(--green-rgb), 0.1)' : p.removed ? 'rgba(var(--red-rgb), 0.1)' : 'transparent' }}>
                         {p.added ? '+ ' : p.removed ? '- ' : '  '}{p.value}
                     </div>
                 ))}
