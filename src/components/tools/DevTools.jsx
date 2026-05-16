@@ -104,6 +104,66 @@ const SqlFormatter = () => {
     );
 };
 
+const JsonFormatter = ({ onResultChange }) => {
+    const [val, setVal] = useState('');
+    const resultRef = useRef(onResultChange);
+    useEffect(() => { resultRef.current = onResultChange; }, [onResultChange]);
+
+    useEffect(() => {
+        try {
+            if (!val) { resultRef.current(null); return; }
+            const parsed = JSON.parse(val);
+            resultRef.current({ text: JSON.stringify(parsed, null, 2), filename: 'formatted.json' });
+        } catch (e) {
+            resultRef.current(null);
+        }
+    }, [val]);
+    return (
+        <div className="card p-20 glass-card">
+            <textarea className="pill font-mono" rows="8" placeholder='{"key": "value"}' value={val} onChange={e => setVal(e.target.value)} />
+        </div>
+    );
+};
+
+const SecurityHub = ({ onResultChange, subtool }) => {
+    const [hashInput, setHashInput] = useState('');
+    const [algo, setAlgo] = useState('SHA-256');
+
+    const genHash = async () => {
+        const msgUint8 = new TextEncoder().encode(hashInput);
+        const hashBuffer = await crypto.subtle.digest(algo, msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        onResultChange({ text: hashHex, filename: 'hash.txt' });
+    };
+
+    return (
+        <div className="grid gap-20">
+            <div className="card p-25 glass-card text-center">
+                <h3 className="mb-15">Quick Actions</h3>
+                <div className="grid grid-2-cols gap-10">
+                    <button className="btn-primary" onClick={() => onResultChange({text: crypto.randomUUID(), filename: 'uuid.txt'})}>Gen UUID</button>
+                    <button className="pill" onClick={() => onResultChange({text: Math.random().toString(36).substring(2, 15), filename: 'password.txt'})}>Gen Password</button>
+                </div>
+            </div>
+            <div className="card p-25 glass-card">
+                <h3 className="mb-15">Hash Generator</h3>
+                <div className="grid gap-10">
+                    <input className="pill" value={hashInput} onChange={e=>setHashInput(e.target.value)} placeholder="Text to hash..." />
+                    <div className="flex-gap">
+                        <select className="pill flex-1" value={algo} onChange={e=>setAlgo(e.target.value)}>
+                            <option value="SHA-1">SHA-1</option>
+                            <option value="SHA-256">SHA-256</option>
+                            <option value="SHA-512">SHA-512</option>
+                        </select>
+                        <button className="btn-primary flex-1" onClick={genHash} disabled={!hashInput}>Generate Hash</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   const tabs = [
     { id: 'json-fmt', label: 'JSON Formatter' },
@@ -115,10 +175,30 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('json-fmt');
+  const resultRef = useRef(onResultChange);
+  const subtoolRef = useRef(onSubtoolChange);
+
+  useEffect(() => {
+    resultRef.current = onResultChange;
+    subtoolRef.current = onSubtoolChange;
+  }, [onResultChange, onSubtoolChange]);
+
+  useEffect(() => {
+    if (toolId) {
+        if (toolId === 'json-formatter') setActiveTab('json-fmt');
+        else if (toolId === 'sql-formatter') setActiveTab('sql');
+        else if (toolId === 'diff-viewer') setActiveTab('diff');
+        else if (['length-conv', 'weight-conv', 'temp-conv', 'data-conv'].includes(toolId)) setActiveTab('converter');
+        else if (['password-gen', 'hash-gen', 'uuid-gen'].includes(toolId)) setActiveTab('security');
+        else if (toolId === 'regex-tester') setActiveTab('regex');
+    }
+  }, [toolId]);
 
   useEffect(() => {
     const current = tabs.find(t => t.id === activeTab);
-    if (current && onSubtoolChange) onSubtoolChange(current.label);
+    if (current && subtoolRef.current) subtoolRef.current(current.label);
+    // Reset result on tab change
+    if (resultRef.current) resultRef.current(null);
   }, [activeTab]);
 
   return (
@@ -132,17 +212,11 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       </div>
 
       <div className="hub-content animate-fadeIn">
-        {activeTab === 'json-fmt' && (
-            <div className="card p-20 glass-card">
-                <textarea className="pill font-mono" rows="8" placeholder='{"key": "value"}' onChange={e => {
-                    try { onResultChange({ text: JSON.stringify(JSON.parse(e.target.value), null, 2) }); } catch(err) {}
-                }} />
-            </div>
-        )}
+        {activeTab === 'json-fmt' && <JsonFormatter onResultChange={onResultChange} />}
         {activeTab === 'sql' && <SqlFormatter />}
         {activeTab === 'diff' && <DiffViewer />}
-        {activeTab === 'converter' && <UnitConverterHub onResultChange={onResultChange} />}
-        {activeTab === 'security' && <div className="card p-30 text-center glass-card"><button className="btn-primary" onClick={() => onResultChange({text: crypto.randomUUID()})}>Gen UUID</button></div>}
+        {activeTab === 'converter' && <UnitConverterHub onResultChange={onResultChange} subtool={toolId} />}
+        {activeTab === 'security' && <SecurityHub onResultChange={onResultChange} subtool={toolId} />}
         {activeTab === 'regex' && <div className="card p-20 glass-card">Regex Tester Integrated.</div>}
       </div>
     </div>
