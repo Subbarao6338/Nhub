@@ -44,7 +44,7 @@ const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onS
             onClick={() => handleTabClick('toolbox')}
             title="Toolbox"
           >
-            <span className="material-icons">handyman</span>
+            <span className="material-icons-outlined">handyman</span>
             <span className="tab-name desktop-only">Toolbox</span>
           </div>
         )}
@@ -62,7 +62,7 @@ const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onS
             onContextMenu={(e) => e.preventDefault()}
             title="Bookmarks"
           >
-            <span className="material-icons">bookmarks</span>
+            <span className="material-icons-outlined">bookmarks</span>
             <span className="tab-name desktop-only">Bookmarks</span>
           </div>
         )}
@@ -74,26 +74,28 @@ const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onS
             onClick={() => handleTabClick('projects')}
             title="Projects"
           >
-            <span className="material-icons">architecture</span>
+            <span className="material-icons-outlined">architecture</span>
             <span className="tab-name desktop-only">Projects</span>
           </div>
         )}
 
         <div
           id="tab-search"
-          className={`tab-item mobile-only ${searchActive ? 'active' : ''}`}
+          className={`tab-item ${searchActive ? 'active' : ''}`}
           onClick={onSearchClick}
           title="Search"
         >
-          <span className="material-icons">search</span>
+          <span className="material-icons-outlined">search</span>
+          <span className="tab-name desktop-only">Search</span>
         </div>
 
         <div
-          className="tab-item mobile-only"
+          className="tab-item"
           onClick={onSettingsClick}
           title="Settings"
         >
-          <span className="material-icons">settings</span>
+          <span className="material-icons-outlined">settings</span>
+          <span className="tab-name desktop-only">Settings</span>
         </div>
       </div>
     </nav>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, memo, lazy, Suspense } from 'react';
 import { storage } from '../utils/storage';
 import CategoryNav from './CategoryNav';
-import NatureEmptyState from './NatureEmptyState';
+import EmptyState from './EmptyState';
 import ErrorBoundary from './ErrorBoundary';
 import { highlightText } from '../utils/helpers';
 
@@ -243,8 +243,11 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
         extraCategories={[{ name: 'Pinned', icon: 'push_pin', count: pinnedTools.length }]}
       />
       <div className="toolbox-page-header">
-        <h2>Epic Toolbox</h2>
-        <p>Your essential tools, simplified and unified.</p>
+        {searchQuery ? (
+           <h2>Search Results</h2>
+        ) : (
+           <p>Your essential tools, simplified and unified.</p>
+        )}
 
         {activeCategory === 'All' && !searchQuery && pinnedTools.length > 0 && (
           <div className="p-0-10 mb-20 text-left">
@@ -316,7 +319,7 @@ const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, 
                 </button>
            </div>
            <div className="card-header">
-                <div className="card-icon flex-center" style={{ background: 'var(--bg)' }}><span className="material-icons">{tool.icon}</span></div>
+                <div className="card-icon flex-center"><span className="material-icons">{tool.icon}</span></div>
                 <div className="card-title" dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
             </div>
         </div>

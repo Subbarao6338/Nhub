@@ -1,7 +1,7 @@
 {
-  "name": "Nature Hub",
-  "short_name": "Nature Hub",
-  "description": "Consolidated tool ecosystem with nature-inspired design.",
+  "name": "Epic Toolbox",
+  "short_name": "Epic Toolbox",
+  "description": "Consolidated tool ecosystem with a professional design.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#fdfbf7",

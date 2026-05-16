@@ -251,7 +251,7 @@ const SslTool = () => {
                             <div className="font-bold text-lg mb-5">SSL is VALID</div>
                             <div>Issuer: {info.issuer}</div>
                             <div>Expires: {info.expiry}</div>
-                            <div className="mt-10" style={{color: info.days_left < 30 ? 'var(--danger)' : 'var(--nature-moss)'}}>
+                            <div className="mt-10" style={{color: info.days_left < 30 ? 'var(--danger)' : 'var(--green)'}}>
                                 {info.days_left} days remaining
                             </div>
                         </>

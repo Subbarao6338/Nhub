@@ -1,4 +1,4 @@
-const CACHE_NAME = 'nature-hub-v30';
+const CACHE_NAME = 'epic-toolbox-v1';
 const ASSETS = [
   '/',
   '/index.html',

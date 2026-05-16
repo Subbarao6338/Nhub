@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import CategoryNav from './CategoryNav';
-import NatureEmptyState from './NatureEmptyState';
+import EmptyState from './EmptyState';
 import API_BASE from '../api';
 import { highlightText } from '../utils/helpers';
 
@@ -318,7 +318,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
       </div>
 
       {cats.length === 0 ? (
-    <NatureEmptyState
+    <EmptyState
       title={searchQuery ? "No matching bookmarks" : "No bookmarks here yet"}
       body={searchQuery ? `We couldn't find any bookmarks matching "${searchQuery}".` : "Start by adding some of your favorite links!"}
     />

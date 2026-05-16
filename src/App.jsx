@@ -426,20 +426,6 @@ function App() {
           />
         </Header>
 
-        <TabBar
-          currentTab={currentTab}
-          setTab={setTab}
-          onAddClick={() => { setEditingLink(null); setIsBookmarkOpen(true); }}
-          onBookmarksLongPress={() => { if (enableProfiles) setIsProfileOpen(true); }}
-          onSettingsClick={() => setIsSettingsOpen(true)}
-          onSearchClick={handleSearchToggle}
-          searchActive={searchActive}
-          enableProfiles={enableProfiles}
-          hideBookmarks={hideBookmarks}
-          hideToolbox={hideToolbox}
-          showProjectsTab={showProjectsTab}
-        />
-
         <div
           id="content"
           className={`tools-container ${isCompact ? 'compact' : ''} ${isRefreshing ? 'refreshing' : ''}`}
@@ -493,6 +479,19 @@ function App() {
         >
           <span className="material-icons">arrow_upward</span>
         </button>
+        <TabBar
+          currentTab={currentTab}
+          setTab={setTab}
+          onAddClick={() => { setEditingLink(null); setIsBookmarkOpen(true); }}
+          onBookmarksLongPress={() => { if (enableProfiles) setIsProfileOpen(true); }}
+          onSettingsClick={() => setIsSettingsOpen(true)}
+          onSearchClick={handleSearchToggle}
+          searchActive={searchActive}
+          enableProfiles={enableProfiles}
+          hideBookmarks={hideBookmarks}
+          hideToolbox={hideToolbox}
+          showProjectsTab={showProjectsTab}
+        />
       </main>
 
       {(isSettingsOpen || isProfileOpen || isBookmarkOpen) && (

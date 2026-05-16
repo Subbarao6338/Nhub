@@ -1,17 +1,17 @@
 /**
- * Nature Toolbox - Externalized Strings
+ * Epic Toolbox - Externalized Strings
  * Consolidates all UI text for localization readiness and consistency.
  */
 export const STRINGS = {
   common: {
     back: "Back",
-    loading: "Nurturing tool...",
-    error: "A storm has passed through. Please try again.",
+    loading: "Loading tool...",
+    error: "An unexpected error occurred. Please try again.",
     detecting: "Detecting...",
-    searchPlaceholder: "Search nature's tools...",
-    emptyStateTitle: "No tools found — just rustling leaves…",
+    searchPlaceholder: "Search tools...",
+    emptyStateTitle: "No tools found",
     emptyStateBody: "Try searching for something else or explore different categories.",
-    pinnerEmptyState: "No tools pinned yet — plant your favourites 🌱"
+    pinnerEmptyState: "No tools pinned yet — add your favorites to get started."
   },
   tools: {
     travel: {

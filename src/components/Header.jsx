@@ -13,9 +13,9 @@ const Header = memo(({ appName, currentProfile, profiles, setView, onSettingsCli
           else setView(currentTab === 'bookmarks' ? 'toolbox' : 'bookmarks');
         }}
       >
-        <div className="flex-center" style={{ background: 'var(--primary-glow)', padding: '10px', borderRadius: 'var(--radius-lg)' }}>
-            <span className="material-icons app-logo" style={{ fontSize: '32px' }}>
-              {currentProfile === 'Default' ? 'eco' : (profile.icon || 'person')}
+        <div className="flex-center" style={{ background: 'var(--primary-glow)', padding: '10px', borderRadius: 'var(--radius-md)' }}>
+            <span className="material-icons-outlined app-logo" style={{ fontSize: '32px', color: 'var(--primary)' }}>
+              {currentProfile === 'Default' ? 'construction' : (profile.icon || 'person')}
             </span>
         </div>
         <h1 className="page-title" style={{ fontSize: '1.5rem', fontWeight: 900 }}>
@@ -24,7 +24,7 @@ const Header = memo(({ appName, currentProfile, profiles, setView, onSettingsCli
       </div>
       <div className="top-actions">
         {children}
-        <button id="settings-toggle" className="icon-btn" title="Settings" onClick={onSettingsClick}>
+        <button id="settings-toggle" className="icon-btn desktop-only" title="Settings" onClick={onSettingsClick}>
           <span className="material-icons">settings</span>
         </button>
       </div>

@@ -86,7 +86,7 @@ const CollapsibleSection = ({ id, title, icon, isOpen, onToggle, children }) => 
 };
 
 const THEME_COLORS = [
-  'indigo', 'blue', 'sky', 'cyan', 'teal', 'green', 'nature', 'forest', 'spring', 'meadow', 'seedling', 'lime', 'yellow', 'amber', 'orange', 'deep-orange', 'red', 'pink', 'rose', 'blossom', 'purple', 'violet', 'lavender', 'slate', 'grey', 'brown', 'black', 'white',
+  'indigo', 'blue', 'sky', 'cyan', 'teal', 'green', 'lime', 'yellow', 'amber', 'orange', 'deep-orange', 'red', 'pink', 'rose', 'purple', 'violet', 'lavender', 'slate', 'grey', 'brown', 'black', 'white',
   'ocean', 'earth', 'mountain', 'desert', 'sunset', 'winter', 'autumn', 'galaxy', 'blackhole',
   'midnight', 'canyon', 'glacier', 'sunlight', 'breeze', 'mist'
 ];
@@ -139,7 +139,7 @@ const SettingsModal = ({
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = `nature_hub_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `epic_toolbox_backup_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
   };
 
@@ -292,7 +292,6 @@ const SettingsModal = ({
 const getHex = (color) => {
     const map = {
         indigo: '#6366f1', blue: '#3b82f6', sky: '#0ea5e9', cyan: '#06b6d4', teal: '#14b8a6', green: '#10b981',
-        nature: '#2d6a4f', forest: '#1b4332', ocean: '#0077b6', earth: '#78350f',
         mountain: '#475569', desert: '#dda15e', sunset: '#fb8500', winter: '#0369a1',
         autumn: '#bc4749', lavender: '#7c3aed', spring: '#166534', galaxy: '#c084fc',
         blackhole: '#1a1a1a', midnight: '#0f172a', blossom: '#e11d48',

@@ -91,3 +91,30 @@ async def translate_doc(file: UploadFile = File(...), target_lang: str = Form("e
 @app.get("/api/profiles")
 def get_profiles():
     return [{"id": 1, "name": "Default", "icon": "home"}]
+
+@app.get("/api/categories")
+def get_categories(profile_id: int = 1):
+    return [
+        {"id": 1, "name": "Social", "icon": "share"},
+        {"id": 2, "name": "Dev", "icon": "terminal"}
+    ]
+
+@app.get("/api/links")
+def get_links(profile_id: int = 1):
+    return [
+        {
+            "id": 101,
+            "title": "YouTube",
+            "url": "https://www.youtube.com/",
+            "category": "Social",
+            "is_pinned": True,
+            "urls": ["https://www.youtube.com/", "https://m.youtube.com/"]
+        },
+        {
+            "id": 102,
+            "title": "Google",
+            "url": "https://www.google.com",
+            "category": "Social",
+            "is_pinned": False
+        }
+    ]
