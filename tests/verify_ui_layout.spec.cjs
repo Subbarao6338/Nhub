@@ -19,11 +19,10 @@ test('Verify CSS classes and UI layout', async ({ page }) => {
   const appHeader = page.locator('.top-bar');
   await expect(appHeader.locator('h1')).toContainText('Epic Toolbox');
 
-  // Check for card-actions (hover to make visible)
+  // Check for pin-btn in card-footer
   const card = page.locator('.card').first();
-  await card.hover();
-  const cardActions = card.locator('.card-actions');
-  await expect(cardActions).toBeVisible();
+  const pinBtn = card.locator('.card-footer .pin-btn');
+  await expect(pinBtn).toBeVisible();
 
   // Verify flexible height (height: auto)
   const computedHeight = await card.evaluate(el => window.getComputedStyle(el).height);
