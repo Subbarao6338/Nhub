@@ -36,7 +36,7 @@ const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onS
 
   return (
     <nav className="tab-bar">
-      <div className="tab-group">
+      <div className="tab-group glass-card">
         {!hideToolbox && (
           <div
             id="tab-toolbox"
@@ -45,7 +45,7 @@ const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onS
             title="Toolbox"
           >
             <span className="material-icons">handyman</span>
-            <span className="tab-name">Toolbox</span>
+            <span className="tab-name desktop-only">Toolbox</span>
           </div>
         )}
 
@@ -63,7 +63,7 @@ const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onS
             title="Bookmarks"
           >
             <span className="material-icons">bookmarks</span>
-            <span className="tab-name">Bookmarks</span>
+            <span className="tab-name desktop-only">Bookmarks</span>
           </div>
         )}
 
@@ -75,7 +75,7 @@ const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onS
             title="Projects"
           >
             <span className="material-icons">architecture</span>
-            <span className="tab-name">Projects</span>
+            <span className="tab-name desktop-only">Projects</span>
           </div>
         )}
 
@@ -86,7 +86,6 @@ const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onS
           title="Search"
         >
           <span className="material-icons">search</span>
-          <span className="tab-name">Search</span>
         </div>
 
         <div
@@ -95,7 +94,6 @@ const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onS
           title="Settings"
         >
           <span className="material-icons">settings</span>
-          <span className="tab-name">Settings</span>
         </div>
       </div>
     </nav>

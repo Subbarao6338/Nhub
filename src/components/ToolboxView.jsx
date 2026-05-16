@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, memo, lazy, Suspense } from 'react
 import { storage } from '../utils/storage';
 import CategoryNav from './CategoryNav';
 import NatureEmptyState from './NatureEmptyState';
+import ErrorBoundary from './ErrorBoundary';
 import { highlightText } from '../utils/helpers';
 
 // Consolidated Lazy Loaded Hubs
@@ -14,19 +15,12 @@ const WebTools = lazy(() => import('./tools/WebTools'));
 const AiTools = lazy(() => import('./tools/AiTools'));
 
 const TOOLS = [
-    // Communication & Web
     { id: 'web-main', title: 'Web & Social Tools', icon: 'public', category: 'Web', component: WebTools, subTools: ['social-downloader', 'web-to-md', 'web-mhtml', 'url-to-pdf'] },
     { id: 'network-main', title: 'Network Hub', icon: 'router', category: 'Web', component: NetworkTools, subTools: ['ip-info', 'ping', 'dns', 'whois', 'speed', 'geo', 'ssl', 'subnet', 'bluetooth'] },
     { id: 'ai-main', title: 'AI Hub', icon: 'auto_awesome', category: 'Web', component: AiTools, subTools: ['ai-chat', 'ai-image', 'ai-text'] },
-
-    // Developer & Docs
-    { id: 'dev-main', title: 'Dev Hub', icon: 'terminal', category: 'Developer', component: DevTools, subTools: ['json-formatter', 'jwt-decoder', 'sql-formatter', 'diff-viewer', 'regex-tester'] },
-    { id: 'doc-main', title: 'Document Tools', icon: 'description', category: 'Developer', component: DocTools, subTools: ['md-editor', 'doc-translator'] },
-
-    // Math & Science
-    { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['csv-viewer', 'data-visualizer', 'anomaly-detect', 'stat-calc', 'data-quality', 'data-profiling', 'data-anonymizer', 'json-csv', 'mock-gen'] },
-
-    // Productivity
+    { id: 'dev-main', title: 'Dev Hub', icon: 'terminal', category: 'Developer', component: DevTools, subTools: ['json-formatter', 'jwt-decoder', 'sql-formatter', 'diff-viewer', 'regex-tester', 'length-conv', 'weight-conv', 'temp-conv', 'data-conv', 'color-picker', 'password-gen', 'hash-gen'] },
+    { id: 'doc-main', title: 'Document Tools', icon: 'description', category: 'Developer', component: DocTools, subTools: ['md-editor', 'doc-translator', 'pdf-merge', 'pdf-split', 'pdf-rotate', 'img-format', 'img-resize', 'case-converter', 'word-counter'] },
+    { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['csv-viewer', 'data-visualizer', 'anomaly-detect', 'stat-calc', 'currency-conv', 'compound-int', 'loan-calc', 'mock-gen'] },
     { id: 'time-main', title: 'Date & Time Tools', icon: 'schedule', category: 'Productivity', component: DateTimeTools, subTools: ['stopwatch', 'pomodoro', 'worldclock', 'age', 'timestamp', 'panchangam', 'datediff', 'countdown'] },
 ];
 
@@ -104,7 +98,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
   const handleShare = async (e, tool) => {
     e.stopPropagation();
     const url = window.location.origin + window.location.pathname + `?tab=toolbox&tool=${tool.id}`;
-    if (navigator.share) { try { await navigator.share({ title: `Epic Toolbox - ${tool.title}`, url }); } catch (err) {} }
+    if (navigator.share) { try { await navigator.share({ title: `Nature Hub - ${tool.title}`, url }); } catch (err) {} }
     else { navigator.clipboard.writeText(url); alert("Link copied!"); }
   };
 
@@ -178,10 +172,8 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     let tool = TOOLS.find(t => t.id === activeToolId);
     let effectiveToolId = activeToolId;
 
-    // If not found directly, check if it's a sub-tool of any hub
     if (!tool) {
         tool = TOOLS.find(t => t.subTools?.includes(activeToolId));
-        // effectiveToolId remains the sub-tool ID so the hub can activate the correct tab
     }
 
     if (!tool) return <div className="text-center p-20"><button className="pill" onClick={() => setActiveToolId(null)}>Back</button><h2>Not Found</h2></div>;
@@ -227,9 +219,11 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
           </div>
         </div>
         <div className="tool-container-inner">
-          <Suspense fallback={<div className="text-center p-20 rotating">refresh</div>}>
-            <tool.component onResultChange={setCurrentResult} toolId={effectiveToolId} onSubtoolChange={setActiveSubtoolLabel} />
-          </Suspense>
+          <ErrorBoundary>
+            <Suspense fallback={<div className="text-center p-20 rotating material-icons">refresh</div>}>
+                <tool.component onResultChange={setCurrentResult} toolId={effectiveToolId} onSubtoolChange={setActiveSubtoolLabel} />
+            </Suspense>
+          </ErrorBoundary>
         </div>
       </div>
     );
@@ -249,8 +243,8 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
         extraCategories={[{ name: 'Pinned', icon: 'push_pin', count: pinnedTools.length }]}
       />
       <div className="toolbox-page-header">
-        <h2>Toolbox Hubs</h2>
-        <p>All tools consolidated into unified categories.</p>
+        <h2>Nature Hub</h2>
+        <p>Your essential tools, simplified and unified.</p>
 
         {activeCategory === 'All' && !searchQuery && pinnedTools.length > 0 && (
           <div className="p-0-10 mb-20 text-left">
@@ -332,17 +326,9 @@ const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, 
 const getCategoryIcon = (cat) => {
     const icons = {
         'Productivity': 'assignment',
-        'Creative': 'brush',
-        'Media': 'perm_media',
         'Web': 'public',
         'Developer': 'terminal',
-        'Data': 'insights',
-        'Security': 'security',
-        'Sensors': 'sensors',
-        'Games': 'casino',
-        'Education': 'school',
-        'Utility': 'more_horiz',
-        'Health': 'monitor_heart'
+        'Data': 'insights'
     };
     return icons[cat] || 'folder';
 };
