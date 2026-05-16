@@ -276,6 +276,33 @@ body {
   color: var(--text-muted);
 }
 
+.matched-subtools-bar {
+  margin-top: 1.5rem;
+  padding: 0 1.5rem;
+  text-align: left;
+}
+
+.matched-subtools-label {
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.matched-subtools-label::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 12px;
+  background: var(--brand-accent);
+  border-radius: 2px;
+}
+
 .tab-item:hover {
   background: var(--primary-glow);
   color: var(--primary);
@@ -319,11 +346,14 @@ body {
 
 /* Mobile */
 @media (max-width: 768px) {
-  body { padding: 0.5rem; }
-  .tools-container { padding: 1rem; }
+  body { padding: 0; }
+  .tools-container { padding: 1rem; margin: 0; border-radius: 0; border-left: none; border-right: none; }
   .category-grid { grid-template-columns: 1fr; }
   .pill { padding: 8px 14px; font-size: 0.85rem; }
   .toolbox-page-header h2 { font-size: 1.75rem; }
+  .top-bar { padding: 0.75rem 1rem; }
+  .logo-container span:not(.material-icons) { display: none; }
+  .matched-subtools-bar { padding: 0 1rem; }
 }
 
 /* Animation Utilities */
@@ -479,6 +509,35 @@ input.pill:focus {
   background: var(--green) !important;
   color: white !important;
   border-color: var(--green) !important;
+}
+
+/* Modal Overlay & Base */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 99;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--surface-solid);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 /* Dropdown Menu */

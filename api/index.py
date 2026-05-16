@@ -90,31 +90,186 @@ async def translate_doc(file: UploadFile = File(...), target_lang: str = Form("e
 
 @app.get("/api/profiles")
 def get_profiles():
-    return [{"id": 1, "name": "Default", "icon": "home"}]
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM profiles")
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return rows
+
+@app.post("/api/profiles")
+def create_profile(name: str = Body(..., embed=True), icon: str = Body("person", embed=True)):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    try:
+        c.execute("INSERT INTO profiles (name, icon) VALUES (?, ?)", (name, icon))
+        new_id = c.lastrowid
+        conn.commit()
+        return {"id": new_id, "name": name, "icon": icon}
+    except sqlite3.IntegrityError:
+        raise HTTPException(status_code=400, detail="Profile already exists")
+    finally:
+        conn.close()
 
 @app.get("/api/categories")
 def get_categories(profile_id: int = 1):
-    return [
-        {"id": 1, "name": "Social", "icon": "share"},
-        {"id": 2, "name": "Dev", "icon": "terminal"}
-    ]
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM categories WHERE profile_id = ?", (profile_id,))
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+    return rows
+
+@app.post("/api/categories")
+def create_category(name: str = Body(..., embed=True), icon: str = Body("folder", embed=True), profile_id: int = Body(1, embed=True)):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("INSERT INTO categories (name, icon, profile_id) VALUES (?, ?, ?)", (name, icon, profile_id))
+    new_id = c.lastrowid
+    conn.commit()
+    conn.close()
+    return {"id": new_id, "name": name, "icon": icon, "profile_id": profile_id}
+
+DB_FILE = "data/database.sqlite"
+
+def init_db():
+    if not os.path.exists("data"):
+        os.makedirs("data")
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+
+    # Links Table
+    c.execute('''CREATE TABLE IF NOT EXISTS links
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  title TEXT, url TEXT, category TEXT,
+                  is_pinned BOOLEAN, urls TEXT, profile_id INTEGER,
+                  icon TEXT, is_internal BOOLEAN)''')
+
+    # Profiles Table
+    c.execute('''CREATE TABLE IF NOT EXISTS profiles
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  name TEXT UNIQUE, icon TEXT)''')
+
+    # Categories Table
+    c.execute('''CREATE TABLE IF NOT EXISTS categories
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  name TEXT, icon TEXT, profile_id INTEGER)''')
+
+    # Seed Profiles
+    c.execute("SELECT count(*) FROM profiles")
+    if c.fetchone()[0] == 0:
+        c.execute("INSERT INTO profiles (name, icon) VALUES (?, ?)", ("Default", "home"))
+        c.execute("INSERT INTO profiles (name, icon) VALUES (?, ?)", ("Work", "business"))
+        c.execute("INSERT INTO profiles (name, icon) VALUES (?, ?)", ("Personal", "person"))
+
+    # Seed Categories
+    c.execute("SELECT count(*) FROM categories")
+    if c.fetchone()[0] == 0:
+        c.execute("INSERT INTO categories (name, icon, profile_id) VALUES (?, ?, ?)", ("Social", "share", 1))
+        c.execute("INSERT INTO categories (name, icon, profile_id) VALUES (?, ?, ?)", ("Dev", "terminal", 1))
+
+    # Seed Links
+    c.execute("SELECT count(*) FROM links")
+    if c.fetchone()[0] == 0:
+        c.execute("INSERT INTO links (title, url, category, is_pinned, urls, profile_id, is_internal) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                  ("YouTube", "https://www.youtube.com/", "Social", True, json.dumps(["https://www.youtube.com/", "https://m.youtube.com/"]), 1, False))
+        c.execute("INSERT INTO links (title, url, category, is_pinned, profile_id, is_internal) VALUES (?, ?, ?, ?, ?, ?)",
+                  ("Google", "https://www.google.com", "Social", False, 1, False))
+
+    conn.commit()
+    conn.close()
+
+init_db()
+
+class LinkModel(BaseModel):
+    title: str
+    url: str
+    category: str
+    is_pinned: bool = False
+    urls: Optional[List[str]] = None
+    profile_id: int = 1
+    icon: Optional[str] = None
+    is_internal: bool = False
 
 @app.get("/api/links")
 def get_links(profile_id: int = 1):
-    return [
-        {
-            "id": 101,
-            "title": "YouTube",
-            "url": "https://www.youtube.com/",
-            "category": "Social",
-            "is_pinned": True,
-            "urls": ["https://www.youtube.com/", "https://m.youtube.com/"]
-        },
-        {
-            "id": 102,
-            "title": "Google",
-            "url": "https://www.google.com",
-            "category": "Social",
-            "is_pinned": False
-        }
-    ]
+    conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("SELECT * FROM links WHERE profile_id = ?", (profile_id,))
+    rows = c.fetchall()
+    links = []
+    for row in rows:
+        d = dict(row)
+        d['is_pinned'] = bool(d['is_pinned'])
+        d['is_internal'] = bool(d['is_internal'])
+        if d['urls']:
+            try:
+                d['urls'] = json.loads(d['urls'])
+            except:
+                d['urls'] = [d['url']]
+        links.append(d)
+    conn.close()
+    return links
+
+@app.post("/api/links")
+def create_link(link: LinkModel):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("INSERT INTO links (title, url, category, is_pinned, urls, profile_id, icon, is_internal) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+              (link.title, link.url, link.category, link.is_pinned, json.dumps(link.urls) if link.urls else None, link.profile_id, link.icon, link.is_internal))
+    new_id = c.lastrowid
+    conn.commit()
+    conn.close()
+    return {"id": new_id, **link.dict()}
+
+@app.put("/api/links/{link_id}")
+def update_link(link_id: int, link: dict = Body(...)):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+
+    # Get existing
+    c.execute("SELECT * FROM links WHERE id = ?", (link_id,))
+    existing = c.fetchone()
+    if not existing:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Link not found")
+
+    fields = []
+    values = []
+    for k, v in link.items():
+        if k == 'id': continue
+        fields.append(f"{k} = ?")
+        if k == 'urls' and v is not None:
+            values.append(json.dumps(v))
+        else:
+            values.append(v)
+
+    if fields:
+        query = f"UPDATE links SET {', '.join(fields)} WHERE id = ?"
+        values.append(link_id)
+        c.execute(query, tuple(values))
+        conn.commit()
+
+    conn.close()
+    return {"status": "success"}
+
+@app.delete("/api/links/{link_id}")
+def delete_link(link_id: int):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("DELETE FROM links WHERE id = ?", (link_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "deleted"}
+
+@app.get("/api/links/categories")
+def get_link_categories(profile_id: int = 1):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT DISTINCT category FROM links WHERE profile_id = ?", (profile_id,))
+    cats = [r[0] for r in c.fetchall()]
+    conn.close()
+    return cats
