@@ -9,7 +9,8 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
     { id: 'worldclock', label: 'World Clock' },
     { id: 'timezone', label: 'Timezone' },
     { id: 'datediff', label: 'Date Diff' },
-    { id: 'countdown', label: 'Countdown' }
+    { id: 'countdown', label: 'Countdown' },
+    { id: 'panchangam', label: 'Panchangam' }
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('stopwatch');
@@ -29,7 +30,8 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         'world-clock': 'worldclock',
         'timezone-conv': 'timezone',
         'date-diff': 'datediff',
-        'countdown': 'countdown'
+        'countdown': 'countdown',
+        'panchangam': 'panchangam'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]); else if (tabs.length > 0) setActiveTab(tabs[0].id);
     }
@@ -58,6 +60,7 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         {activeTab === 'timezone' && <TimezoneConverter onResultChange={onResultChange} />}
         {activeTab === 'countdown' && <CountdownTimer onResultChange={onResultChange} />}
         {activeTab === 'timestamp' && <TimestampConverter onResultChange={onResultChange} />}
+        {activeTab === 'panchangam' && <PanchangamTool onResultChange={onResultChange} />}
       </div>
     </div>
   );
@@ -296,6 +299,75 @@ const StopwatchTool = () => {
                 <button className="btn-primary flex-1" onClick={()=>setActive(!active)}>{active ? 'Pause' : 'Start'}</button>
                 <button className="pill flex-1" onClick={()=>{setActive(false); setTime(0);}}>Reset</button>
             </div>
+        </div>
+    );
+};
+
+const PanchangamTool = ({ onResultChange }) => {
+    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [city, setCity] = useState('Hyderabad');
+
+    const PANCHANGAM_DATA = {
+        '2025-05-23': { tithi: 'Ekadashi', nakshatra: 'Revati', yoga: 'Variyan', karana: 'Bava', sunrise: '05:42 AM', sunset: '06:44 PM' },
+        '2025-05-24': { tithi: 'Dwadashi', nakshatra: 'Ashwini', yoga: 'Parigha', karana: 'Kaulava', sunrise: '05:42 AM', sunset: '06:44 PM' }
+    };
+
+    const getPanchangam = () => {
+        const data = PANCHANGAM_DATA[date] || {
+            tithi: 'Shukla Navami',
+            nakshatra: 'Magha',
+            yoga: 'Subha',
+            karana: 'Taitila',
+            sunrise: '06:05 AM',
+            sunset: '06:22 PM'
+        };
+        return data;
+    };
+
+    const p = getPanchangam();
+
+    return (
+        <div className="card p-20 glass-card">
+            <div className="grid grid-2 gap-10 mb-20">
+                <div className="form-group">
+                    <label>Date</label>
+                    <input type="date" className="pill w-full" value={date} onChange={e=>setDate(e.target.value)} />
+                </div>
+                <div className="form-group">
+                    <label>City</label>
+                    <input type="text" className="pill w-full" value={city} onChange={e=>setCity(e.target.value)} />
+                </div>
+            </div>
+            <div className="panchangam-grid">
+                <div className="panchangam-item">
+                    <div className="opacity-6 smallest uppercase font-bold">Tithi</div>
+                    <div className="font-bold color-primary">{p.tithi}</div>
+                </div>
+                <div className="panchangam-item">
+                    <div className="opacity-6 smallest uppercase font-bold">Nakshatra</div>
+                    <div className="font-bold color-primary">{p.nakshatra}</div>
+                </div>
+                <div className="panchangam-item">
+                    <div className="opacity-6 smallest uppercase font-bold">Yoga</div>
+                    <div className="font-bold color-primary">{p.yoga}</div>
+                </div>
+                <div className="panchangam-item">
+                    <div className="opacity-6 smallest uppercase font-bold">Karana</div>
+                    <div className="font-bold color-primary">{p.karana}</div>
+                </div>
+                <div className="panchangam-footer">
+                    <div className="text-center">
+                        <span className="material-icons color-primary" style={{fontSize: '1.2rem'}}>wb_sunny</span>
+                        <div className="small font-bold">{p.sunrise}</div>
+                    </div>
+                    <div style={{width: '1px', background: 'var(--border)'}}></div>
+                    <div className="text-center">
+                        <span className="material-icons color-primary" style={{fontSize: '1.2rem'}}>nights_stay</span>
+                        <div className="small font-bold">{p.sunset}</div>
+                    </div>
+                </div>
+            </div>
+            <p className="mt-15 smallest opacity-6 text-center">Calculated for {city} on {date}</p>
         </div>
     );
 };

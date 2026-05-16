@@ -140,6 +140,11 @@ def init_db():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
 
+    # Reset tables for clean seeding
+    c.execute("DROP TABLE IF EXISTS links")
+    c.execute("DROP TABLE IF EXISTS profiles")
+    c.execute("DROP TABLE IF EXISTS categories")
+
     # Links Table
     c.execute('''CREATE TABLE IF NOT EXISTS links
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -158,25 +163,47 @@ def init_db():
                   name TEXT, icon TEXT, profile_id INTEGER)''')
 
     # Seed Profiles
-    c.execute("SELECT count(*) FROM profiles")
-    if c.fetchone()[0] == 0:
-        c.execute("INSERT INTO profiles (name, icon) VALUES (?, ?)", ("Default", "home"))
-        c.execute("INSERT INTO profiles (name, icon) VALUES (?, ?)", ("Private", "security"))
-        c.execute("INSERT INTO profiles (name, icon) VALUES (?, ?)", ("Personal", "person"))
+    profiles_data = [
+        ("Default", "home"),
+        ("Private", "security"),
+        ("Personal", "person")
+    ]
+    c.executemany("INSERT INTO profiles (name, icon) VALUES (?, ?)", profiles_data)
 
-    # Seed Categories
-    c.execute("SELECT count(*) FROM categories")
-    if c.fetchone()[0] == 0:
-        c.execute("INSERT INTO categories (name, icon, profile_id) VALUES (?, ?, ?)", ("Social", "share", 1))
-        c.execute("INSERT INTO categories (name, icon, profile_id) VALUES (?, ?, ?)", ("Dev", "terminal", 1))
+    # Load Source JSON Data
+    try:
+        with open("data/url_cat.json", "r") as f: default_cats = json.load(f)
+        with open("data/url_links.json", "r") as f: default_links = json.load(f)
+        with open("data/necs_cat.json", "r") as f: private_cats = json.load(f)
+        with open("data/necs_links.json", "r") as f: private_links = json.load(f)
+    except Exception as e:
+        print(f"Error loading seed JSONs: {e}")
+        default_cats, default_links, private_cats, private_links = {}, [], {}, []
 
-    # Seed Links
-    c.execute("SELECT count(*) FROM links")
-    if c.fetchone()[0] == 0:
-        c.execute("INSERT INTO links (title, url, category, is_pinned, urls, profile_id, is_internal) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                  ("YouTube", "https://www.youtube.com/", "Social", True, json.dumps(["https://www.youtube.com/", "https://m.youtube.com/"]), 1, False))
-        c.execute("INSERT INTO links (title, url, category, is_pinned, profile_id, is_internal) VALUES (?, ?, ?, ?, ?, ?)",
-                  ("Google", "https://www.google.com", "Social", False, 1, False))
+    # Seed Categories for each profile
+    def seed_cats(cats_dict, profile_id):
+        for name, icon in cats_dict.items():
+            c.execute("INSERT INTO categories (name, icon, profile_id) VALUES (?, ?, ?)", (name, icon, profile_id))
+
+    seed_cats(default_cats, 1)
+    seed_cats(private_cats, 2)
+    # Combined categories for Personal
+    combined_cats = {**default_cats, **private_cats}
+    seed_cats(combined_cats, 3)
+
+    # Seed Links for each profile
+    def seed_links(links_list, profile_id):
+        for l in links_list:
+            c.execute("""INSERT INTO links
+                         (title, url, category, is_pinned, urls, profile_id, icon, is_internal)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                      (l.get('title'), l.get('url'), l.get('category'),
+                       l.get('is_pinned', False), json.dumps(l.get('urls')),
+                       profile_id, l.get('icon') or l.get('optional_icon'), l.get('isInternal', False)))
+
+    seed_links(default_links, 1)
+    seed_links(private_links, 2)
+    seed_links(default_links + private_links, 3)
 
     conn.commit()
     conn.close()
@@ -273,3 +300,8 @@ def get_link_categories(profile_id: int = 1):
     cats = [r[0] for r in c.fetchall()]
     conn.close()
     return cats
+
+@app.post("/api/debug/reset-db")
+def reset_db():
+    init_db()
+    return {"status": "success", "message": "Database reset to defaults"}

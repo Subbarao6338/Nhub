@@ -93,14 +93,14 @@ const BookmarkModal = ({ link, profileId, profiles, enableProfiles, onClose, onS
         <h2 style={{margin: 0}}>{link ? 'Edit Bookmark' : 'Add Bookmark'}</h2>
         <button className="icon-btn" onClick={onClose}><span className="material-icons">close</span></button>
       </div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="modal-content">
         {enableProfiles && (
           <div className="form-group">
             <label>Profile</label>
             <select
               value={selectedProfileId}
               onChange={(e) => setSelectedProfileId(parseInt(e.target.value))}
-              style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--surface)', color: 'var(--on-surface)' }}
+              className="pill"
             >
               {profiles?.map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
@@ -110,26 +110,26 @@ const BookmarkModal = ({ link, profileId, profiles, enableProfiles, onClose, onS
         )}
         <div className="form-group">
           <label>Title</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="My Bookmark" />
+          <input type="text" className="pill" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="My Bookmark" />
         </div>
         <div className="form-group">
           <label>Primary URL</label>
-          <input type="url" value={url} onChange={(e) => setUrl(e.target.value)} required placeholder="https://example.com" />
+          <input type="url" className="pill" value={url} onChange={(e) => setUrl(e.target.value)} required placeholder="https://example.com" />
         </div>
         <div className="form-group">
-          <label>
-            Alternative URLs (Optional)
-            <button type="button" className="btn-small" onClick={handleAddUrl}>
-              <span className="material-icons" style={{fontSize: '1rem', verticalAlign: 'middle'}}>add</span> Add URL
+          <label className="flex-between">
+            <span>Alternative URLs (Optional)</span>
+            <button type="button" className="pill smallest" onClick={handleAddUrl} style={{padding: '4px 10px'}}>
+              <span className="material-icons" style={{fontSize: '0.9rem'}}>add</span> Add
             </button>
           </label>
           <div id="alternative-urls-container">
             {urls.map((u, i) => (
               u !== url && (
-                <div key={i} className="url-field-wrapper">
-                  <input type="url" value={u} onChange={(e) => handleUrlChange(i, e.target.value)} placeholder="https://alternative-url.com" />
-                  <button type="button" className="btn-remove" onClick={() => handleRemoveUrl(i)}>
-                    <span className="material-icons">close</span>
+                <div key={i} className="url-field-wrapper" style={{display: 'flex', gap: '8px', marginBottom: '8px'}}>
+                  <input type="url" className="pill" style={{flex: 1}} value={u} onChange={(e) => handleUrlChange(i, e.target.value)} placeholder="https://alternative-url.com" />
+                  <button type="button" className="icon-btn" style={{borderColor: 'var(--danger)', color: 'var(--danger)'}} onClick={() => handleRemoveUrl(i)}>
+                    <span className="material-icons">delete</span>
                   </button>
                 </div>
               )
@@ -138,12 +138,13 @@ const BookmarkModal = ({ link, profileId, profiles, enableProfiles, onClose, onS
         </div>
         <div className="form-group">
           <label>Icon (URL or Emoji) - Optional</label>
-          <input type="text" value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="e.g. 🚀 or https://..." />
+          <input type="text" className="pill" value={icon} onChange={(e) => setIcon(e.target.value)} placeholder="e.g. 🚀 or https://..." />
         </div>
         <div className="form-group">
           <label>Category</label>
           <input
             type="text"
+            className="pill"
             list="category-suggestions"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
