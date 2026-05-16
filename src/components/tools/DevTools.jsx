@@ -74,7 +74,7 @@ const UnitConverterHub = ({ subtool, onResultChange }) => {
 // --- CORE DEV TOOLS ---
 const DiffViewer = () => {
     const [oldT, setOldT] = useState('Hello World\nEpic Toolbox');
-    const [newT, setNewT] = useState('Hello Nature\nEpic Toolbox v2');
+    const [newT, setNewT] = useState('Hello Epic Toolbox\nEpic Toolbox v2');
     const diff = diffLines(oldT, newT);
     return (
         <div className="grid gap-15">

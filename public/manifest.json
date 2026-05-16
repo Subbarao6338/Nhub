@@ -4,8 +4,8 @@
   "description": "Consolidated tool ecosystem with a professional design.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fdfbf7",
-  "theme_color": "#2d6a4f",
+  "background_color": "#f8fafc",
+  "theme_color": "#4f46e5",
   "icons": [
     {
       "src": "/assets/icon-192.png",
