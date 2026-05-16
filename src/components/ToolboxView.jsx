@@ -243,9 +243,6 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
         extraCategories={[{ name: 'Pinned', icon: 'push_pin', count: pinnedTools.length }]}
       />
       <div className="toolbox-page-header">
-        <h2>Nature Hub</h2>
-        <p>Your essential tools, simplified and unified.</p>
-
         {activeCategory === 'All' && !searchQuery && pinnedTools.length > 0 && (
           <div className="p-0-10 mb-20 text-left">
             <h3 className="uppercase tracking-wider opacity-6 mb-10 flex-center gap-10" style={{ fontSize: '0.9rem', justifyContent: 'flex-start' }}>

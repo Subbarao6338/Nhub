@@ -28,5 +28,6 @@ test('Verify Toolbox Pruning and URL to PDF', async ({ page }) => {
   await expect(page.locator('h1.page-title')).toHaveText('Toolbox');
 
   await page.goto('http://localhost:5173/?tab=bookmarks');
+  // Wait for dynamic title to update
   await expect(page.locator('h1.page-title')).toHaveText('Bookmarks');
 });

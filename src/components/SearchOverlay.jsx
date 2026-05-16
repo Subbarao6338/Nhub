@@ -3,6 +3,7 @@ import React from 'react';
 const SearchOverlay = ({ active, setActive, query, onChange, onClear, currentTab }) => {
   const getPlaceholder = () => {
     if (query.startsWith('cat:')) return 'Filtering by category...';
+    if (window.innerWidth <= 768) return 'Search...';
     return `Search ${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}... [/]`;
   };
 

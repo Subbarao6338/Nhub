@@ -88,13 +88,6 @@ const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onS
           <span className="material-icons">search</span>
         </div>
 
-        <div
-          className="tab-item mobile-only"
-          onClick={onSettingsClick}
-          title="Settings"
-        >
-          <span className="material-icons">settings</span>
-        </div>
       </div>
     </nav>
   );
