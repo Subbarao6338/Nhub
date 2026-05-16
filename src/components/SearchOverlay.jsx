@@ -1,9 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const SearchOverlay = ({ active, setActive, query, onChange, onClear, currentTab }) => {
+  const [placeholder, setPlaceholder] = useState('');
+  const tips = [
+    `Search ${currentTab}... [/]`,
+    "Try 'cat:dev' for hubs",
+    "Try 'cat:social' for links",
+    "Search bookmarks...",
+    "Instant hub access",
+    "Press Alt+1 for Toolbox"
+  ];
+
+  useEffect(() => {
+    let i = 0;
+    const it = setInterval(() => {
+      setPlaceholder(tips[i % tips.length]);
+      i++;
+    }, 4000);
+    setPlaceholder(tips[0]);
+    return () => clearInterval(it);
+  }, [currentTab]);
+
   const getPlaceholder = () => {
     if (query.startsWith('cat:')) return 'Filtering by category...';
-    return `Search ${currentTab.charAt(0).toUpperCase() + currentTab.slice(1)}... [/]`;
+    return placeholder;
   };
 
   const handleKeyDown = (e) => {

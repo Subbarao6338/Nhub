@@ -78,7 +78,7 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
         {activeTab === 'finance' && <FinanceHub onResultChange={onResultChange} subtool={toolId} />}
         {activeTab === 'profiling' && <DataProfilingTool onResultChange={onResultChange} data={uploadedData} />}
         {activeTab === 'mock' && <MockDataGenerator onResultChange={onResultChange} />}
-        {activeTab === 'json-csv' && <div className="card p-20 glass-card">JSON ↔ CSV Converter (Integrated)</div>}
+        {activeTab === 'json-csv' && <JsonCsvConverter onResultChange={onResultChange} />}
       </div>
     </div>
   );
@@ -142,6 +142,36 @@ const DataViewer = ({ onResultChange, setGlobalData }) => {
 const DataProfilingTool = ({ onResultChange, data }) => {
     if (!data) return <div className="text-center p-30 card glass-card opacity-6">Upload data in Viewer first.</div>;
     return <div className="card p-20 glass-card">Analysis of {data.length} rows complete.</div>;
+};
+
+const JsonCsvConverter = ({ onResultChange }) => {
+    const [input, setInput] = useState('');
+    const convertToCsv = () => {
+        try {
+            const json = JSON.parse(input);
+            const csv = Papa.unparse(json);
+            onResultChange({ text: csv, filename: 'converted.csv' });
+        } catch (e) { alert("Invalid JSON input"); }
+    };
+    const convertToJson = () => {
+        Papa.parse(input, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+                onResultChange({ text: JSON.stringify(results.data, null, 2), filename: 'converted.json' });
+            },
+            error: (e) => alert("Invalid CSV input: " + e.message)
+        });
+    };
+    return (
+        <div className="card p-20 glass-card grid gap-15">
+            <textarea className="pill font-mono" rows="8" value={input} onChange={e => setInput(e.target.value)} placeholder="Paste JSON or CSV here..." />
+            <div className="flex-gap">
+                <button className="btn-primary flex-1" onClick={convertToCsv}>JSON to CSV</button>
+                <button className="pill flex-1" onClick={convertToJson}>CSV to JSON</button>
+            </div>
+        </div>
+    );
 };
 
 const MockDataGenerator = ({ onResultChange }) => {

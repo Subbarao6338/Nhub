@@ -35,7 +35,7 @@ const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
 
       <div className="hub-content animate-fadeIn">
         {activeTab === 'social' && <SocialTools />}
-        {activeTab === 'archive' && <div className="card p-20 glass-card">Web Archiving Utilities (Integrated)</div>}
+        {activeTab === 'archive' && <WebArchiver onResultChange={onResultChange} />}
         {activeTab === 'url2pdf' && <UrlToPdf onResultChange={onResultChange} />}
       </div>
     </div>
@@ -65,6 +65,37 @@ const UrlToPdf = ({ onResultChange }) => {
             </button>
             <div className="opacity-6 smallest text-center">
                 Uses headless browser to capture a high-quality PDF of the webpage.
+            </div>
+        </div>
+    );
+};
+
+const WebArchiver = ({ onResultChange }) => {
+    const [url, setUrl] = useState('');
+    const openArchive = (mode) => {
+        if (!url) return;
+        let target = '';
+        if (mode === 'search') target = `https://web.archive.org/web/*/${url}`;
+        else if (mode === 'save') target = `https://web.archive.org/save/${url}`;
+        window.open(target, '_blank');
+        onResultChange({ text: `Opened Wayback Machine (${mode}) for ${url}` });
+    };
+    return (
+        <div className="card p-30 glass-card grid gap-15">
+            <div className="form-group">
+                <label>Web URL</label>
+                <input type="text" className="pill w-full" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://example.com" />
+            </div>
+            <div className="flex-gap">
+                <button className="btn-primary flex-1" onClick={() => openArchive('search')}>
+                    <span className="material-icons">search</span> Search Archive
+                </button>
+                <button className="pill flex-1" onClick={() => openArchive('save')}>
+                    <span className="material-icons">save</span> Save Page
+                </button>
+            </div>
+            <div className="opacity-6 smallest text-center">
+                Powered by the Wayback Machine.
             </div>
         </div>
     );
