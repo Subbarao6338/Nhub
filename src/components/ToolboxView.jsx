@@ -18,7 +18,7 @@ const TOOLS = [
     { id: 'web-main', title: 'Web & Social Tools', icon: 'public', category: 'Web', component: WebTools, subTools: ['social-downloader', 'web-to-md', 'web-mhtml', 'url-to-pdf'] },
     { id: 'network-main', title: 'Network Hub', icon: 'router', category: 'Web', component: NetworkTools, subTools: ['ip-info', 'ping', 'dns', 'whois', 'speed', 'geo', 'ssl', 'subnet', 'bluetooth'] },
     { id: 'ai-main', title: 'AI Hub', icon: 'auto_awesome', category: 'Web', component: AiTools, subTools: ['ai-chat', 'ai-image', 'ai-text'] },
-    { id: 'dev-main', title: 'Dev Hub', icon: 'terminal', category: 'Developer', component: DevTools, subTools: ['json-formatter', 'jwt-decoder', 'sql-formatter', 'diff-viewer', 'regex-tester', 'length-conv', 'weight-conv', 'temp-conv', 'data-conv', 'color-picker', 'password-gen', 'hash-gen'] },
+    { id: 'dev-main', title: 'Dev Hub', icon: 'terminal', category: 'Developer', component: DevTools, subTools: ['json-formatter', 'jwt-decoder', 'sql-formatter', 'diff-viewer', 'regex-tester', 'length-conv', 'weight-conv', 'temp-conv', 'data-conv', 'color-picker', 'password-gen', 'hash-gen', 'base64', 'cron-helper', 'uuid-gen', 'url-tool', 'yaml-conv', 'minifier', 'xml-json', 'xml-formatter', 'json-to-ts'] },
     { id: 'doc-main', title: 'Document Tools', icon: 'description', category: 'Developer', component: DocTools, subTools: ['md-editor', 'doc-translator', 'pdf-merge', 'pdf-split', 'pdf-rotate', 'img-format', 'img-resize', 'case-converter', 'word-counter'] },
     { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['csv-viewer', 'data-visualizer', 'anomaly-detect', 'stat-calc', 'currency-conv', 'compound-int', 'loan-calc', 'mock-gen'] },
     { id: 'time-main', title: 'Date & Time Tools', icon: 'schedule', category: 'Productivity', component: DateTimeTools, subTools: ['stopwatch', 'pomodoro', 'worldclock', 'age', 'timestamp', 'panchangam', 'datediff', 'countdown'] },
@@ -98,7 +98,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
   const handleShare = async (e, tool) => {
     e.stopPropagation();
     const url = window.location.origin + window.location.pathname + `?tab=toolbox&tool=${tool.id}`;
-    if (navigator.share) { try { await navigator.share({ title: `Nature Hub - ${tool.title}`, url }); } catch (err) {} }
+    if (navigator.share) { try { await navigator.share({ title: `Epic Toolbox - ${tool.title}`, url }); } catch (err) {} }
     else { navigator.clipboard.writeText(url); alert("Link copied!"); }
   };
 
@@ -243,7 +243,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
         extraCategories={[{ name: 'Pinned', icon: 'push_pin', count: pinnedTools.length }]}
       />
       <div className="toolbox-page-header">
-        <h2>Nature Hub</h2>
+        <h2>Epic Toolbox</h2>
         <p>Your essential tools, simplified and unified.</p>
 
         {activeCategory === 'All' && !searchQuery && pinnedTools.length > 0 && (

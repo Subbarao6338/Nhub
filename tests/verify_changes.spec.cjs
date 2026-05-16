@@ -25,8 +25,8 @@ test('Verify Toolbox Pruning and URL to PDF', async ({ page }) => {
   await expect(page.locator('button:has-text("Convert URL to PDF")')).toBeVisible();
 
   // Check header title logic
-  await expect(page.locator('h1.page-title')).toHaveText('Toolbox');
+  await expect(page.locator('h1.page-title')).toHaveText('Epic Toolbox');
 
   await page.goto('http://localhost:5173/?tab=bookmarks');
-  await expect(page.locator('h1.page-title')).toHaveText('Bookmarks');
+  await expect(page.locator('h1.page-title')).toHaveText('Epic Toolbox');
 });

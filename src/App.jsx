@@ -13,7 +13,7 @@ import API_BASE from './api';
 import { storage } from './utils/storage';
 
 function App() {
-  const [appName, setAppName] = useState(storage.get('hub_app_name', 'Nature Hub'));
+  const [appName, setAppName] = useState(storage.get('hub_app_name', 'Epic Toolbox'));
   const [enableProfiles, setEnableProfiles] = useState(storage.getBoolean('hub_enable_profiles', false));
   const [currentProfileName, setCurrentProfileName] = useState(storage.get('hub_current_profile') || storage.get('hub_startup_profile', 'Default'));
   const [profiles, setProfiles] = useState([]);

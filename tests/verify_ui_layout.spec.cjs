@@ -10,7 +10,7 @@ test('Verify CSS classes and UI layout', async ({ page }) => {
   // Check for toolbox-page-header
   const header = page.locator('.toolbox-page-header');
   await expect(header).toBeVisible();
-  await expect(header.locator('h2')).toContainText('Nature Hub');
+  await expect(header.locator('h2')).toContainText('Epic Toolbox');
 
   // Check for card-actions (hover to make visible)
   const card = page.locator('.card').first();
