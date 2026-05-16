@@ -355,22 +355,19 @@ const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, 
 
     return (
         <div id={`card-${tool.id}`} className={`card ${noAnimation ? 'no-animation' : ''}`} style={{'--delay': idx}} onClick={() => openTool(tool.id)} tabIndex="0" onKeyDown={onKeyDown}>
-           <div className="card-actions">
+           <div className="card-actions" style={{ position: 'absolute', top: '10px', right: '10px', opacity: 1, zIndex: 2 }}>
                 <button className={`pin-btn ${isPinned ? 'active' : ''}`} onClick={(e) => togglePin(e, tool.id)} aria-label={isPinned ? 'Unpin tool' : 'Pin tool'}>
                     <span className="material-icons">push_pin</span>
                 </button>
-                <button onClick={(e) => handleShare(e, tool)} aria-label="Share tool">
-                    <span className="material-icons">share</span>
-                </button>
            </div>
-           <div className="card-header">
-                <div className="card-icon flex-center"><span className="material-icons">{tool.icon}</span></div>
+           <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: 0 }}>
+                <div className="card-icon flex-center" style={{ marginBottom: 0 }}><span className="material-icons">{tool.icon}</span></div>
                 <div className="card-title-group">
-                    <div className="card-title" dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
+                    <div className="card-title" style={{ marginBottom: 0 }} dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
                 </div>
             </div>
             {tool.subTools && (
-                <span className="fallback-badge card-badge-top" title={`${tool.subTools.length} sub-tools available`}>
+                <span className="fallback-badge card-badge-top" style={{ position: 'absolute', bottom: '10px', right: '10px' }} title={`${tool.subTools.length} sub-tools available`}>
                     <span className="material-icons" style={{ fontSize: '0.9rem', marginRight: '2px' }}>apps</span>
                     {tool.subTools.length}
                 </span>

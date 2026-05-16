@@ -16,7 +16,11 @@ function App() {
   const [appName, setAppName] = useState(storage.get('hub_app_name', 'Epic Toolbox'));
   const [enableProfiles, setEnableProfiles] = useState(storage.getBoolean('hub_enable_profiles', false));
   const [currentProfileName, setCurrentProfileName] = useState(storage.get('hub_current_profile') || storage.get('hub_startup_profile', 'Default'));
-  const [profiles, setProfiles] = useState([]);
+  const [profiles, setProfiles] = useState([
+    { id: 1, name: 'Default', icon: 'home' },
+    { id: 2, name: 'Private', icon: 'security' },
+    { id: 3, name: 'Personal', icon: 'person' }
+  ]);
   const [currentTab, setCurrentTab] = useState(storage.get('hub_startup_tab', 'toolbox'));
   const [searchQuery, setSearchQuery] = useState('');
   const [searchActive, setSearchActive] = useState(false);
@@ -132,16 +136,9 @@ function App() {
 
   const refreshData = async () => {
     setIsRefreshing(true);
-    try {
-      const res = await fetch(`${API_BASE}/profiles`);
-      const data = res.ok ? await res.json() : [];
-      if (Array.isArray(data)) setProfiles(data);
-      setRefreshTrigger(prev => prev + 1);
-    } catch (err) {
-      console.error("Refresh failed:", err);
-    } finally {
-      setTimeout(() => setIsRefreshing(false), 500);
-    }
+    // In local JSON mode, refresh just triggers a re-render of current view
+    setRefreshTrigger(prev => prev + 1);
+    setTimeout(() => setIsRefreshing(false), 500);
   };
 
   const touchStart = React.useRef(0);
@@ -149,11 +146,10 @@ function App() {
 
   const handleTouchStart = (e) => {
     const container = document.querySelector('.tools-container');
-    // Only capture touch start if we are at the very top and NOT inside a horizontally scrollable element
     const isInsideScrollableX = e.target.closest('.scrollable-x');
     if (container && container.scrollTop <= 0 && !isInsideScrollableX) {
       touchStart.current = e.targetTouches[0].clientY;
-      touchEnd.current = 0; // Reset end position
+      touchEnd.current = 0;
     } else {
       touchStart.current = 0;
     }
@@ -162,13 +158,6 @@ function App() {
   const handleTouchMove = (e) => {
     if (touchStart.current === 0) return;
     touchEnd.current = e.targetTouches[0].clientY;
-
-    // If user is pulling down (distance > 0), we can prevent default to avoid double scroll/bounce
-    // but ONLY if they've pulled enough to indicate a refresh intent
-    const distance = touchEnd.current - touchStart.current;
-    if (distance > 10 && distance < 120) {
-      // Small pull, let it be natural or slightly resisted
-    }
   };
 
   const handleTouchEnd = () => {
@@ -180,18 +169,6 @@ function App() {
     touchStart.current = 0;
     touchEnd.current = 0;
   };
-
-  useEffect(() => {
-    fetch(`${API_BASE}/profiles`)
-      .then(res => res.ok ? res.json() : [])
-      .then(data => {
-        if (Array.isArray(data)) setProfiles(data);
-      })
-      .catch(err => {
-        console.error("Failed to fetch profiles:", err);
-        setProfiles([]);
-      });
-  }, []);
 
   useEffect(() => {
     const applyTheme = (t) => {
@@ -265,7 +242,6 @@ function App() {
   // Tab Validation and Redirection
   useEffect(() => {
     if (hideBookmarks && hideToolbox) {
-        // Prevent both being hidden simultaneously to avoid redirection loops
         setHideToolbox(false);
         storage.set('hub_hide_toolbox', false);
         return;
@@ -286,7 +262,6 @@ function App() {
       else if (showProjectsTab) setTab('projects');
     }
 
-    // Reset scroll on tab change to prevent headers from disappearing
     const container = document.querySelector('.tools-container');
     if (container) {
       container.scrollTop = 0;
@@ -313,7 +288,6 @@ function App() {
         }, 100);
       }
 
-      // Tab Switching Shortcuts (Alt + 1/2/3/4)
       if (e.altKey) {
         if (e.key === '1') { e.preventDefault(); setCurrentTab('toolbox'); }
         if (e.key === '2') { e.preventDefault(); setCurrentTab('bookmarks'); }
@@ -338,11 +312,7 @@ function App() {
   useEffect(() => { storage.set('hub_auto_focus_search', autoFocusSearch); }, [autoFocusSearch]);
   useEffect(() => { storage.set('hub_open_newtab', openInNewTab); }, [openInNewTab]);
 
-  const currentProfile = Array.isArray(profiles) && profiles.length > 0
-    ? (profiles.find(p => p.name.trim() === (enableProfiles ? (currentProfileName?.trim() || 'Default') : 'Default')) ||
-       profiles.find(p => p.name.trim() === 'Default') ||
-       profiles[0])
-    : { id: 1, name: 'Default', icon: 'home' }; // Fallback for initial load
+  const currentProfile = profiles.find(p => p.name === (enableProfiles ? currentProfileName : 'Default')) || profiles[0];
 
   const handleSearchToggle = () => setSearchActive(!searchActive);
   const handleSearchClear = () => {
@@ -351,56 +321,26 @@ function App() {
   };
 
   const togglePin = React.useCallback((link) => {
-    const newPinnedStatus = !link.is_pinned;
-    fetch(`${API_BASE}/links/${link.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ is_pinned: newPinnedStatus })
-    })
-    .then(async res => {
-      if (res.ok) {
-        if ('caches' in window) {
-          try {
-            const cache = await caches.open('url-hub-v18');
-            const keys = await cache.keys();
-            for (const request of keys) {
-              if (request.url.includes('/api/')) {
-                await cache.delete(request);
-              }
-            }
-          } catch (err) {
-            console.error("Failed to clear cache:", err);
-          }
-        }
-        setRefreshTrigger(prev => prev + 1);
-      }
-    })
-    .catch(err => console.error("Failed to toggle pin:", err));
+    const profileId = link.profile_id;
+    let storedLinks = storage.getJSON(`hub_links_p${profileId}`);
+    if (!storedLinks) return;
+
+    storedLinks = storedLinks.map(l => l.id === link.id ? { ...l, is_pinned: !l.is_pinned } : l);
+    storage.setJSON(`hub_links_p${profileId}`, storedLinks);
+    setRefreshTrigger(prev => prev + 1);
   }, []);
 
   const deleteLink = React.useCallback((id) => {
     if (!confirmDelete || window.confirm("Are you sure you want to delete this bookmark?")) {
-      fetch(`${API_BASE}/links/${id}`, { method: 'DELETE' })
-        .then(async (res) => {
-          if (res.ok) {
-            if ('caches' in window) {
-              try {
-                const cache = await caches.open('url-hub-v18');
-                const keys = await cache.keys();
-                for (const request of keys) {
-                  if (request.url.includes('/api/')) {
-                    await cache.delete(request);
-                  }
-                }
-              } catch (err) {
-                console.error("Failed to clear cache:", err);
-              }
-            }
-            setRefreshTrigger(prev => prev + 1);
-          }
-        });
+        const profileId = currentProfile.id;
+        let storedLinks = storage.getJSON(`hub_links_p${profileId}`);
+        if (!storedLinks) return;
+
+        storedLinks = storedLinks.filter(l => l.id !== id);
+        storage.setJSON(`hub_links_p${profileId}`, storedLinks);
+        setRefreshTrigger(prev => prev + 1);
     }
-  }, [confirmDelete]);
+  }, [confirmDelete, currentProfile.id]);
 
   return (
     <div className="app-layout">
@@ -573,15 +513,25 @@ function App() {
           enableProfiles={enableProfiles}
           onClose={() => setIsBookmarkOpen(false)}
           onSave={(savedLink) => {
+            const profileId = savedLink.profile_id;
+            let storedLinks = storage.getJSON(`hub_links_p${profileId}`) || [];
+
+            if (editingLink) {
+                storedLinks = storedLinks.map(l => l.id === editingLink.id ? { ...l, ...savedLink } : l);
+            } else {
+                const newLink = {
+                    id: `l-${profileId}-${Date.now()}`,
+                    ...savedLink,
+                    is_pinned: false
+                };
+                storedLinks = [newLink, ...storedLinks];
+            }
+
+            storage.setJSON(`hub_links_p${profileId}`, storedLinks);
             setRefreshTrigger(prev => prev + 1);
             setTab('bookmarks');
             setSearchQuery('');
-            if (savedLink && savedLink.profile_id) {
-              const targetProfile = profiles.find(p => p.id === savedLink.profile_id);
-              if (targetProfile && targetProfile.name !== currentProfileName) {
-                setCurrentProfileName(targetProfile.name);
-              }
-            }
+            setIsBookmarkOpen(false);
           }}
         />
       )}

@@ -2,8 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import CategoryNav from './CategoryNav';
 import EmptyState from './EmptyState';
-import API_BASE from '../api';
 import { highlightText } from '../utils/helpers';
+import { storage } from '../utils/storage';
+
+// Import initial data (Vite will bundle these)
+import defaultCats from '../../data/url_cat.json';
+import defaultLinks from '../../data/url_links.json';
+import privateCats from '../../data/necs_cat.json';
+import privateLinks from '../../data/necs_links.json';
 
 const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refreshTrigger, hideUrls, hideIcons, showStats, openInNewTab }) => {
   const [links, setLinks] = useState([]);
@@ -46,26 +52,42 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
     prevProfileIdRef.current = profileId;
 
     setLoading(true);
-    Promise.all([
-      fetch(`${API_BASE}/links?profile_id=${profileId}`).then(res => res.json()),
-      fetch(`${API_BASE}/categories?profile_id=${profileId}`).then(res => res.json())
-    ]).then(([linksData, catsData]) => {
-      setLinks(Array.isArray(linksData) ? linksData : []);
-      const catsMap = {};
-      if (Array.isArray(catsData)) {
-        catsData.forEach(c => catsMap[c.name] = c.icon);
-      }
-      setCategories(catsMap);
-      setLoading(false);
-      if (isProfileChange) {
+
+    // Load data from localStorage or initial JSONs
+    let storedLinks = storage.getJSON(`hub_links_p${profileId}`);
+    let storedCats = storage.getJSON(`hub_cats_p${profileId}`);
+
+    if (!storedLinks) {
+        if (profileId === 1) storedLinks = defaultLinks;
+        else if (profileId === 2) storedLinks = privateLinks;
+        else if (profileId === 3) storedLinks = [...defaultLinks, ...privateLinks];
+        else storedLinks = [];
+
+        // Add unique IDs if missing
+        storedLinks = storedLinks.map((l, index) => ({
+            id: l.id || `l-${profileId}-${index}-${Date.now()}`,
+            ...l,
+            profile_id: profileId,
+            is_pinned: l.is_pinned || false
+        }));
+        storage.setJSON(`hub_links_p${profileId}`, storedLinks);
+    }
+
+    if (!storedCats) {
+        if (profileId === 1) storedCats = defaultCats;
+        else if (profileId === 2) storedCats = privateCats;
+        else if (profileId === 3) storedCats = { ...defaultCats, ...privateCats };
+        else storedCats = {};
+        storage.setJSON(`hub_cats_p${profileId}`, storedCats);
+    }
+
+    setLinks(storedLinks);
+    setCategories(storedCats);
+    setLoading(false);
+
+    if (isProfileChange) {
         setActiveCategory('All');
-      }
-    }).catch(err => {
-      console.error("Failed to fetch bookmarks:", err);
-      setLoading(false);
-      setLinks(null); // Set to null to indicate error
-      setCategories({});
-    });
+    }
   }, [profileId, refreshTrigger]);
 
   const currentLinks = Array.isArray(links) ? links : [];
@@ -79,12 +101,12 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
       const query = searchQuery.toLowerCase();
       if (query.startsWith('cat:')) {
         const catQuery = query.replace('cat:', '').trim();
-        matchesCat = l.category.toLowerCase().includes(catQuery);
-        matchesSearch = true; // category match is the search match
+        matchesCat = (l.category || '').toLowerCase().includes(catQuery);
+        matchesSearch = true;
       } else {
-        matchesSearch = l.title.toLowerCase().includes(query) ||
-          l.category.toLowerCase().includes(query) ||
-          l.url.toLowerCase().includes(query) ||
+        matchesSearch = (l.title || '').toLowerCase().includes(query) ||
+          (l.category || '').toLowerCase().includes(query) ||
+          (l.url || '').toLowerCase().includes(query) ||
           (l.urls && l.urls.some(u => u.toLowerCase().includes(query)));
       }
     }
@@ -99,7 +121,8 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
 
   const grouped = {};
   filteredLinks.forEach(l => {
-    (grouped[l.category] || (grouped[l.category] = [])).push(l);
+    const cat = l.category || 'Uncategorized';
+    (grouped[cat] || (grouped[cat] = [])).push(l);
   });
 
   // Sort bookmarks within each category: Pinned first
@@ -107,7 +130,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
     grouped[cat].sort((a, b) => {
       if (a.is_pinned && !b.is_pinned) return -1;
       if (!a.is_pinned && b.is_pinned) return 1;
-      return a.title.localeCompare(b.title);
+      return (a.title || '').localeCompare(b.title || '');
     });
   });
 
@@ -131,8 +154,9 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
   const visibleCategories = {};
   currentLinks.forEach(l => {
     if (l.is_internal) return;
-    stats[l.category] = (stats[l.category] || 0) + 1;
-    visibleCategories[l.category] = categories[l.category] || 'folder';
+    const cat = l.category || 'Uncategorized';
+    stats[cat] = (stats[cat] || 0) + 1;
+    visibleCategories[cat] = categories[cat] || 'folder';
   });
   const totalCount = Object.values(stats).reduce((a, b) => a + b, 0);
   const pinnedCount = currentLinks.filter(l => l.is_pinned).length;
@@ -147,39 +171,6 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
                 <div key={i} className="card skeleton" style={{ height: '120px' }}></div>
             ))}
         </div>
-        <style>{`
-            .skeleton {
-                background: linear-gradient(90deg, var(--surface) 25%, var(--border) 50%, var(--surface) 75%);
-                background-size: 200% 100%;
-                animation: skeleton-loading 1.5s infinite;
-            }
-            @keyframes skeleton-loading {
-                0% { background-position: 200% 0; }
-                100% { background-position: -200% 0; }
-            }
-        `}</style>
-    </div>
-  );
-
-  if (links === null) return (
-    <div style={{textAlign:'center', padding:'3rem'}}>
-      <span className="material-icons" style={{fontSize: '3rem', color: 'var(--danger)', marginBottom: '1rem'}}>error_outline</span>
-      <h3 style={{marginBottom: '0.5rem'}}>Failed to load bookmarks</h3>
-      <p style={{opacity: 0.7, marginBottom: '1rem'}}>Could not connect to the server.</p>
-      <div style={{background: 'var(--surface)', padding: '1rem', borderRadius: '12px', fontSize: '0.8rem', marginBottom: '1.5rem', wordBreak: 'break-all', textAlign: 'left'}}>
-        <strong>API Base:</strong> {API_BASE}
-      </div>
-      <button className="btn-primary" onClick={() => window.location.reload()}>
-        <span className="material-icons" style={{fontSize: '1.1rem', verticalAlign: 'middle', marginRight: '4px'}}>refresh</span>
-        Retry
-      </button>
-    </div>
-  );
-
-  if (!profileId) return (
-    <div style={{textAlign:'center', padding:'3rem', opacity:0.5}}>
-      <p>No profile selected.</p>
-      <button className="btn-primary" style={{marginTop: '1rem'}} onClick={() => window.location.reload()}>Retry</button>
     </div>
   );
 
@@ -191,19 +182,17 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
   };
 
   const getModalStyle = () => {
-    if (window.innerWidth <= 768) return { display: 'block' }; // Center on mobile
+    if (window.innerWidth <= 768) return { display: 'block' };
 
     const modalWidth = 500;
     const padding = 20;
     let left = modalPosition.x;
     let top = modalPosition.y;
 
-    // Boundary checks for width
     if (left + modalWidth > window.innerWidth) {
       left = window.innerWidth - modalWidth - padding;
     }
 
-    // Rough boundary check for height (assuming max-height is 90vh)
     const estimatedMaxHeight = window.innerHeight * 0.8;
     if (top + estimatedMaxHeight > window.innerHeight) {
       top = window.innerHeight - estimatedMaxHeight - padding;
@@ -263,13 +252,13 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
               </button>
               <div className="grid grid-3 gap-10 w-full">
                 <button className="pill" onClick={() => { setIsUrlModalOpen(false); handleShare(selectedLinkForUrls); }}>
-                    <span className="material-icons">share</span>
+                    <span className="material-icons">share</span> Share
                 </button>
                 <button className="pill" onClick={() => { setIsUrlModalOpen(false); onEdit(selectedLinkForUrls); }}>
-                    <span className="material-icons">edit</span>
+                    <span className="material-icons">edit</span> Edit
                 </button>
                 <button className="pill" style={{color: 'var(--danger)', borderColor: 'var(--danger)'}} onClick={() => { setIsUrlModalOpen(false); onDelete(selectedLinkForUrls.id); }}>
-                    <span className="material-icons">delete</span>
+                    <span className="material-icons">delete</span> Delete
                 </button>
               </div>
               <button type="button" className="dismiss-btn" onClick={() => { setIsUrlModalOpen(false); }}>Dismiss</button>
@@ -399,8 +388,8 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
     pressTimer.current = setTimeout(() => {
       isLongPressActive.current = true;
       onLongPress(coords);
-      setIsPressing(false); // Snap back when modal opens
-    }, 400); // 400ms for better responsiveness
+      setIsPressing(false);
+    }, 400);
   };
 
   const cancelPress = () => {
@@ -421,7 +410,7 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
 
   const handleContextMenu = (e) => {
     if (link.urls && link.urls.length > 1) {
-        e.preventDefault(); // Prevent native context menu to avoid collision
+        e.preventDefault();
     }
   };
 
@@ -446,22 +435,22 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
       onTouchMove={cancelPress}
       onContextMenu={handleContextMenu}
     >
-      <span className="fallback-badge card-badge-top" title={`This bookmark has ${link.urls?.length || 1} URL(s). Long-press to see all.`}>
+      <span className="fallback-badge card-badge-top" style={{ position: 'absolute', bottom: '10px', right: '10px' }} title={`This bookmark has ${link.urls?.length || 1} URL(s). Long-press to see all.`}>
         <span className="material-icons" style={{ fontSize: '0.9rem', marginRight: '2px' }}>layers</span>
         {link.urls?.length || 1}
       </span>
-      <div className="card-header" style={{ marginBottom: 0 }}>
+      <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: 0 }}>
         {!hideIcons && <BookmarkIcon link={link} categoryIcon={categoryIcon || 'link'} />}
         <div className="card-title-group" style={{ overflow: 'hidden' }}>
           <div className="card-title" style={{ marginBottom: 0 }} dangerouslySetInnerHTML={{ __html: highlightText(link.title, searchQuery) }} />
         </div>
       </div>
       {!hideUrls && (
-        <div className="card-url" style={{ position: 'absolute', bottom: '10px', left: '1rem', maxWidth: 'calc(100% - 100px)' }}>
+        <div className="card-url" style={{ position: 'absolute', bottom: '10px', left: '1rem', maxWidth: 'calc(100% - 100px)', fontSize: '0.7rem', opacity: 0.7 }}>
           <span>{hostname}</span>
         </div>
       )}
-      <div className="card-actions" onClick={e => e.stopPropagation()}>
+      <div className="card-actions" style={{ position: 'absolute', top: '10px', right: '10px', opacity: 1, zIndex: 2 }} onClick={e => e.stopPropagation()}>
         <button className={`pin-btn ${link.is_pinned ? 'active' : ''}`} onClick={() => onPin(link)} title={link.is_pinned ? 'Unpin' : 'Pin to Top'}>
           <span className="material-icons">push_pin</span>
         </button>
@@ -489,7 +478,7 @@ const BookmarkIcon = ({ link, categoryIcon }) => {
       const hostname = getHostname(link.url);
       setSrc(hostname ? `https://icons.duckduckgo.com/ip3/${hostname}.ico` : null);
     } else {
-      setSrc(null); // Will render fallback
+      setSrc(null);
     }
     setErrorCount(errorCount + 1);
   };
