@@ -5,6 +5,7 @@ const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onS
   const isLongPress = useRef(false);
 
   const startPress = () => {
+    if (!enableProfiles) return;
     isLongPress.current = false;
     const timer = setTimeout(() => {
       isLongPress.current = true;

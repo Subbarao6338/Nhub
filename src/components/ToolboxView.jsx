@@ -273,7 +273,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
             <h2>Search Results</h2>
             {matchedSubtools.length > 0 && (
               <div className="matched-subtools-bar animate-fadeIn">
-                <div className="matched-subtools-label">Matched Sub-tools:</div>
+                <div className="matched-subtools-label">Instant Hub Access:</div>
                 <div className="scrollable-x" style={{padding: '5px 0'}}>
                   {matchedSubtools.map(match => (
                     <button
@@ -365,8 +365,16 @@ const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, 
            </div>
            <div className="card-header">
                 <div className="card-icon flex-center"><span className="material-icons">{tool.icon}</span></div>
-                <div className="card-title" dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
+                <div className="card-title-group">
+                    <div className="card-title" dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
+                </div>
             </div>
+            {tool.subTools && (
+                <span className="fallback-badge card-badge-top" title={`${tool.subTools.length} sub-tools available`}>
+                    <span className="material-icons" style={{ fontSize: '0.9rem', marginRight: '2px' }}>apps</span>
+                    {tool.subTools.length}
+                </span>
+            )}
         </div>
     );
 });
