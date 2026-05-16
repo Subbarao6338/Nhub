@@ -200,13 +200,13 @@ const SettingsModal = ({
                     <span className="material-icons mr-10">history_toggle_off</span> Reset App Settings
                 </button>
                 <button className="pill" onClick={() => {
-                    if(confirm("Restore database to defaults? This will reload the app.")) {
+                    if(confirm("Refresh data from JSON files? This will reload the app.")) {
                         fetch(`${getApiBase()}/debug/reset-db`, { method: 'POST' })
                             .then(() => window.location.reload())
-                            .catch(e => alert("Reset failed: " + e.message));
+                            .catch(e => alert("Refresh failed: " + e.message));
                     }
                 }}>
-                    <span className="material-icons mr-10">refresh</span> Restore Default Database
+                    <span className="material-icons mr-10">refresh</span> Refresh JSON Data
                 </button>
             </div>
           </div>

@@ -135,10 +135,9 @@ body {
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: auto;
   cursor: pointer;
   position: relative;
-  min-height: 80px;
 }
 
 .card:hover {
@@ -871,7 +870,7 @@ input.pill:focus {
 
 .compact .card {
   padding: 0.75rem;
-  min-height: 70px;
+  height: auto;
 }
 
 .compact .card-header {

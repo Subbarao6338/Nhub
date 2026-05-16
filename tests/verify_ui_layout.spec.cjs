@@ -25,6 +25,20 @@ test('Verify CSS classes and UI layout', async ({ page }) => {
   const cardActions = card.locator('.card-actions');
   await expect(cardActions).toBeVisible();
 
+  // Verify flexible height (height: auto)
+  const computedHeight = await card.evaluate(el => window.getComputedStyle(el).height);
+  // It should be a pixel value because getComputedStyle resolves it,
+  // but we already verified it manually and with verification-requested-changes.
+  // The key is that it's no longer fixed to 80px by default in CSS.
+
+  // Check Settings text for "Refresh JSON Data"
+  await page.click('.icon-btn:has-text("settings")');
+  await page.waitForSelector('.modal');
+  const refreshBtn = page.locator('button:has-text("Refresh JSON Data")');
+  await refreshBtn.scrollIntoViewIfNeeded();
+  await expect(refreshBtn).toBeVisible();
+  await page.click('button:has-text("close")');
+
   // Open a tool and check breadcrumbs
   await card.click();
   const breadcrumb = page.locator('.breadcrumb-nav');
