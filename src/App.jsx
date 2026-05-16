@@ -415,6 +415,7 @@ function App() {
           hideBookmarks={hideBookmarks}
           hideToolbox={hideToolbox}
           currentTab={currentTab}
+          searchActive={searchActive}
         >
           <SearchOverlay
             active={searchActive}
