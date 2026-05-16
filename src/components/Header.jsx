@@ -19,7 +19,7 @@ const Header = memo(({ appName, currentProfile, profiles, setView, onSettingsCli
             </span>
         </div>
         <h1 className="page-title" style={{ fontSize: '1.5rem', fontWeight: 900 }}>
-          {appName || 'Nature Hub'}
+          {appName || 'Epic Toolbox'}
         </h1>
       </div>
       <div className="top-actions">

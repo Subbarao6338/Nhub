@@ -25,7 +25,7 @@ class ErrorBoundary extends React.Component {
           color: 'var(--on-surface)'
         }}>
           <span className="material-icons" style={{ fontSize: '5rem', color: 'var(--danger)', marginBottom: '1rem' }}>eco</span>
-          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '1rem' }}>Nature hit a snag</h1>
+          <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '1rem' }}>Epic Toolbox Error</h1>
           <p style={{ marginBottom: '1.5rem', color: 'var(--text-muted)', maxWidth: '400px' }}>
             Even in the digital wilderness, things can go wrong. We've encountered an unexpected error.
           </p>

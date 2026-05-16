@@ -1,4 +1,4 @@
-# Nature Hub
+# Epic Toolbox
 
 A unified ecosystem of essential tools, designed with the **Nature Design Mandate v6 (Harmony & Flow)**. This application consolidates multiple utility hubs into a single, high-performance interface with organic geometry and fluid interactions.
 

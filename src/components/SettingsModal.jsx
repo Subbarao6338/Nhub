@@ -191,7 +191,7 @@ const SettingsModal = ({
                 }}
               >
                 <span className="material-icons mr-10">download_for_offline</span>
-                Install Nature Hub
+                Install Epic Toolbox
               </button>
             </div>
           )}
@@ -202,7 +202,7 @@ const SettingsModal = ({
               className="pill"
               value={appName}
               onChange={(e) => setAppName(e.target.value)}
-              placeholder="Nature Hub"
+              placeholder="Epic Toolbox"
             />
           </div>
           <div className="form-group">
