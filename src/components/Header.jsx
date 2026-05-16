@@ -13,9 +13,9 @@ const Header = memo(({ appName, currentProfile, profiles, setView, onSettingsCli
           else setView(currentTab === 'bookmarks' ? 'toolbox' : 'bookmarks');
         }}
       >
-        <div className="flex-center" style={{ background: 'var(--primary-glow)', padding: '10px', borderRadius: 'var(--radius-lg)' }}>
-            <span className="material-icons app-logo" style={{ fontSize: '32px' }}>
-              {currentProfile === 'Default' ? 'eco' : (profile.icon || 'person')}
+        <div className="flex-center">
+            <span className="material-icons app-logo" style={{ fontSize: '28px' }}>
+              {currentProfile === 'Default' ? 'inbox' : (profile.icon || 'person')}
             </span>
         </div>
         <h1 className="page-title" style={{ fontSize: '1.5rem', fontWeight: 900 }}>

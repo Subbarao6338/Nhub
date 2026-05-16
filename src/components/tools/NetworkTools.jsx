@@ -282,7 +282,7 @@ const SubnetCalculator = () => {
   };
   return (
     <div className="grid gap-15">
-      <div className="flex-gap card p-10 glass-card"><input value={ip} onChange={e=>setIp(e.target.value)} className="pill flex-1 border-none shadow-none" /><input value={mask} onChange={e=>setMask(e.target.value)} className="pill border" style={{width: '80px'}} /></div>
+      <div className="flex-gap card p-10 glass-card"><input value={ip} onChange={e=>setIp(e.target.value)} className="pill flex-1 border-none shadow-none" /><input value={mask} onChange={e=>setMask(e.target.value)} className="pill border" style={{width: '5rem'}} /></div>
       <button className="btn-primary" onClick={calc}>Calculate</button>
       {res && <div className="tool-result font-mono">Net: {res.net}<br/>Broadcast: {res.br}<br/>Hosts: {res.hosts}</div>}
     </div>

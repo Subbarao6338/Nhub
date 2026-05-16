@@ -1,8 +1,8 @@
 # Epic Toolbox
 
-A unified ecosystem of essential tools, designed with the **Nature Design Mandate v6 (Harmony & Flow)**. This application consolidates multiple utility hubs into a single, high-performance interface with organic geometry and fluid interactions.
+A unified ecosystem of essential tools. This application consolidates multiple utility hubs into a single, high-performance interface with a modern and clean design.
 
-## 🌿 Core Hubs
+## 🛠️ Core Hubs
 
 1.  **Document Tools**: Integrated PDF, Image, and Text utilities. Edit, convert, and translate documents with ease.
 2.  **Developer Hub**: Essential tools for engineers—JSON formatters, Unit converters, Color pickers, and Security utilities.
@@ -14,7 +14,7 @@ A unified ecosystem of essential tools, designed with the **Nature Design Mandat
 
 ## 🚀 Features
 
-*   **Pebble UI**: Organic "Pebble" cards with smooth, physics-based hover effects.
+*   **Modern UI**: Clean, intuitive interface with a professional color palette.
 *   **Performance**: Lazy-loaded hubs and optimized React components for maximum speed.
 *   **PWA Support**: Fully installable with offline capabilities via service workers.
 *   **Customization**: Nature-inspired accent colors and theme modes (Light/Dark/System).
@@ -22,7 +22,7 @@ A unified ecosystem of essential tools, designed with the **Nature Design Mandat
 
 ## 🛠 Tech Stack
 
-*   **Frontend**: React 18, Vite, CSS3 (Nature Design Mandate).
+*   **Frontend**: React 18, Vite, CSS3.
 *   **Backend**: Python (FastAPI) for heavy processing (Document translation, YT-DLP).
 *   **Libraries**: jsPDF, pdf-lib, PapaParse, Tesseract.js, Lucide Icons.
 

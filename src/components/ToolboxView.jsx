@@ -233,48 +233,40 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
 
   return (
     <>
-      <CategoryNav
-        categories={toolboxCategories}
-        activeCategory={activeCategory}
-        setActiveCategory={setActiveCategory}
-        showStats={showStats}
-        stats={stats}
-        totalCount={TOOLS.length}
-        extraCategories={[{ name: 'Pinned', icon: 'push_pin', count: pinnedTools.length }]}
-      />
+      <div className="main-category-nav">
+        <div className={`pill ${activeCategory === 'All' ? 'active' : ''}`} onClick={() => setActiveCategory('All')}>
+          <span className="material-icons">home</span> <span>All</span>
+        </div>
+        <div className={`pill ${activeCategory === 'Pinned' ? 'active' : ''}`} onClick={() => setActiveCategory('Pinned')}>
+          <span className="material-icons">push_pin</span> <span>Pinned</span>
+        </div>
+        {Object.keys(toolboxCategories).sort().map(cat => (
+          <div key={cat} className={`pill ${activeCategory === cat ? 'active' : ''}`} onClick={() => setActiveCategory(cat)}>
+            <span className="material-icons">{toolboxCategories[cat]}</span> <span>{cat}</span>
+          </div>
+        ))}
+      </div>
+
       <div className="toolbox-page-header">
-        <h2>Epic Toolbox</h2>
-        <p>Your essential tools, simplified and unified.</p>
+        <h2 className="text-center mt-20">Toolbox</h2>
+        <p className="text-center opacity-6 small">Collection of useful offline utilities.</p>
 
         {activeCategory === 'All' && !searchQuery && pinnedTools.length > 0 && (
-          <div className="p-0-10 mb-20 text-left">
-            <h3 className="uppercase tracking-wider opacity-6 mb-10 flex-center gap-10" style={{ fontSize: '0.9rem', justifyContent: 'flex-start' }}>
-              <span className="material-icons" style={{ fontSize: '1.2rem' }}>push_pin</span> Pinned Hubs
-            </h3>
+          <div className="mb-20">
+            <h3 className="uppercase small opacity-6 mb-10">Pinned Hubs</h3>
             <div className="category-grid">
               {TOOLS.filter(t => pinnedTools.includes(t.id)).map((tool, idx) => (
-                <ToolCard key={`pinned-${tool.id}`} tool={tool} idx={idx} isPinned={true} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} />
+                <ToolCard key={`pinned-${tool.id}`} tool={tool} idx={idx} isPinned={true} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={true} />
               ))}
             </div>
-          </div>
-        )}
-
-        {groupedTools && cats.length > 0 && (
-          <div className="pill-group" style={{justifyContent: 'center', marginTop: '1rem'}}>
-            <button className="pill" onClick={() => collapseAll(cats)} style={{padding: '8px 16px', fontSize: '0.8rem'}}>
-              <span className="material-icons" style={{fontSize: '1.1rem'}}>unfold_less</span> Collapse All
-            </button>
-            <button className="pill" onClick={expandAll} style={{padding: '8px 16px', fontSize: '0.8rem'}}>
-              <span className="material-icons" style={{fontSize: '1.1rem'}}>unfold_more</span> Expand All
-            </button>
           </div>
         )}
       </div>
 
       {!groupedTools ? (
-        <div className="category-grid p-0-10">
+        <div className="category-grid">
           {filteredTools.map((tool, idx) => (
-            <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} />
+            <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={true} />
           ))}
         </div>
       ) : (
@@ -306,17 +298,17 @@ const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, 
     }, [openTool, tool.id]);
 
     return (
-        <div id={`card-${tool.id}`} className={`card ${noAnimation ? 'no-animation' : ''}`} style={{'--delay': idx}} onClick={() => openTool(tool.id)} tabIndex="0" onKeyDown={onKeyDown}>
+        <div id={`card-${tool.id}`} className="card" onClick={() => openTool(tool.id)} tabIndex="0" onKeyDown={onKeyDown}>
            <div className="card-actions">
                 <button className={`pin-btn ${isPinned ? 'active' : ''}`} onClick={(e) => togglePin(e, tool.id)} aria-label={isPinned ? 'Unpin tool' : 'Pin tool'}>
-                    <span className="material-icons">push_pin</span>
+                    <span className="material-icons" style={{fontSize: '1rem'}}>push_pin</span>
                 </button>
                 <button onClick={(e) => handleShare(e, tool)} aria-label="Share tool">
-                    <span className="material-icons">share</span>
+                    <span className="material-icons" style={{fontSize: '1rem'}}>share</span>
                 </button>
            </div>
            <div className="card-header">
-                <div className="card-icon flex-center" style={{ background: 'var(--bg)' }}><span className="material-icons">{tool.icon}</span></div>
+                <div className="card-icon"><span className="material-icons">{tool.icon}</span></div>
                 <div className="card-title" dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
             </div>
         </div>
