@@ -8,7 +8,7 @@ const TabBar = memo(({ currentTab, setTab, onAddClick, onBookmarksLongPress, onS
     isLongPress.current = false;
     const timer = setTimeout(() => {
       isLongPress.current = true;
-      if (onBookmarksLongPress && enableProfiles) onBookmarksLongPress();
+      if (onBookmarksLongPress) onBookmarksLongPress();
     }, 500);
     setPressTimer(timer);
   };

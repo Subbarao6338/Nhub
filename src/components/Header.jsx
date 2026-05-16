@@ -13,12 +13,12 @@ const Header = memo(({ appName, currentProfile, profiles, setView, onSettingsCli
           else setView(currentTab === 'bookmarks' ? 'toolbox' : 'bookmarks');
         }}
       >
-        <div className="flex-center" style={{ background: 'var(--primary-glow)', padding: '10px', borderRadius: 'var(--radius-md)' }}>
-            <span className="material-icons-outlined app-logo" style={{ fontSize: '32px', color: 'var(--primary)' }}>
-              {currentProfile === 'Default' ? 'construction' : (profile.icon || 'person')}
+        <div className="logo-icon-wrapper">
+            <span className="material-icons-outlined app-logo">
+              {profile.icon || 'home'}
             </span>
         </div>
-        <h1 className="page-title" style={{ fontSize: '1.5rem', fontWeight: 900 }}>
+        <h1 className="page-title">
           {appName || 'Epic Toolbox'}
         </h1>
       </div>

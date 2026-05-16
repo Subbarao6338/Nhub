@@ -90,13 +90,13 @@ const SettingsModal = ({
   );
 
   return (
-    <div className="modal glass-card" style={{display: 'block', maxWidth: '600px'}}>
+    <div className="modal glass-card" style={{maxWidth: '600px'}}>
       <div className="modal-header-flex">
         <h2 style={{margin: 0, fontSize: '1.5rem', fontWeight: 800}}>Settings</h2>
         <button className="icon-btn" onClick={onClose}><span className="material-icons">close</span></button>
       </div>
 
-      <div className="settings-container" style={{maxHeight: '70vh', overflowY: 'auto', paddingRight: '5px'}}>
+      <div className="settings-container" style={{flex: 1, overflowY: 'auto', paddingRight: '5px', marginTop: '1rem'}}>
         <CollapsibleSection id="global" title="General" icon="settings" isOpen={openSections.includes('global')} onToggle={toggleSection}>
           <div className="form-group">
             <label>Application Name</label>
@@ -168,26 +168,49 @@ const SettingsModal = ({
               <span className="material-icons mr-10">install_desktop</span> Install App
             </button>
           )}
-          <div className="grid grid-2 gap-10">
-            <button className="pill" onClick={handleExport}><span className="material-icons mr-10">download</span> Export</button>
-            <label className="pill" style={{cursor: 'pointer'}}>
-              <span className="material-icons mr-10">upload</span> Import
-              <input type="file" hidden accept=".json" onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => {
-                        try {
-                            const json = JSON.parse(ev.target.result);
-                            Object.keys(json).forEach(k => localStorage.setItem(k, json[k]));
-                            window.location.reload();
-                        } catch(e) { alert("Invalid backup file"); }
-                    };
-                    reader.readAsText(file);
-                }
-              }} />
-            </label>
+
+          <div className="form-group">
+            <label>Backup & Restore</label>
+            <div className="grid grid-2 gap-10">
+                <button className="pill" onClick={handleExport}><span className="material-icons mr-10">download</span> Export</button>
+                <label className="pill" style={{cursor: 'pointer'}}>
+                <span className="material-icons mr-10">upload</span> Import
+                <input type="file" hidden accept=".json" onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            try {
+                                const json = JSON.parse(ev.target.result);
+                                Object.keys(json).forEach(k => localStorage.setItem(k, json[k]));
+                                window.location.reload();
+                            } catch(e) { alert("Invalid backup file"); }
+                        };
+                        reader.readAsText(file);
+                    }
+                }} />
+                </label>
+            </div>
           </div>
+
+          <div className="form-group">
+            <label>Advanced Recovery</label>
+            <div className="grid gap-10">
+                <button className="pill" onClick={() => { if(confirm("Clear local storage?")) { localStorage.clear(); window.location.reload(); } }}>
+                    <span className="material-icons mr-10">history_toggle_off</span> Reset App Settings
+                </button>
+                <button className="pill" onClick={() => {
+                    if(confirm("Restore database to defaults? This will reload the app.")) {
+                        fetch(`${getApiBase()}/debug/reset-db`, { method: 'POST' })
+                            .then(() => window.location.reload())
+                            .catch(e => alert("Reset failed: " + e.message));
+                    }
+                }}>
+                    <span className="material-icons mr-10">refresh</span> Restore Default Database
+                </button>
+            </div>
+          </div>
+
           <button className="pill w-full mt-10" style={{color: 'var(--danger)', borderColor: 'var(--danger)'}} onClick={resetData}>
             <span className="material-icons mr-10">delete_forever</span> Reset All Data
           </button>
@@ -198,27 +221,6 @@ const SettingsModal = ({
         <button type="button" className="btn-primary w-full" onClick={onClose}>Finish</button>
       </div>
 
-      <style>{`
-        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
-        .settings-row:last-child { border-bottom: none; }
-        .settings-row-label { display: flex; align-items: center; font-weight: 500; }
-        .color-circle { width: 32px; height: 32px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.2s; }
-        .color-circle:hover { transform: scale(1.1); }
-        .color-circle.active { border-color: var(--on-surface); transform: scale(1.1); }
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--primary); }
-        input:checked + .slider:before { transform: translateX(20px); }
-        .settings-collapsible { margin-bottom: 8px; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; background: var(--brand-bg-light); }
-        .collapsible-header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-weight: 700; transition: background 0.2s; }
-        .collapsible-header:hover { background: var(--primary-glow); }
-        .header-left { display: flex; align-items: center; gap: 10px; color: var(--primary); }
-        .collapsible-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: var(--surface-solid); }
-        .settings-collapsible.is-open .collapsible-content { max-height: 1000px; transition: max-height 0.5s ease-in; }
-        .collapsible-inner { padding: 16px; border-top: 1px solid var(--border); }
-      `}</style>
     </div>
   );
 };

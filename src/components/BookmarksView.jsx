@@ -231,11 +231,12 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
           <div className="modal-overlay" style={{display: 'block'}} onClick={() => { setIsUrlModalOpen(false); }}></div>
           <div className="modal modal-multi-url" style={getModalStyle()}>
             <div className="modal-header-flex">
-              <h2>Multiple URLs</h2>
+              <h2>{selectedLinkForUrls.urls?.length > 1 ? 'Multiple URLs' : 'Bookmark Actions'}</h2>
               <button className="icon-btn" onClick={() => setIsUrlModalOpen(false)}>
                 <span className="material-icons">close</span>
               </button>
             </div>
+            <div className="modal-content">
             <p className="modal-subtitle">
               Select a URL to open from "<strong>{selectedLinkForUrls.title}</strong>"
             </p>
@@ -244,20 +245,35 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
                 <div key={i} className="url-btn-row">
                   <a href={url} target={openInNewTab ? '_blank' : '_self'} className="url-btn" onClick={() => setIsUrlModalOpen(false)}>
                     <span className="material-icons url-btn-icon">link</span>
-                    <span className="url-btn-content">{url}</span>
+                    <div className="url-btn-text-group">
+                        <span className="url-btn-content">{url}</span>
+                        <span className="url-btn-label">Primary URL {i > 0 ? `#${i+1}` : ''}</span>
+                    </div>
                     <span className="material-icons url-btn-arrow">open_in_new</span>
                   </a>
-                  <button className="icon-btn" onClick={() => handleCopy(i, url)} title="Copy URL">
+                  <button className="icon-btn highlight" onClick={() => handleCopy(i, url)} title="Copy URL">
                     <span className="material-icons">{copiedId === i ? 'check' : 'content_copy'}</span>
                   </button>
                 </div>
               ))}
             </div>
-            <div className="modal-footer-actions">
-              <button type="button" className="pill copy-all-btn" onClick={copyAllUrls}>
+            <div className="modal-footer-actions" style={{ flexDirection: 'column', gap: '8px' }}>
+              <button type="button" className="pill btn-primary w-full" onClick={copyAllUrls}>
                 <span className="material-icons">content_copy</span> Copy All URLs
               </button>
+              <div className="grid grid-3 gap-10 w-full">
+                <button className="pill" onClick={() => { setIsUrlModalOpen(false); handleShare(selectedLinkForUrls); }}>
+                    <span className="material-icons">share</span>
+                </button>
+                <button className="pill" onClick={() => { setIsUrlModalOpen(false); onEdit(selectedLinkForUrls); }}>
+                    <span className="material-icons">edit</span>
+                </button>
+                <button className="pill" style={{color: 'var(--danger)', borderColor: 'var(--danger)'}} onClick={() => { setIsUrlModalOpen(false); onDelete(selectedLinkForUrls.id); }}>
+                    <span className="material-icons">delete</span>
+                </button>
+              </div>
               <button type="button" className="dismiss-btn" onClick={() => { setIsUrlModalOpen(false); }}>Dismiss</button>
+            </div>
             </div>
           </div>
         </>,
@@ -382,10 +398,8 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
     setIsPressing(true);
     pressTimer.current = setTimeout(() => {
       isLongPressActive.current = true;
-      if (link.urls && link.urls.length > 1) {
-        onLongPress(coords);
-        setIsPressing(false); // Snap back when modal opens
-      }
+      onLongPress(coords);
+      setIsPressing(false); // Snap back when modal opens
     }, 400); // 400ms for better responsiveness
   };
 
@@ -450,20 +464,6 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
       <div className="card-actions" onClick={e => e.stopPropagation()}>
         <button className={`pin-btn ${link.is_pinned ? 'active' : ''}`} onClick={() => onPin(link)} title={link.is_pinned ? 'Unpin' : 'Pin to Top'}>
           <span className="material-icons">push_pin</span>
-        </button>
-        <button onClick={() => handleShare(link)} title="Share Bookmark">
-          <span className="material-icons">share</span>
-        </button>
-        <button onClick={() => handleCopy(link.id, link.url)} title="Copy URL">
-          <span className="material-icons" style={{color: isCopied ? 'var(--accent-green)' : 'inherit'}}>
-            {isCopied ? 'check' : 'content_copy'}
-          </span>
-        </button>
-        <button onClick={() => onEdit(link)} title="Edit">
-          <span className="material-icons">edit</span>
-        </button>
-        <button className="btn-delete" onClick={() => onDelete(link.id)} title="Delete">
-          <span className="material-icons">delete</span>
         </button>
       </div>
     </div>
