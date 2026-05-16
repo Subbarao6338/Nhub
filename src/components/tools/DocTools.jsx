@@ -699,7 +699,7 @@ const MarkdownEditor = ({ onResultChange }) => {
   };
 
   const exportHtml = () => {
-      const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Nature Doc</title><style>body{font-family:sans-serif;padding:40px;line-height:1.6;max-width:800px;margin:0 auto;}</style></head><body>${html}</body></html>`], { type: 'text/html' });
+      const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Document</title><style>body{font-family:sans-serif;padding:40px;line-height:1.6;max-width:800px;margin:0 auto;}</style></head><body>${html}</body></html>`], { type: 'text/html' });
       onResultChange({ text: 'Exported Markdown to HTML', blob, filename: 'document.html' });
   };
 
