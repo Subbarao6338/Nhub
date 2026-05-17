@@ -27,8 +27,6 @@ const TOOLS = [
 const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRecentTools, hideRecentTools, hideIcons }) => {
   const [activeToolId, setActiveToolId] = useState(null);
   const [activeSubtoolLabel, setActiveSubtoolLabel] = useState(null);
-  const [currentResult, setCurrentResult] = useState(null);
-  const [copySuccess, setCopySuccess] = useState(false);
   const [activeCategory, setActiveCategory] = useState('All');
   const [pinnedTools, setPinnedTools] = useState(storage.getJSON('hub_pinned_tools', []));
   const [collapsedCategories, setCollapsedCategories] = useState({});
@@ -67,7 +65,6 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     if (activeToolId === id) return;
     setActiveToolId(id);
     setActiveSubtoolLabel(null);
-    setCurrentResult(null);
     if (TOOLS.find(t => t.id === id)) {
       const newRecents = [id, ...recentTools.filter(t => t !== id)].slice(0, 4);
       setRecentTools(newRecents);
@@ -157,36 +154,6 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
     return matches;
   }, [searchQuery]);
 
-  const handleCopyResult = () => {
-    if (!currentResult?.text) return;
-    navigator.clipboard.writeText(currentResult.text).then(() => {
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    });
-  };
-
-  const downloadResult = async (format) => {
-    if (!currentResult?.text) return;
-    const { text, filename = 'result' } = currentResult;
-    const baseName = filename.includes('.') ? filename.substring(0, filename.lastIndexOf('.')) : filename;
-
-    if (format === 'txt') {
-        const blob = new Blob([text], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `${baseName}.txt`; a.click();
-    } else if (format === 'md') {
-        const blob = new Blob([`# ${baseName}\n\n${text}`], { type: 'text/markdown' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `${baseName}.md`; a.click();
-    } else if (format === 'pdf') {
-        const { jsPDF } = await import('jspdf');
-        const doc = new jsPDF();
-        const splitText = doc.splitTextToSize(text, 180);
-        doc.text(splitText, 10, 10);
-        doc.save(`${baseName}.pdf`);
-    }
-  };
-
   if (activeToolId) {
     let tool = TOOLS.find(t => t.id === activeToolId);
     let effectiveToolId = activeToolId;
@@ -219,28 +186,11 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
                   </>
               )}
           </div>
-          <div className="flex-center" style={{ gap: '10px' }}>
-            {currentResult?.text && (
-                <>
-                    <button className={`icon-btn ${copySuccess ? 'copy-success' : ''}`} onClick={handleCopyResult} title="Copy Result">
-                        <span className="material-icons">{copySuccess ? 'check' : 'content_copy'}</span>
-                    </button>
-                    <div className="dropdown-container">
-                        <button className="icon-btn" title="Download Result"><span className="material-icons">download</span></button>
-                        <div className="dropdown-menu">
-                            <button onClick={() => downloadResult('txt')}>.TXT</button>
-                            <button onClick={() => downloadResult('md')}>.MD</button>
-                            <button onClick={() => downloadResult('pdf')}>.PDF</button>
-                        </div>
-                    </div>
-                </>
-            )}
-          </div>
         </div>
         <div className="tool-container-inner">
           <ErrorBoundary>
             <Suspense fallback={<div className="text-center p-20 rotating material-icons">refresh</div>}>
-                <tool.component onResultChange={setCurrentResult} toolId={effectiveToolId} onSubtoolChange={setActiveSubtoolLabel} />
+                <tool.component toolId={effectiveToolId} onSubtoolChange={setActiveSubtoolLabel} />
             </Suspense>
           </ErrorBoundary>
         </div>

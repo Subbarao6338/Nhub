@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { diffLines } from 'diff';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
-import API_BASE from '../../api';
+import ToolResult from './ToolResult';
 
 // --- UNIT CONVERTER HUB ---
-const UnitConverterHub = ({ subtool, onResultChange }) => {
+const UnitConverterHub = ({ subtool }) => {
     const tabs = [
         { id: 'length-conv', label: 'Length' },
         { id: 'weight-conv', label: 'Weight' },
@@ -37,7 +35,6 @@ const UnitConverterHub = ({ subtool, onResultChange }) => {
             res = rates[key] ? val * rates[key] : (rates[`${toUnit}_${fromUnit}`] ? val / rates[`${toUnit}_${fromUnit}`] : val);
         }
         setResult(res.toFixed(2));
-        onResultChange({ text: `${value} ${fromUnit} = ${res.toFixed(2)} ${toUnit}` });
     }, [value, fromUnit, toUnit, activeTab]);
 
     return (
@@ -67,6 +64,7 @@ const UnitConverterHub = ({ subtool, onResultChange }) => {
                     <div className="opacity-6 font-bold">{toUnit.toUpperCase()}</div>
                 </div>
             </div>
+            <ToolResult result={`${value} ${fromUnit} = ${result} ${toUnit}`} />
         </div>
     );
 };
@@ -76,6 +74,8 @@ const DiffViewer = () => {
     const [oldT, setOldT] = useState('Hello World\nEpic Toolbox');
     const [newT, setNewT] = useState('Hello Epic Toolbox\nEpic Toolbox v2');
     const diff = diffLines(oldT, newT);
+    const resultText = diff.map(p => (p.added ? '+ ' : p.removed ? '- ' : '  ') + p.value).join('');
+
     return (
         <div className="grid gap-15">
             <div className="grid grid-2 gap-10">
@@ -89,6 +89,7 @@ const DiffViewer = () => {
                     </div>
                 ))}
             </div>
+            <ToolResult result={{ text: resultText, filename: 'diff.txt' }} />
         </div>
     );
 };
@@ -99,34 +100,36 @@ const SqlFormatter = () => {
     return (
         <div className="card p-20 glass-card">
             <textarea className="pill font-mono mb-15" rows="4" value={sql} onChange={e=>setSql(e.target.value)} />
-            <pre className="tool-result">{formatted}</pre>
+            <ToolResult result={{ text: formatted, filename: 'formatted.sql' }} />
         </div>
     );
 };
 
-const JsonFormatter = ({ onResultChange }) => {
+const JsonFormatter = () => {
     const [val, setVal] = useState('');
-    const resultRef = useRef(onResultChange);
-    useEffect(() => { resultRef.current = onResultChange; }, [onResultChange]);
+    const [result, setResult] = useState(null);
 
     useEffect(() => {
         try {
-            if (!val) { resultRef.current(null); return; }
+            if (!val) { setResult(null); return; }
             const parsed = JSON.parse(val);
-            resultRef.current({ text: JSON.stringify(parsed, null, 2), filename: 'formatted.json' });
+            setResult({ text: JSON.stringify(parsed, null, 2), filename: 'formatted.json' });
         } catch (e) {
-            resultRef.current(null);
+            setResult(null);
         }
     }, [val]);
+
     return (
         <div className="card p-20 glass-card">
             <textarea className="pill font-mono" rows="8" placeholder='{"key": "value"}' value={val} onChange={e => setVal(e.target.value)} />
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const Base64Tool = ({ onResultChange }) => {
+const Base64Tool = () => {
     const [input, setInput] = useState('');
+    const [result, setResult] = useState(null);
     const process = (mode) => {
         try {
             let res;
@@ -139,37 +142,41 @@ const Base64Tool = ({ onResultChange }) => {
                 for (let i = 0; i < bin.length; i++) uint8[i] = bin.charCodeAt(i);
                 res = new TextDecoder().decode(uint8);
             }
-            onResultChange({ text: res, filename: `base64_${mode}.txt` });
+            setResult({ text: res, filename: `base64_${mode}.txt` });
         } catch (e) { alert("Invalid input for " + mode); }
     };
     return (
         <div className="card p-20 glass-card">
             <textarea className="pill font-mono mb-15" rows="5" value={input} onChange={e => setInput(e.target.value)} placeholder="Enter text..." />
-            <div className="flex-gap">
+            <div className="flex-gap mb-15">
                 <button className="btn-primary flex-1" onClick={() => process('encode')}>Encode</button>
                 <button className="pill flex-1" onClick={() => process('decode')}>Decode</button>
             </div>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const UrlTool = ({ onResultChange }) => {
+const UrlTool = () => {
     const [input, setInput] = useState('');
-    const encode = () => onResultChange({ text: encodeURIComponent(input) });
-    const decode = () => { try { onResultChange({ text: decodeURIComponent(input) }); } catch(e) { alert("Invalid URI"); } };
+    const [result, setResult] = useState(null);
+    const encode = () => setResult({ text: encodeURIComponent(input) });
+    const decode = () => { try { setResult({ text: decodeURIComponent(input) }); } catch(e) { alert("Invalid URI"); } };
     return (
         <div className="card p-20 glass-card">
             <textarea className="pill font-mono mb-15" rows="5" value={input} onChange={e => setInput(e.target.value)} placeholder="URL or text..." />
-            <div className="flex-gap">
+            <div className="flex-gap mb-15">
                 <button className="btn-primary flex-1" onClick={encode}>Encode</button>
                 <button className="pill flex-1" onClick={decode}>Decode</button>
             </div>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const YamlConverter = ({ onResultChange }) => {
+const YamlConverter = () => {
     const [val, setVal] = useState('');
+    const [result, setResult] = useState(null);
     const convert = () => {
         try {
             if (val.trim().startsWith('{') || val.trim().startsWith('[')) {
@@ -185,7 +192,7 @@ const YamlConverter = ({ onResultChange }) => {
                     }
                     return yaml;
                 };
-                onResultChange({ text: toYaml(obj), filename: 'converted.yaml' });
+                setResult({ text: toYaml(obj), filename: 'converted.yaml' });
             } else {
                 const lines = val.split('\n');
                 const obj = {};
@@ -193,20 +200,22 @@ const YamlConverter = ({ onResultChange }) => {
                     const parts = line.split(':');
                     if (parts.length >= 2) obj[parts[0].trim()] = parts.slice(1).join(':').trim();
                 });
-                onResultChange({ text: JSON.stringify(obj, null, 2), filename: 'converted.json' });
+                setResult({ text: JSON.stringify(obj, null, 2), filename: 'converted.json' });
             }
         } catch(e) { alert("Invalid format: " + e.message); }
     };
     return (
         <div className="card p-20 glass-card">
             <textarea className="pill font-mono mb-15" rows="8" value={val} onChange={e=>setVal(e.target.value)} placeholder="JSON or basic YAML..." />
-            <button className="btn-primary w-full" onClick={convert}>Convert (Basic)</button>
+            <button className="btn-primary w-full mb-15" onClick={convert}>Convert (Basic)</button>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const XmlJsonConverter = ({ onResultChange }) => {
+const XmlJsonConverter = () => {
     const [val, setVal] = useState('');
+    const [result, setResult] = useState(null);
     const convert = (mode) => {
         try {
             if (mode === 'xml2json') {
@@ -241,8 +250,8 @@ const XmlJsonConverter = ({ onResultChange }) => {
                     }
                     return Object.keys(obj).length === 0 ? "" : obj;
                 };
-                const result = toJson(xmlDoc.documentElement);
-                onResultChange({ text: JSON.stringify(result, null, 2), filename: 'converted.json' });
+                const res = toJson(xmlDoc.documentElement);
+                setResult({ text: JSON.stringify(res, null, 2), filename: 'converted.json' });
             } else {
                 const obj = JSON.parse(val);
                 const toXml = (o, name) => {
@@ -255,23 +264,25 @@ const XmlJsonConverter = ({ onResultChange }) => {
                     xml += `</${name}>`;
                     return xml;
                 };
-                onResultChange({ text: toXml(obj, 'root'), filename: 'converted.xml' });
+                setResult({ text: toXml(obj, 'root'), filename: 'converted.xml' });
             }
         } catch(e) { alert("Conversion failed: " + e.message); }
     };
     return (
         <div className="card p-20 glass-card">
             <textarea className="pill font-mono mb-15" rows="8" value={val} onChange={e=>setVal(e.target.value)} placeholder="XML or JSON..." />
-            <div className="flex-gap">
+            <div className="flex-gap mb-15">
                 <button className="btn-primary flex-1" onClick={() => convert('xml2json')}>XML to JSON</button>
                 <button className="pill flex-1" onClick={() => convert('json2xml')}>JSON to XML</button>
             </div>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const XmlFormatter = ({ onResultChange }) => {
+const XmlFormatter = () => {
     const [xml, setXml] = useState('');
+    const [result, setResult] = useState(null);
     const format = () => {
         let formatted = '', indent= '';
         const nodes = xml.replace(/>\s*</g, '><').split(/(?=<)|(?<=>)/);
@@ -280,18 +291,20 @@ const XmlFormatter = ({ onResultChange }) => {
             if (node.trim()) formatted += indent + node + '\r\n';
             if (node.startsWith('<') && !node.startsWith('</') && !node.endsWith('/>') && !node.startsWith('<?')) indent += '  ';
         });
-        onResultChange({ text: formatted.trim(), filename: 'formatted.xml' });
+        setResult({ text: formatted.trim(), filename: 'formatted.xml' });
     };
     return (
         <div className="card p-20 glass-card">
             <textarea className="pill font-mono mb-15" rows="8" value={xml} onChange={e=>setXml(e.target.value)} placeholder="<xml>...</xml>" />
-            <button className="btn-primary w-full" onClick={format}>Format XML</button>
+            <button className="btn-primary w-full mb-15" onClick={format}>Format XML</button>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const JsonToTs = ({ onResultChange }) => {
+const JsonToTs = () => {
     const [json, setJson] = useState('');
+    const [result, setResult] = useState(null);
     const generate = () => {
         try {
             const obj = JSON.parse(json);
@@ -306,46 +319,45 @@ const JsonToTs = ({ onResultChange }) => {
                 ts += `  ${key}: ${getType(obj[key])};\n`;
             });
             ts += "}";
-            onResultChange({ text: ts, filename: 'types.ts' });
+            setResult({ text: ts, filename: 'types.ts' });
         } catch(e) { alert("Invalid JSON"); }
     };
     return (
         <div className="card p-20 glass-card">
             <textarea className="pill font-mono mb-15" rows="8" value={json} onChange={e=>setJson(e.target.value)} placeholder='{"id": 1}' />
-            <button className="btn-primary w-full" onClick={generate}>Generate TypeScript</button>
+            <button className="btn-primary w-full mb-15" onClick={generate}>Generate TypeScript</button>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const CronHelper = ({ onResultChange }) => {
+const CronHelper = () => {
     const [exp, setExp] = useState('* * * * *');
     const [desc, setDesc] = useState('Runs every minute');
     const update = (v) => {
         setExp(v);
         // Simple mock description
-        if (v === '0 0 * * *') setDesc('Daily at midnight');
-        else if (v === '*/5 * * * *') setDesc('Every 5 minutes');
-        else setDesc('Custom schedule');
-        onResultChange({ text: `Cron: ${v}\nDesc: ${desc}` });
+        let d = 'Custom schedule';
+        if (v === '0 0 * * *') d = 'Daily at midnight';
+        else if (v === '*/5 * * * *') d = 'Every 5 minutes';
+        setDesc(d);
     };
     return (
         <div className="card p-20 glass-card text-center">
             <input className="pill text-center h3 mb-10 w-full" value={exp} onChange={e=>update(e.target.value)} />
             <div className="opacity-6 mb-15">{desc}</div>
-            <div className="pill-group" style={{justifyContent: 'center'}}>
+            <div className="pill-group mb-15" style={{justifyContent: 'center'}}>
                 <button className="pill" onClick={()=>update('0 0 * * *')}>Daily</button>
                 <button className="pill" onClick={()=>update('*/5 * * * *')}>5 Min</button>
                 <button className="pill" onClick={()=>update('0 * * * *')}>Hourly</button>
             </div>
+            <ToolResult result={`Cron: ${exp}\nDescription: ${desc}`} />
         </div>
     );
 };
 
-const ColorPicker = ({ onResultChange }) => {
+const ColorPicker = () => {
     const [color, setColor] = useState('#00ff00');
-    useEffect(() => {
-        onResultChange({ text: `HEX: ${color}\nRGB: ${hexToRgb(color)}` });
-    }, [color]);
     const hexToRgb = (hex) => {
         const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
         return `rgb(${r}, ${g}, ${b})`;
@@ -354,20 +366,22 @@ const ColorPicker = ({ onResultChange }) => {
         <div className="card p-20 glass-card text-center">
             <input type="color" className="w-full mb-15" style={{height: '100px', border: 'none', borderRadius: '12px'}} value={color} onChange={e=>setColor(e.target.value)} />
             <div className="h3 font-mono">{color.toUpperCase()}</div>
-            <div className="opacity-6">{hexToRgb(color)}</div>
+            <div className="opacity-6 mb-15">{hexToRgb(color)}</div>
+            <ToolResult result={`HEX: ${color.toUpperCase()}\nRGB: ${hexToRgb(color)}`} />
         </div>
     );
 };
 
-const Minifier = ({ onResultChange }) => {
+const Minifier = () => {
     const [input, setInput] = useState('');
     const [mode, setMode] = useState('json');
+    const [result, setResult] = useState(null);
     const minify = () => {
         let res = input;
         if (mode === 'json') { try { res = JSON.stringify(JSON.parse(input)); } catch(e) {} }
         else if (mode === 'css') res = input.replace(/\/\*[\s\S]*?\*\/|(?:\s+|(\s*\{\s*|\s*\}\s*|\s*:\s*|\s*;\s*))/g, '$1');
         else res = input.replace(/\s+/g, ' ').trim();
-        onResultChange({ text: res, filename: `minified.${mode}` });
+        setResult({ text: res, filename: `minified.${mode}` });
     };
     return (
         <div className="card p-20 glass-card">
@@ -379,31 +393,34 @@ const Minifier = ({ onResultChange }) => {
                 </select>
                 <button className="btn-primary flex-1" onClick={minify}>Minify</button>
             </div>
-            <textarea className="pill font-mono" rows="8" value={input} onChange={e=>setInput(e.target.value)} />
+            <textarea className="pill font-mono mb-15" rows="8" value={input} onChange={e=>setInput(e.target.value)} />
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const JwtDecoder = ({ onResultChange }) => {
+const JwtDecoder = () => {
     const [jwt, setJwt] = useState('');
+    const [result, setResult] = useState(null);
     const decode = () => {
         try {
             const parts = jwt.split('.');
             if (parts.length !== 3) throw new Error("Invalid JWT");
             const header = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
             const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-            onResultChange({ text: JSON.stringify({ header, payload }, null, 2), filename: 'jwt_decoded.json' });
+            setResult({ text: JSON.stringify({ header, payload }, null, 2), filename: 'jwt_decoded.json' });
         } catch (e) { alert("Invalid JWT format"); }
     };
     return (
         <div className="card p-20 glass-card">
             <textarea className="pill font-mono mb-15" rows="5" value={jwt} onChange={e => setJwt(e.target.value)} placeholder="Paste JWT here..." />
-            <button className="btn-primary w-full" onClick={decode}>Decode JWT</button>
+            <button className="btn-primary w-full mb-15" onClick={decode}>Decode JWT</button>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const RegexTester = ({ onResultChange }) => {
+const RegexTester = () => {
     const [pattern, setPattern] = useState('[a-z]+');
     const [flags, setFlags] = useState('gi');
     const [testString, setTestString] = useState('Epic Toolbox 2024');
@@ -414,7 +431,6 @@ const RegexTester = ({ onResultChange }) => {
             const regex = new RegExp(pattern, flags);
             const found = [...testString.matchAll(regex)];
             setMatches(found.map(m => m[0]));
-            onResultChange({ text: `Regex matches: ${found.length}\n${found.map(m => m[0]).join(', ')}` });
         } catch (e) {
             setMatches([]);
         }
@@ -444,20 +460,22 @@ const RegexTester = ({ onResultChange }) => {
                     )) : <span className="opacity-4">No matches found.</span>}
                 </div>
             </div>
+            <ToolResult result={`Matches (${matches.length}):\n${matches.join(', ')}`} />
         </div>
     );
 };
 
-const SecurityHub = ({ onResultChange, subtool }) => {
+const SecurityHub = ({ subtool }) => {
     const [hashInput, setHashInput] = useState('');
     const [algo, setAlgo] = useState('SHA-256');
+    const [result, setResult] = useState(null);
 
     const genHash = async () => {
         const msgUint8 = new TextEncoder().encode(hashInput);
         const hashBuffer = await crypto.subtle.digest(algo, msgUint8);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
         const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        onResultChange({ text: hashHex, filename: 'hash.txt' });
+        setResult({ text: hashHex, filename: 'hash.txt' });
     };
 
     return (
@@ -465,8 +483,8 @@ const SecurityHub = ({ onResultChange, subtool }) => {
             <div className="card p-25 glass-card text-center">
                 <h3 className="mb-15">Quick Actions</h3>
                 <div className="grid grid-2-cols gap-10">
-                    <button className="btn-primary" onClick={() => onResultChange({text: crypto.randomUUID(), filename: 'uuid.txt'})}>Gen UUID</button>
-                    <button className="pill" onClick={() => onResultChange({text: Math.random().toString(36).substring(2, 15), filename: 'password.txt'})}>Gen Password</button>
+                    <button className="btn-primary" onClick={() => setResult({text: crypto.randomUUID(), filename: 'uuid.txt'})}>Gen UUID</button>
+                    <button className="pill" onClick={() => setResult({text: Math.random().toString(36).substring(2, 15), filename: 'password.txt'})}>Gen Password</button>
                 </div>
             </div>
             <div className="card p-25 glass-card">
@@ -483,11 +501,12 @@ const SecurityHub = ({ onResultChange, subtool }) => {
                     </div>
                 </div>
             </div>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+const DevTools = ({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'json-fmt', label: 'JSON Formatter' },
     { id: 'sql', label: 'SQL Formatter' },
@@ -508,13 +527,11 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   ].sort((a, b) => a.label.localeCompare(b.label));
 
   const [activeTab, setActiveTab] = useState('json-fmt');
-  const resultRef = useRef(onResultChange);
   const subtoolRef = useRef(onSubtoolChange);
 
   useEffect(() => {
-    resultRef.current = onResultChange;
     subtoolRef.current = onSubtoolChange;
-  }, [onResultChange, onSubtoolChange]);
+  }, [onSubtoolChange]);
 
   useEffect(() => {
     if (toolId) {
@@ -540,8 +557,6 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   useEffect(() => {
     const current = tabs.find(t => t.id === activeTab);
     if (current && subtoolRef.current) subtoolRef.current(current.label);
-    // Reset result on tab change
-    if (resultRef.current) resultRef.current(null);
   }, [activeTab]);
 
   return (
@@ -555,22 +570,22 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       </div>
 
       <div className="hub-content animate-fadeIn">
-        {activeTab === 'json-fmt' && <JsonFormatter onResultChange={onResultChange} />}
+        {activeTab === 'json-fmt' && <JsonFormatter />}
         {activeTab === 'sql' && <SqlFormatter />}
         {activeTab === 'diff' && <DiffViewer />}
-        {activeTab === 'converter' && <UnitConverterHub onResultChange={onResultChange} subtool={toolId} />}
-        {activeTab === 'security' && <SecurityHub onResultChange={onResultChange} subtool={toolId} />}
-        {activeTab === 'regex' && <RegexTester onResultChange={onResultChange} />}
-        {activeTab === 'base64' && <Base64Tool onResultChange={onResultChange} />}
-        {activeTab === 'jwt' && <JwtDecoder onResultChange={onResultChange} />}
-        {activeTab === 'cron' && <CronHelper onResultChange={onResultChange} />}
-        {activeTab === 'url' && <UrlTool onResultChange={onResultChange} />}
-        {activeTab === 'yaml' && <YamlConverter onResultChange={onResultChange} />}
-        {activeTab === 'minifier' && <Minifier onResultChange={onResultChange} />}
-        {activeTab === 'xml-json' && <XmlJsonConverter onResultChange={onResultChange} />}
-        {activeTab === 'xml-fmt' && <XmlFormatter onResultChange={onResultChange} />}
-        {activeTab === 'json-ts' && <JsonToTs onResultChange={onResultChange} />}
-        {activeTab === 'color' && <ColorPicker onResultChange={onResultChange} />}
+        {activeTab === 'converter' && <UnitConverterHub subtool={toolId} />}
+        {activeTab === 'security' && <SecurityHub subtool={toolId} />}
+        {activeTab === 'regex' && <RegexTester />}
+        {activeTab === 'base64' && <Base64Tool />}
+        {activeTab === 'jwt' && <JwtDecoder />}
+        {activeTab === 'cron' && <CronHelper />}
+        {activeTab === 'url' && <UrlTool />}
+        {activeTab === 'yaml' && <YamlConverter />}
+        {activeTab === 'minifier' && <Minifier />}
+        {activeTab === 'xml-json' && <XmlJsonConverter />}
+        {activeTab === 'xml-fmt' && <XmlFormatter />}
+        {activeTab === 'json-ts' && <JsonToTs />}
+        {activeTab === 'color' && <ColorPicker />}
       </div>
     </div>
   );
