@@ -18,10 +18,26 @@ const HighlightText = ({ text, query }) => {
   );
 };
 
-const ProjectsView = ({ searchQuery, openInNewTab }) => {
+const ProjectsView = ({ searchQuery, openInNewTab, hideUrls, hideIcons }) => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pinnedProjects, setPinnedProjects] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('hub_pinned_projects') || '[]');
+    } catch (e) { return []; }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('hub_pinned_projects', JSON.stringify(pinnedProjects));
+  }, [pinnedProjects]);
+
+  const togglePin = (e, id) => {
+    e.stopPropagation();
+    setPinnedProjects(prev =>
+      prev.includes(id) ? prev.filter(p => p !== id) : [id, ...prev]
+    );
+  };
 
   useEffect(() => {
     fetch(`${API_BASE}/projects`)
@@ -93,55 +109,65 @@ const ProjectsView = ({ searchQuery, openInNewTab }) => {
         />
       ) : (
         <div className="category-grid">
-          {filteredProjects.map((project, idx) => (
-            <div
-              key={project.id}
-              className="card"
-              style={{'--delay': idx}}
-              onClick={() => window.open(project.url, openInNewTab ? '_blank' : '_self')}
-            >
-              <div className="card-header">
-                <div className="card-icon" style={{display:'grid', placeItems:'center', background:'var(--bg)'}}>
-                  <span className="material-icons">{project.icon || 'code'}</span>
-                </div>
-                <div>
-                  <div className="card-title">
-                    <HighlightText text={project.title} query={searchQuery} />
+          {filteredProjects.map((project, idx) => {
+            const isPinned = pinnedProjects.includes(project.id);
+            return (
+              <div
+                key={project.id}
+                className="card"
+                style={{'--delay': idx}}
+                onClick={() => window.open(project.url, openInNewTab ? '_blank' : '_self')}
+              >
+                {!hideUrls && (
+                  <div className="card-header">
+                    <div className="card-url">
+                      {project.url || 'No Link'}
+                    </div>
                   </div>
-                  {project.category && (
-                    <span style={{fontSize: '0.75rem', opacity: 0.6, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em'}}>
-                      {project.category}
-                    </span>
+                )}
+                <div className="card-body">
+                  {!hideIcons && (
+                    <div className="card-icon" style={{display:'grid', placeItems:'center', background:'var(--bg)'}}>
+                      <span className="material-icons">{project.icon || 'code'}</span>
+                    </div>
                   )}
+                  <div className="card-title-group">
+                    <div className="card-title">
+                      <HighlightText text={project.title} query={searchQuery} />
+                    </div>
+                    {project.description && (
+                      <div className="card-subtitle small opacity-7">
+                        <HighlightText text={project.description} query={searchQuery} />
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <p style={{fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '1rem', flex: 1, minHeight: '3em'}}>
-                <HighlightText text={project.description || ''} query={searchQuery} />
-              </p>
-              <div className="card-footer">
-                <div className="card-url">
-                  {(() => {
-                    try {
-                      return project.url ? new URL(project.url).hostname : 'No Link';
-                    } catch(e) {
-                      return project.url || 'No Link';
-                    }
-                  })()}
-                </div>
-                <button className="icon-btn" onClick={(e) => {
-                   e.stopPropagation();
-                   if (navigator.share) {
-                     navigator.share({ title: project.title, url: project.url });
-                   } else {
+                <div className="card-footer">
+                  <button className="icon-btn" onClick={(e) => {
+                     e.stopPropagation();
+                     if (navigator.share) {
+                       navigator.share({ title: project.title, url: project.url });
+                     } else {
+                       navigator.clipboard.writeText(project.url);
+                       alert("Link copied!");
+                     }
+                  }} title="Share Project">
+                    <span className="material-icons">share</span>
+                  </button>
+                  <button className="icon-btn" onClick={(e) => {
+                     e.stopPropagation();
                      navigator.clipboard.writeText(project.url);
-                     alert("Link copied!");
-                   }
-                }} title="Share Project">
-                  <span className="material-icons">share</span>
-                </button>
+                     alert("Project URL copied!");
+                  }} title="Copy URL">
+                    <span className="material-icons">content_copy</span>
+                  </button>
+                  <button className={`pin-btn ${isPinned ? 'active' : ''}`} onClick={(e) => togglePin(e, project.id)} title={isPinned ? 'Unpin' : 'Pin'}>
+                    <span className="material-icons">push_pin</span>
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

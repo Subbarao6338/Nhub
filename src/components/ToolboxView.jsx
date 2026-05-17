@@ -24,7 +24,7 @@ const TOOLS = [
     { id: 'time-main', title: 'Date & Time Tools', icon: 'schedule', category: 'Productivity', component: DateTimeTools, subTools: ['stopwatch', 'pomodoro', 'worldclock', 'age', 'timestamp', 'panchangam', 'datediff', 'countdown'] },
 ];
 
-const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRecentTools, hideRecentTools }) => {
+const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRecentTools, hideRecentTools, hideIcons }) => {
   const [activeToolId, setActiveToolId] = useState(null);
   const [activeSubtoolLabel, setActiveSubtoolLabel] = useState(null);
   const [currentResult, setCurrentResult] = useState(null);
@@ -301,7 +301,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
             </h3>
             <div className="category-grid">
               {TOOLS.filter(t => pinnedTools.includes(t.id)).map((tool, idx) => (
-                <ToolCard key={`pinned-${tool.id}`} tool={tool} idx={idx} isPinned={true} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} />
+                <ToolCard key={`pinned-${tool.id}`} tool={tool} idx={idx} isPinned={true} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} hideIcons={hideIcons} />
               ))}
             </div>
           </div>
@@ -322,7 +322,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
       {!groupedTools ? (
         <div className="category-grid p-0-10">
           {filteredTools.map((tool, idx) => (
-            <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} />
+            <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} hideIcons={hideIcons} />
           ))}
         </div>
       ) : (
@@ -338,7 +338,7 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
             </div>
             <div className="category-grid">
               {groupedTools[cat].map((tool, idx) => (
-                <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} />
+                <ToolCard key={tool.id} tool={tool} idx={idx} isPinned={pinnedTools.includes(tool.id)} togglePin={togglePin} handleShare={handleShare} openTool={openTool} searchQuery={searchQuery} highlightText={highlightText} noAnimation={!!searchQuery} hideIcons={hideIcons} />
               ))}
             </div>
           </div>
@@ -348,24 +348,26 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
   );
 };
 
-const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, searchQuery, highlightText, noAnimation }) => {
+const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, searchQuery, highlightText, noAnimation, hideIcons }) => {
     const onKeyDown = React.useCallback(e => {
         if (e.key === 'Enter') openTool(tool.id);
     }, [openTool, tool.id]);
 
     return (
         <div id={`card-${tool.id}`} className={`card ${noAnimation ? 'no-animation' : ''}`} style={{'--delay': idx}} onClick={() => openTool(tool.id)} tabIndex="0" onKeyDown={onKeyDown}>
-            <div className="card-icon flex-center"><span className="material-icons">{tool.icon}</span></div>
-            <div className="card-title-group" style={{marginTop: '10px'}}>
-                <div className="card-title" style={{ marginBottom: 0 }} dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
+            <div className="card-body">
+                {!hideIcons && (
+                  <div className="card-icon flex-center"><span className="material-icons">{tool.icon}</span></div>
+                )}
+                <div className="card-title-group">
+                    <div className="card-title" dangerouslySetInnerHTML={{ __html: highlightText(tool.title, searchQuery) }} />
+                </div>
             </div>
             <div className="card-footer">
-                {tool.subTools && (
-                    <span className="fallback-badge" title={`${tool.subTools.length} sub-tools available`}>
-                        <span className="material-icons">apps</span>
-                        {tool.subTools.length}
-                    </span>
-                )}
+                <span className="fallback-badge" title={`${tool.subTools?.length || 0} sub-tools available`}>
+                    <span className="material-icons">apps</span>
+                    {tool.subTools?.length || 0}
+                </span>
                 <button className={`pin-btn ${isPinned ? 'active' : ''}`} onClick={(e) => togglePin(e, tool.id)} aria-label={isPinned ? 'Unpin tool' : 'Pin tool'}>
                     <span className="material-icons">push_pin</span>
                 </button>

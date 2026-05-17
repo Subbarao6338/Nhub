@@ -92,8 +92,11 @@ function App() {
 
   // Additional Settings
   const [isCompact, setIsCompact] = useState(storage.getBoolean('hub_compact', false));
-  const [hideUrls, setHideUrls] = useState(storage.getBoolean('hub_hide_urls', false));
-  const [hideIcons, setHideIcons] = useState(storage.getBoolean('hub_hide_icons', false));
+  const [hideBookmarkUrls, setHideBookmarkUrls] = useState(storage.getBoolean('hub_hide_bookmark_urls', false));
+  const [hideBookmarkIcons, setHideBookmarkIcons] = useState(storage.getBoolean('hub_hide_bookmark_icons', false));
+  const [hideToolboxIcons, setHideToolboxIcons] = useState(storage.getBoolean('hub_hide_toolbox_icons', false));
+  const [hideProjectUrls, setHideProjectUrls] = useState(storage.getBoolean('hub_hide_project_urls', false));
+  const [hideProjectIcons, setHideProjectIcons] = useState(storage.getBoolean('hub_hide_project_icons', false));
   const [showStats, setShowStats] = useState(storage.get('hub_show_stats') !== 'false');
   const [autoFocusSearch, setAutoFocusSearch] = useState(storage.getBoolean('hub_auto_focus_search', false));
   const [openInNewTab, setOpenInNewTab] = useState(storage.get('hub_open_newtab') !== 'false');
@@ -306,8 +309,11 @@ function App() {
   }, [isSettingsOpen, isProfileOpen]);
 
   useEffect(() => { storage.set('hub_compact', isCompact); }, [isCompact]);
-  useEffect(() => { storage.set('hub_hide_urls', hideUrls); }, [hideUrls]);
-  useEffect(() => { storage.set('hub_hide_icons', hideIcons); }, [hideIcons]);
+  useEffect(() => { storage.set('hub_hide_bookmark_urls', hideBookmarkUrls); }, [hideBookmarkUrls]);
+  useEffect(() => { storage.set('hub_hide_bookmark_icons', hideBookmarkIcons); }, [hideBookmarkIcons]);
+  useEffect(() => { storage.set('hub_hide_toolbox_icons', hideToolboxIcons); }, [hideToolboxIcons]);
+  useEffect(() => { storage.set('hub_hide_project_urls', hideProjectUrls); }, [hideProjectUrls]);
+  useEffect(() => { storage.set('hub_hide_project_icons', hideProjectIcons); }, [hideProjectIcons]);
   useEffect(() => { storage.set('hub_show_stats', showStats); }, [showStats]);
   useEffect(() => { storage.set('hub_auto_focus_search', autoFocusSearch); }, [autoFocusSearch]);
   useEffect(() => { storage.set('hub_open_newtab', openInNewTab); }, [openInNewTab]);
@@ -387,8 +393,8 @@ function App() {
               onDelete={deleteLink}
               onEdit={(link) => { setEditingLink(link); setIsBookmarkOpen(true); }}
               refreshTrigger={refreshTrigger}
-              hideUrls={hideUrls}
-              hideIcons={hideIcons}
+              hideUrls={hideBookmarkUrls}
+              hideIcons={hideBookmarkIcons}
               showStats={showStats}
               openInNewTab={openInNewTab}
             />
@@ -401,12 +407,15 @@ function App() {
               recentTools={recentTools}
               setRecentTools={setRecentTools}
               hideRecentTools={hideRecentTools}
+              hideIcons={hideToolboxIcons}
             />
           )}
           {currentTab === 'projects' && showProjectsTab && (
             <ProjectsView
               searchQuery={searchQuery}
               openInNewTab={openInNewTab}
+              hideUrls={hideProjectUrls}
+              hideIcons={hideProjectIcons}
             />
           )}
         </div>
@@ -462,10 +471,16 @@ function App() {
           setAccentColor={setAccentColor}
           isCompact={isCompact}
           setIsCompact={setIsCompact}
-          hideUrls={hideUrls}
-          setHideUrls={setHideUrls}
-          hideIcons={hideIcons}
-          setHideIcons={setHideIcons}
+          hideBookmarkUrls={hideBookmarkUrls}
+          setHideBookmarkUrls={setHideBookmarkUrls}
+          hideBookmarkIcons={hideBookmarkIcons}
+          setHideBookmarkIcons={setHideBookmarkIcons}
+          hideToolboxIcons={hideToolboxIcons}
+          setHideToolboxIcons={setHideToolboxIcons}
+          hideProjectUrls={hideProjectUrls}
+          setHideProjectUrls={setHideProjectUrls}
+          hideProjectIcons={hideProjectIcons}
+          setHideProjectIcons={setHideProjectIcons}
           showStats={showStats}
           setShowStats={setShowStats}
           autoFocusSearch={autoFocusSearch}
