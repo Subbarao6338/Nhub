@@ -246,11 +246,11 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
                 </div>
               ))}
             </div>
-            <div className="modal-footer-actions" style={{ flexDirection: 'column', gap: '8px' }}>
-              <button type="button" className="pill btn-primary w-full" onClick={copyAllUrls}>
+            <div className="modal-footer-actions" style={{ flexDirection: 'column', gap: '10px' }}>
+              <button type="button" className="pill btn-primary" style={{width: '100%'}} onClick={copyAllUrls}>
                 <span className="material-icons">content_copy</span> Copy All URLs
               </button>
-              <div className="grid grid-3 gap-10 w-full">
+              <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
                 <button className="pill" onClick={() => { setIsUrlModalOpen(false); handleShare(selectedLinkForUrls); }}>
                     <span className="material-icons">share</span> Share
                 </button>

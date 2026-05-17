@@ -171,34 +171,35 @@ const SettingsModal = ({
 
           <div className="form-group">
             <label>Backup & Restore</label>
+            <p className="smallest opacity-6 mb-10">Export your bookmarks and settings to a JSON file or import from a previous backup.</p>
             <div className="grid grid-2 gap-10">
-                <button className="pill" onClick={handleExport}><span className="material-icons mr-10">download</span> Export</button>
-                <label className="pill" style={{cursor: 'pointer'}}>
-                <span className="material-icons mr-10">upload</span> Import
-                <input type="file" hidden accept=".json" onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (ev) => {
-                            try {
-                                const json = JSON.parse(ev.target.result);
-                                Object.keys(json).forEach(k => localStorage.setItem(k, json[k]));
-                                window.location.reload();
-                            } catch(e) { alert("Invalid backup file"); }
-                        };
-                        reader.readAsText(file);
-                    }
-                }} />
+                <button className="pill" onClick={handleExport} title="Download a JSON backup of your data">
+                    <span className="material-icons mr-10">download</span> Export Data
+                </button>
+                <label className="pill" style={{cursor: 'pointer'}} title="Restore data from a JSON backup">
+                    <span className="material-icons mr-10">upload</span> Import Data
+                    <input type="file" hidden accept=".json" onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (ev) => {
+                                try {
+                                    const json = JSON.parse(ev.target.result);
+                                    Object.keys(json).forEach(k => localStorage.setItem(k, json[k]));
+                                    window.location.reload();
+                                } catch(e) { alert("Invalid backup file"); }
+                            };
+                            reader.readAsText(file);
+                        }
+                    }} />
                 </label>
             </div>
           </div>
 
           <div className="form-group">
-            <label>Advanced Recovery</label>
+            <label>Data Management</label>
+            <p className="smallest opacity-6 mb-10">Refresh local data or clear specific application states.</p>
             <div className="grid gap-10">
-                <button className="pill" onClick={() => { if(confirm("Clear local storage?")) { localStorage.clear(); window.location.reload(); } }}>
-                    <span className="material-icons mr-10">history_toggle_off</span> Reset App Settings
-                </button>
                 <button className="pill" onClick={() => {
                     if(confirm("Refresh data from JSON files? This will reload the app.")) {
                         fetch(`${getApiBase()}/debug/reset-db`, { method: 'POST' })
@@ -206,14 +207,24 @@ const SettingsModal = ({
                             .catch(e => alert("Refresh failed: " + e.message));
                     }
                 }}>
-                    <span className="material-icons mr-10">refresh</span> Refresh JSON Data
+                    <span className="material-icons mr-10">refresh</span> Initialize from Defaults
+                </button>
+                <button className="pill" onClick={() => { if(confirm("Clear local storage? This will reset all your settings and bookmarks.")) { localStorage.clear(); window.location.reload(); } }}>
+                    <span className="material-icons mr-10">history_toggle_off</span> Reset App Settings
                 </button>
             </div>
           </div>
 
-          <button className="pill w-full mt-10" style={{color: 'var(--danger)', borderColor: 'var(--danger)'}} onClick={resetData}>
-            <span className="material-icons mr-10">delete_forever</span> Reset All Data
-          </button>
+          <div className="form-group">
+             <label style={{color: 'var(--danger)'}}>Danger Zone</label>
+             <button className="pill w-full" style={{color: 'var(--danger)', borderColor: 'var(--danger)'}} onClick={resetData}>
+                <span className="material-icons mr-10">delete_forever</span> Wipe All Data & Factory Reset
+             </button>
+          </div>
+
+          <div className="p-10 text-center opacity-4 smallest uppercase font-bold">
+             Local Storage Usage: {(JSON.stringify(localStorage).length / 1024).toFixed(2)} KB
+          </div>
         </CollapsibleSection>
       </div>
 

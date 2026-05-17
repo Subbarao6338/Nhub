@@ -39,7 +39,7 @@ const NetworkTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   }, [toolId]);
 
   return (
-    <div className="tool-form">
+    <div className="tool-form mt-20">
       <div className="pill-group mb-20 scrollable-x">
         {tabs.map(tab => (
           <button
