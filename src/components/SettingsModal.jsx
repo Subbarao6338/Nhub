@@ -38,8 +38,11 @@ const SettingsModal = ({
   isCompact, setIsCompact,
   hideBookmarks, setHideBookmarks,
   hideToolbox, setHideToolbox,
-  hideUrls, setHideUrls,
-  hideIcons, setHideIcons,
+  hideBookmarkUrls, setHideBookmarkUrls,
+  hideBookmarkIcons, setHideBookmarkIcons,
+  hideToolboxIcons, setHideToolboxIcons,
+  hideProjectUrls, setHideProjectUrls,
+  hideProjectIcons, setHideProjectIcons,
   showStats, setShowStats,
   autoFocusSearch, setAutoFocusSearch,
   openInNewTab, setOpenInNewTab,
@@ -53,7 +56,7 @@ const SettingsModal = ({
   onClose,
   resetData
 }) => {
-  const [openSections, setOpenSections] = useState([]);
+  const [openSections, setOpenSections] = useState(['global']);
 
   const toggleSection = (id) => {
     setOpenSections(prev =>
@@ -103,28 +106,42 @@ const SettingsModal = ({
             <input type="text" className="pill" value={appName} onChange={(e) => setAppName(e.target.value)} />
           </div>
           <Toggle label="Enable Profiles" value={enableProfiles} onChange={setEnableProfiles} icon="account_circle" />
-          <Toggle label="Auto-focus Search" value={autoFocusSearch} onChange={setAutoFocusSearch} icon="search" />
-          <Toggle label="Open links in new tab" value={openInNewTab} onChange={setOpenInNewTab} icon="open_in_new" />
-          <Toggle label="Confirm Deletion" value={confirmDelete} onChange={setConfirmDelete} icon="delete" />
-        </CollapsibleSection>
-
-        <CollapsibleSection id="tabs" title="Tabs & Navigation" icon="tab" isOpen={openSections.includes('tabs')} onToggle={toggleSection}>
-           <div className="form-group">
+          <div className="form-group">
             <label>Startup Tab</label>
             <div className="pill-group">
               {['toolbox', 'bookmarks', 'projects'].map(tab => (
-                <button key={tab} className={`pill ${startupTab === tab ? 'active' : ''}`} onClick={() => setStartupTab(tab)} disabled={tab === 'projects' && !showProjectsTab}>
+                <button key={tab} className={`pill ${startupTab === tab ? 'active' : ''}`} onClick={() => setStartupTab(tab)} disabled={(tab === 'projects' && !showProjectsTab) || (tab === 'toolbox' && hideToolbox) || (tab === 'bookmarks' && hideBookmarks)}>
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
               ))}
             </div>
           </div>
-          <Toggle label="Show Toolbox" value={!hideToolbox} onChange={(v) => setHideToolbox(!v)} icon="handyman" />
-          <Toggle label="Show Bookmarks" value={!hideBookmarks} onChange={(v) => setHideBookmarks(!v)} icon="bookmarks" />
-          <Toggle label="Show Projects Tab" value={showProjectsTab} onChange={setShowProjectsTab} icon="architecture" />
+          <Toggle label="Auto-focus Search" value={autoFocusSearch} onChange={setAutoFocusSearch} icon="search" />
+          <Toggle label="Open links in new tab" value={openInNewTab} onChange={setOpenInNewTab} icon="open_in_new" />
+          <Toggle label="Confirm Deletion" value={confirmDelete} onChange={setConfirmDelete} icon="delete" />
         </CollapsibleSection>
 
-        <CollapsibleSection id="appearance" title="UI Customization" icon="palette" isOpen={openSections.includes('appearance')} onToggle={toggleSection}>
+        <CollapsibleSection id="toolbox" title="Toolbox" icon="handyman" isOpen={openSections.includes('toolbox')} onToggle={toggleSection}>
+          <Toggle label="Show Toolbox Tab" value={!hideToolbox} onChange={(v) => setHideToolbox(!v)} icon="visibility" />
+          <Toggle label="Hide Tool Icons" value={hideToolboxIcons} onChange={setHideToolboxIcons} icon="image_not_supported" />
+          <Toggle label="Group by Category" value={groupToolbox} onChange={setGroupToolbox} icon="grid_view" />
+          <Toggle label="Hide Recent Tools" value={hideRecentTools} onChange={setHideRecentTools} icon="history" />
+          <button className="pill w-full mt-10" onClick={clearRecentTools}><span className="material-icons mr-10">history_toggle_off</span> Clear Recent Tools</button>
+        </CollapsibleSection>
+
+        <CollapsibleSection id="bookmarks" title="Bookmarks" icon="bookmarks" isOpen={openSections.includes('bookmarks')} onToggle={toggleSection}>
+          <Toggle label="Show Bookmarks Tab" value={!hideBookmarks} onChange={(v) => setHideBookmarks(!v)} icon="visibility" />
+          <Toggle label="Hide Bookmark Icons" value={hideBookmarkIcons} onChange={setHideBookmarkIcons} icon="image_not_supported" />
+          <Toggle label="Hide Bookmark URLs" value={hideBookmarkUrls} onChange={setHideBookmarkUrls} icon="link_off" />
+        </CollapsibleSection>
+
+        <CollapsibleSection id="projects" title="Projects" icon="architecture" isOpen={openSections.includes('projects')} onToggle={toggleSection}>
+          <Toggle label="Show Projects Tab" value={showProjectsTab} onChange={setShowProjectsTab} icon="visibility" />
+          <Toggle label="Hide Project Icons" value={hideProjectIcons} onChange={setHideProjectIcons} icon="image_not_supported" />
+          <Toggle label="Hide Project URLs" value={hideProjectUrls} onChange={setHideProjectUrls} icon="link_off" />
+        </CollapsibleSection>
+
+        <CollapsibleSection id="appearance" title="UI & Theme" icon="palette" isOpen={openSections.includes('appearance')} onToggle={toggleSection}>
           <div className="form-group">
             <label>Theme Mode</label>
             <div className="pill-group">
@@ -147,15 +164,7 @@ const SettingsModal = ({
             </div>
           </div>
           <Toggle label="Compact View" value={isCompact} onChange={setIsCompact} icon="view_headline" />
-          <Toggle label="Hide URLs" value={hideUrls} onChange={setHideUrls} icon="link_off" />
-          <Toggle label="Hide Icons" value={hideIcons} onChange={setHideIcons} icon="image_not_supported" />
           <Toggle label="Show Statistics" value={showStats} onChange={setShowStats} icon="bar_chart" />
-          <Toggle label="Group Toolbox by Category" value={groupToolbox} onChange={setGroupToolbox} icon="grid_view" />
-          <Toggle label="Hide Recent Tools" value={hideRecentTools} onChange={setHideRecentTools} icon="history" />
-          <button className="pill w-full mt-10" onClick={clearRecentTools}><span className="material-icons mr-10">history_toggle_off</span> Clear Recent Tools</button>
-        </CollapsibleSection>
-
-        <CollapsibleSection id="performance" title="Effects & Performance" icon="speed" isOpen={openSections.includes('performance')} onToggle={toggleSection}>
           <Toggle label="Enable Glass Morphism" value={!disableGlass} onChange={(v) => setDisableGlass(!v)} icon="blur_on" />
           <Toggle label="Enable Animations" value={!disableAnimations} onChange={(v) => setDisableAnimations(!v)} icon="auto_awesome" />
           <Toggle label="Reduced Motion" value={reducedMotion} onChange={setReducedMotion} icon="motion_photos_off" />

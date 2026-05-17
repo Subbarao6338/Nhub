@@ -435,28 +435,29 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
       onTouchMove={cancelPress}
       onContextMenu={handleContextMenu}
     >
-      <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: 0 }}>
+      <div className="card-header">
+        {!hideUrls && (
+          <div className="card-url">
+            <span>{link.url}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="card-body">
         {!hideIcons && <BookmarkIcon link={link} categoryIcon={categoryIcon || 'link'} />}
-        <div className="card-title-group" style={{ overflow: 'hidden' }}>
-          <div className="card-title" style={{ marginBottom: 0 }} dangerouslySetInnerHTML={{ __html: highlightText(link.title, searchQuery) }} />
-        </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span className="fallback-badge" title={`This bookmark has ${link.urls?.length || 1} URL(s). Long-press to see all.`}>
-            <span className="material-icons">layers</span>
-            {link.urls?.length || 1}
-          </span>
-          <button className={`pin-btn ${link.is_pinned ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); onPin(link); }} title={link.is_pinned ? 'Unpin' : 'Pin to Top'}>
-            <span className="material-icons">push_pin</span>
-          </button>
+        <div className="card-title-group">
+          <div className="card-title" dangerouslySetInnerHTML={{ __html: highlightText(link.title, searchQuery) }} />
         </div>
       </div>
 
       <div className="card-footer">
-        {!hideUrls && (
-          <div className="card-url">
-            <span>{hostname}</span>
-          </div>
-        )}
+        <span className="fallback-badge" title={`This bookmark has ${link.urls?.length || 1} URL(s). Long-press to see all.`}>
+          <span className="material-icons">layers</span>
+          {link.urls?.length || 1}
+        </span>
+        <button className={`pin-btn ${link.is_pinned ? 'active' : ''}`} onClick={(e) => { e.stopPropagation(); onPin(link); }} title={link.is_pinned ? 'Unpin' : 'Pin to Top'}>
+          <span className="material-icons">push_pin</span>
+        </button>
       </div>
     </div>
   );
