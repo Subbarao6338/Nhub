@@ -1,11 +1,11 @@
 {
-  "name": "Epic Toolbox",
-  "short_name": "Epic Toolbox",
-  "description": "Consolidated tool ecosystem with a professional design.",
+  "name": "Nature Hub",
+  "short_name": "Nature Hub",
+  "description": "A nature-inspired unified tool ecosystem for professional efficiency.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#4f46e5",
+  "background_color": "#fdfaf5",
+  "theme_color": "#2d5a27",
   "icons": [
     {
       "src": "/assets/icon-192.png",

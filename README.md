@@ -1,24 +1,23 @@
-# Epic Toolbox
+# Nature Hub
 
-A unified ecosystem of essential tools, designed for professional efficiency and streamlined workflows. This application consolidates multiple utility hubs into a single, high-performance interface with a modern Material Design system.
+A nature-inspired, unified ecosystem of essential tools designed for harmony, professional efficiency, and streamlined workflows. Nature Hub consolidates multiple high-performance utility hubs into a single, fluid interface following the **Nature Design Mandate v6**.
 
 ## 🛠️ Core Hubs
 
-1.  **Document Tools**: Integrated PDF, Image, and Text utilities. Edit, convert, and translate documents with ease.
-2.  **Developer Hub**: Essential tools for engineers—JSON formatters, Unit converters, Color pickers, and Security utilities.
-3.  **Data Science**: Statistical analysis, data profiling, mock data generation, and financial calculators.
-4.  **Network Hub**: IP info, DNS lookups, WHOIS, SSL checks, and Subnet calculators.
-5.  **Web & Social Tools**: Media downloaders and web archiving utilities.
-6.  **AI Hub**: Image generation, chat assistants, and local sentiment analysis.
-7.  **Date & Time Tools**: World clocks, Pomodoro timers, Stopwatch, and Timestamp converters.
+1.  **Document Tools**: Enhanced PDF merging/watermarking, advanced Image filters, and a feature-rich Markdown Editor with a quick-access toolbar.
+2.  **Developer Hub**: Pro-grade tools for engineers—JSON/SQL formatters with syntax highlighting, a multi-category Unit Converter (Force, Pressure), and a robust Security Hub with entropy meters.
+3.  **Data Science**: In-depth statistical analysis, advanced CSV profiling (mean/median/stddev), and precision financial calculators (EMI, ROI).
+4.  **Network Hub**: Real-time Speed Test with progress tracking, detailed DNS/WHOIS lookups, and CIDR-aware Subnet calculators.
+5.  **Web & Social Tools**: High-reliability media downloaders, URL-to-PDF converters, and a curated library of Userscripts and Bookmarklets.
+6.  **AI Hub**: Creative AI Image generation with style presets and an intelligent Chat Assistant with Markdown support.
+7.  **Date & Time Tools**: Precision World Clocks, relative date calculators, and Unix Epoch converters.
 
-## 🚀 Features
+## 🌿 Nature Design Mandate v6
 
-*   **Professional UI**: Clean, Material-inspired cards with smooth interactive states.
-*   **Performance**: Lazy-loaded hubs and optimized React components for maximum speed.
-*   **PWA Support**: Fully installable with offline capabilities via service workers.
-*   **Customization**: Material Expressive color palettes and theme modes (Light/Dark/System).
-*   **Privacy First**: Local-first processing for sensitive tools (Hashing, Password Gen, Image Blur).
+*   **Organic Geometry**: Soft, 40px rounded corners and fluid transitions mimicking natural movement.
+*   **Earth Palette**: A color system inspired by the forest, earth, and sky.
+*   **Harmony & Flow**: Interactive elements feature "leaf-sway" animations and ambient shadows.
+*   **PWA First**: Optimized for installability with a robust offline caching strategy.
 
 ## 💻 Tech Stack
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import API_BASE from '../../api';
 import ToolResult from './ToolResult';
 
-const WebTools = ({ toolId, onSubtoolChange }) => {
+const WebTools = React.memo(({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'social', label: 'Social Tools' },
     { id: 'archive', label: 'Web Archiver' },
@@ -45,12 +45,14 @@ const WebTools = ({ toolId, onSubtoolChange }) => {
       </div>
     </div>
   );
-};
+});
 
 const UrlToPdf = () => {
     const [url, setUrl] = useState('');
     const [isConverting, setIsConverting] = useState(false);
     const [result, setResult] = useState(null);
+
+    const clear = () => { setUrl(''); setResult(null); };
 
     const handleConvert = async () => {
         if (!url) return;
@@ -73,9 +75,12 @@ const UrlToPdf = () => {
                 <label>Web URL</label>
                 <input type="text" className="pill w-full" value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://example.com" />
             </div>
-            <button className="btn-primary w-full" onClick={handleConvert} disabled={isConverting || !url}>
-                {isConverting ? 'Converting...' : 'Convert URL to PDF'}
-            </button>
+            <div className="flex-gap">
+                <button className="btn-primary flex-1" onClick={handleConvert} disabled={isConverting || !url}>
+                    {isConverting ? 'Converting...' : 'Convert URL to PDF'}
+                </button>
+                {url && <button className="pill" onClick={clear}>Clear</button>}
+            </div>
             <div className="opacity-6 smallest text-center">
                 Captures a high-quality PDF of the webpage.
             </div>
@@ -87,6 +92,9 @@ const UrlToPdf = () => {
 const WebArchiver = () => {
     const [url, setUrl] = useState('');
     const [result, setResult] = useState(null);
+
+    const clear = () => { setUrl(''); setResult(null); };
+
     const openArchive = (mode) => {
         if (!url) return;
         let target = '';
@@ -108,6 +116,7 @@ const WebArchiver = () => {
                 <button className="pill flex-1" onClick={() => openArchive('save')}>
                     <span className="material-icons">save</span> Save Page
                 </button>
+                {url && <button className="pill" onClick={clear}>Clear</button>}
             </div>
             <div className="opacity-6 smallest text-center">
                 Powered by the Wayback Machine.
@@ -122,6 +131,8 @@ const SocialTools = () => {
   const [status, setStatus] = useState('idle');
   const [result, setResult] = useState(null);
 
+  const clear = () => { setUrl(''); setResult(null); setStatus('idle'); };
+
   const handleDownload = async () => {
     setStatus('downloading');
     try {
@@ -133,13 +144,22 @@ const SocialTools = () => {
           },
           body: JSON.stringify({ url: url })
       });
-      const data = await response.json();
+      const text = await response.text();
+      let data;
+      try {
+          data = JSON.parse(text);
+      } catch (e) {
+          throw new Error("Invalid API response format");
+      }
+
       if (data.status === 'stream' || data.status === 'redirect') {
           setResult({ text: `Download link: ${data.url}`, url: data.url, filename: 'media' });
       } else if (data.status === 'picker') {
           setResult({ text: `Multiple options found. Please use the first one: ${data.picker[0].url}`, url: data.picker[0].url });
+      } else if (data.status === 'error') {
+          throw new Error(data.text || "Service error");
       } else {
-          throw new Error(data.text || "Download failed");
+          throw new Error("Unexpected response status: " + data.status);
       }
       setStatus('idle');
     } catch (err) {
@@ -154,10 +174,13 @@ const SocialTools = () => {
         <label>Media URL</label>
         <input type="text" value={url} onChange={e => setUrl(e.target.value)} placeholder="YouTube, Twitter, Instagram URL..." className="pill w-full" />
       </div>
-      <button className="btn-primary w-full" onClick={handleDownload} disabled={status === 'downloading' || !url}>
-        <span className="material-icons mr-10">{status === 'downloading' ? 'sync' : 'download'}</span>
-        {status === 'downloading' ? 'Processing...' : 'Process Media'}
-      </button>
+      <div className="flex-gap">
+          <button className="btn-primary flex-1" onClick={handleDownload} disabled={status === 'downloading' || !url}>
+            <span className="material-icons mr-10">{status === 'downloading' ? 'sync' : 'download'}</span>
+            {status === 'downloading' ? 'Processing...' : 'Process Media'}
+          </button>
+          {url && <button className="pill" onClick={clear}>Clear</button>}
+      </div>
       <ToolResult result={result} />
     </div>
   );
