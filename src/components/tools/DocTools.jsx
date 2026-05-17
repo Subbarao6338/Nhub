@@ -404,7 +404,22 @@ const ImageHub = ({ subtool }) => {
     const [image, setImage] = useState(null);
     const [preview, setPreview] = useState(null);
     const [result, setResult] = useState(null);
+    const [filters, setFilters] = useState({ brightness: 100, contrast: 100, grayscale: 0 });
     const imgRef = useRef(null);
+
+    const applyFilters = () => {
+        const canvas = document.createElement('canvas');
+        const img = imgRef.current;
+        if (!img) return;
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.filter = `brightness(${filters.brightness}%) contrast(${filters.contrast}%) grayscale(${filters.grayscale}%)`;
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(blob => {
+            setResult({ text: 'Applied Image Filters', blob, filename: 'filtered.png' });
+        });
+    };
 
     const handleUpload = (e) => {
         const file = e.target.files[0];
@@ -445,6 +460,23 @@ const ImageHub = ({ subtool }) => {
                     {activeSub === 'resize' && <ResizeImage imgRef={imgRef} image={image} setToolResult={setResult} />}
                     {activeSub === 'blur' && <PrivacyBlur imgRef={imgRef} image={image} setToolResult={setResult} />}
                     {activeSub === 'metadata' && <MetadataCleaner imgRef={imgRef} image={image} setToolResult={setResult} />}
+                    {activeSub === 'filters' && (
+                        <div className="card p-20 glass-card grid gap-10">
+                            <div className="form-group">
+                                <label>Brightness: {filters.brightness}%</label>
+                                <input type="range" min="0" max="200" value={filters.brightness} onChange={e=>setFilters({...filters, brightness: e.target.value})} className="w-full" />
+                            </div>
+                            <div className="form-group">
+                                <label>Contrast: {filters.contrast}%</label>
+                                <input type="range" min="0" max="200" value={filters.contrast} onChange={e=>setFilters({...filters, contrast: e.target.value})} className="w-full" />
+                            </div>
+                            <div className="form-group">
+                                <label>Grayscale: {filters.grayscale}%</label>
+                                <input type="range" min="0" max="100" value={filters.grayscale} onChange={e=>setFilters({...filters, grayscale: e.target.value})} className="w-full" />
+                            </div>
+                            <button className="btn-primary w-full" onClick={applyFilters}>Apply & Download</button>
+                        </div>
+                    )}
                     {activeSub === 'b64' && <button className="btn-primary w-full" onClick={() => {
                         const reader = new FileReader();
                         reader.onload = (e) => setResult({ text: e.target.result, filename: 'image_b64.txt' });
@@ -511,6 +543,7 @@ const PdfHub = ({ subtool }) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState(0);
     const [password, setPassword] = useState('');
+    const [watermark, setWatermark] = useState('NATURE HUB');
     const [fileName, setFileName] = useState('');
     const [result, setResult] = useState(null);
 
@@ -549,10 +582,33 @@ const PdfHub = ({ subtool }) => {
         finally { setIsProcessing(false); }
     };
 
+    const addWatermark = async () => {
+        if (files.length === 0) return;
+        setIsProcessing(true);
+        try {
+            const pdfBytes = await files[0].arrayBuffer();
+            const pdfDoc = await PDFDocument.load(pdfBytes);
+            const pages = pdfDoc.getPages();
+            for (const page of pages) {
+                const { width, height } = page.getSize();
+                page.drawText(watermark, {
+                    x: width / 2 - 100,
+                    y: height / 2,
+                    size: 50,
+                    color: rgb(0.5, 0.5, 0.5),
+                    opacity: 0.3,
+                    rotate: { angle: 45, type: 'degrees' }
+                });
+            }
+            setResult({ text: 'Watermarked PDF', blob: new Blob([await pdfDoc.save()], { type: 'application/pdf' }), filename: 'watermarked.pdf' });
+        } catch (e) { alert("Error: " + e.message); }
+        finally { setIsProcessing(false); }
+    };
+
     return (
         <div className="grid gap-20">
             <div className="pill-group scrollable-x">
-                {['merge', 'split', 'rotate', 'lock', 'unlock', 'img2pdf', 'pdf2img', 'word2pdf', 'ocr'].map(t => (
+                {['merge', 'split', 'rotate', 'lock', 'unlock', 'img2pdf', 'pdf2img', 'word2pdf', 'ocr', 'watermark'].map(t => (
                     <button key={t} className={`pill ${activeSub === t ? 'active' : ''}`} onClick={() => setActiveSub(t)} style={{textTransform: 'capitalize'}}>
                         {t === 'img2pdf' ? 'Images to PDF' : t === 'pdf2img' ? 'PDF to Image' : t === 'word2pdf' ? 'Word to PDF' : t === 'ocr' ? 'OCR Scan' : t}
                     </button>
@@ -578,6 +634,12 @@ const PdfHub = ({ subtool }) => {
             <div className="animate-fadeIn">
                 {activeSub === 'merge' && <button className="btn-primary w-full" onClick={mergePdfs} disabled={files.length < 2 || isProcessing}>Merge {files.length} PDFs</button>}
                 {activeSub === 'rotate' && <button className="btn-primary w-full" onClick={rotatePdf} disabled={files.length === 0 || isProcessing}>Rotate 90°</button>}
+                {activeSub === 'watermark' && (
+                    <div className="grid gap-10">
+                        <input className="pill w-full" value={watermark} onChange={e=>setWatermark(e.target.value)} placeholder="Watermark text..." />
+                        <button className="btn-primary w-full" onClick={addWatermark} disabled={files.length === 0 || isProcessing}>Apply Watermark</button>
+                    </div>
+                )}
                 {activeSub === 'lock' && (
                     <div className="grid gap-10">
                         <input type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Password" className="pill w-full" />
@@ -719,6 +781,21 @@ const MarkdownEditor = () => {
     chars: md.length
   }), [md]);
 
+  const insertText = (before, after = '') => {
+    const textarea = document.querySelector('textarea');
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = md;
+    const selected = text.substring(start, end);
+    const newText = text.substring(0, start) + before + selected + after + text.substring(end);
+    setMd(newText);
+    setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + before.length, end + before.length);
+    }, 10);
+  };
+
   const exportPdf = () => {
     const doc = new jsPDF();
     const lines = doc.splitTextToSize(md, 180);
@@ -735,6 +812,16 @@ const MarkdownEditor = () => {
 
   return (
     <div className="grid gap-15">
+      <div className="pill-group">
+          <button className="pill" onClick={() => insertText('# ')}>H1</button>
+          <button className="pill" onClick={() => insertText('## ')}>H2</button>
+          <button className="pill" onClick={() => insertText('**', '**')}>B</button>
+          <button className="pill" onClick={() => insertText('_', '_')}>I</button>
+          <button className="pill" onClick={() => insertText('[', '](url)')}><span className="material-icons">link</span></button>
+          <button className="pill" onClick={() => insertText('- ')}><span className="material-icons">list</span></button>
+          <button className="pill" onClick={() => insertText('> ')}><span className="material-icons">format_quote</span></button>
+          <button className="pill" onClick={() => insertText('```\n', '\n```')}><span className="material-icons">code</span></button>
+      </div>
       <div className="grid grid-2-cols gap-15">
         <div className="flex-column gap-10">
             <textarea
@@ -761,7 +848,7 @@ const MarkdownEditor = () => {
   );
 };
 
-const DocTools = ({ toolId, onSubtoolChange }) => {
+const DocTools = React.memo(({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'pdf', label: 'PDF Hub' },
     { id: 'image', label: 'Image Hub' },
@@ -806,6 +893,6 @@ const DocTools = ({ toolId, onSubtoolChange }) => {
       </div>
     </div>
   );
-};
+});
 
 export default DocTools;

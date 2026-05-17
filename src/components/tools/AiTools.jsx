@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import API_BASE from '../../api';
 import ToolResult from './ToolResult';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 
-const AiTools = ({ toolId, onSubtoolChange }) => {
+const AiTools = React.memo(({ toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('image-gen');
   const chatEndRef = useRef(null);
 
@@ -21,6 +23,7 @@ const AiTools = ({ toolId, onSubtoolChange }) => {
   const [loading, setLoading] = useState(false);
   const [chat, setChat] = useState([]);
   const [style, setStyle] = useState('natural');
+  const [promptPreset, setPromptPreset] = useState('');
   const [localSentiment, setLocalSentiment] = useState(null);
   const [toolResult, setToolResult] = useState(null);
 
@@ -57,8 +60,10 @@ const AiTools = ({ toolId, onSubtoolChange }) => {
   const generateImage = async () => {
     setLoading(true);
     try {
-        const prompt = style === 'natural' ? input : `${input} in ${style} style`;
-        const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=512&height=512&seed=${Math.floor(Math.random()*1000)}&model=flux`;
+        let finalPrompt = input;
+        if (promptPreset) finalPrompt = `${promptPreset}: ${input}`;
+        if (style !== 'natural') finalPrompt = `${finalPrompt} in ${style} style`;
+        const url = `https://pollinations.ai/p/${encodeURIComponent(finalPrompt)}?width=512&height=512&seed=${Math.floor(Math.random()*1000)}&model=flux`;
         setRes(url);
         setToolResult({ text: `AI Image Prompt: ${input} (${style})`, filename: 'ai_image.png', url });
     } catch (e) {
@@ -128,6 +133,17 @@ const AiTools = ({ toolId, onSubtoolChange }) => {
                 </div>
                 <div className="card p-20 grid gap-15 glass-card">
                     <div className="form-group">
+                        <label>Prompt Preset</label>
+                        <select className="pill w-full" value={promptPreset} onChange={e=>setPromptPreset(e.target.value)}>
+                            <option value="">None</option>
+                            <option value="Portrait of">Portrait</option>
+                            <option value="Landscape of">Landscape</option>
+                            <option value="Concept art of">Concept Art</option>
+                            <option value="Macro shot of">Macro</option>
+                            <option value="Aerial view of">Aerial</option>
+                        </select>
+                    </div>
+                    <div className="form-group">
                         <label>Image Prompt</label>
                         <textarea className="pill w-full" rows="3" placeholder="Describe what you want to generate..." value={input} onChange={e=>setInput(e.target.value)} />
                     </div>
@@ -148,7 +164,7 @@ const AiTools = ({ toolId, onSubtoolChange }) => {
                   <div className="card p-15 overflow-auto glass-card" style={{ height: '400px', display: 'flex', flexDirection: 'column', gap: '12px', borderRadius: 'var(--radius-xl)' }}>
                       {chat.length === 0 && <div className="text-center opacity-5 m-auto">Ask me anything...<br/><span className="material-icons" style={{fontSize: '3rem'}}>forum</span></div>}
                       {chat.map((m, i) => (
-                          <div key={i} className={`p-15 animate-slide-up ${m.role === 'user' ? 'ml-40' : 'mr-40'}`} style={{
+                          <div key={i} className={`p-15 animate-slide-up about-content ${m.role === 'user' ? 'ml-40' : 'mr-40'}`} style={{
                               borderRadius: m.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
                               alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
                               maxWidth: '85%',
@@ -156,9 +172,19 @@ const AiTools = ({ toolId, onSubtoolChange }) => {
                               color: m.role === 'user' ? 'var(--on-primary)' : 'var(--on-primary-container)',
                               border: '1px solid var(--border)',
                               boxShadow: 'var(--shadow-sm)',
-                              lineHeight: '1.5'
+                              lineHeight: '1.5',
+                              position: 'relative'
                           }}>
-                              {m.content}
+                              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(m.content)) }} />
+                              {m.role === 'assistant' && (
+                                  <button
+                                    className="pill active smallest"
+                                    style={{position: 'absolute', bottom: '-15px', right: '10px', padding: '2px 8px', fontSize: '0.6rem'}}
+                                    onClick={() => { navigator.clipboard.writeText(m.content); alert("Copied!"); }}
+                                  >
+                                      COPY
+                                  </button>
+                              )}
                           </div>
                       ))}
                       <div ref={chatEndRef} />
@@ -174,6 +200,6 @@ const AiTools = ({ toolId, onSubtoolChange }) => {
       </div>
     </div>
   );
-};
+});
 
 export default AiTools;

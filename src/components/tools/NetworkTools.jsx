@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import API_BASE from '../../api';
 import ToolResult from './ToolResult';
 
-const NetworkTools = ({ toolId, onSubtoolChange }) => {
+const NetworkTools = React.memo(({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'ip-info', label: 'IP Info' },
     { id: 'ping', label: 'Ping' },
@@ -66,7 +66,7 @@ const NetworkTools = ({ toolId, onSubtoolChange }) => {
       </div>
     </div>
   );
-};
+});
 
 const IpInfoTool = () => {
   const [publicIp, setPublicIp] = useState('Loading...');
@@ -208,14 +208,30 @@ const DnsTool = () => {
 const SpeedTestTool = () => {
     const [speed, setSpeed] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [progress, setProgress] = useState(0);
+
     const run = async () => {
-        setLoading(true); const start = Date.now();
+        setLoading(true);
+        setSpeed(null);
+        setProgress(0);
+        const start = Date.now();
         try {
-            // Using a large image from Wikimedia for speed test
-            const res = await fetch('https://upload.wikimedia.org/wikipedia/commons/3/3f/Fronalpstock_big.jpg', { cache: 'no-store' });
-            const blob = await res.blob();
+            const response = await fetch('https://upload.wikimedia.org/wikipedia/commons/3/3f/Fronalpstock_big.jpg', { cache: 'no-store' });
+            const reader = response.body.getReader();
+            const contentLength = +response.headers.get('Content-Length');
+            let receivedLength = 0;
+            let chunks = [];
+
+            while(true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+                chunks.push(value);
+                receivedLength += value.length;
+                if (contentLength) setProgress(Math.round((receivedLength / contentLength) * 100));
+            }
+
             const duration = (Date.now() - start) / 1000;
-            const mbps = ((blob.size * 8) / (duration * 1024 * 1024)).toFixed(2);
+            const mbps = ((receivedLength * 8) / (duration * 1024 * 1024)).toFixed(2);
             setSpeed(mbps);
         } catch(e) { alert("Test failed. Check connection."); }
         finally { setLoading(false); }
@@ -224,6 +240,11 @@ const SpeedTestTool = () => {
         <div className="card p-30 text-center glass-card">
             <span className="material-icons" style={{fontSize: '4rem', color: 'var(--primary)'}}>speed</span>
             <div style={{fontSize: '3rem', fontWeight: 800}} className="mb-20">{speed ? `${speed} Mbps` : '---'}</div>
+            {loading && (
+                <div className="progress-bar-container mb-20" style={{height: '10px'}}>
+                    <div style={{width: `${progress}%`, height: '100%', background: 'var(--primary)', transition: 'width 0.1s'}}></div>
+                </div>
+            )}
             <button className="btn-primary w-full" onClick={run} disabled={loading}>{loading ? 'Testing...' : 'Start Test'}</button>
             <ToolResult result={speed ? `Download Speed: ${speed} Mbps` : null} />
         </div>
@@ -366,12 +387,21 @@ const SubnetCalculator = () => {
       const netNum = (ipNum & maskNum)>>>0;
       const brNum = (netNum | ~maskNum)>>>0;
       const toIp = n => [(n>>>24)&255, (n>>>16)&255, (n>>>8)&255, n&255].join('.');
-      setRes({ net: toIp(netNum), br: toIp(brNum), hosts: m === 32 ? 1 : m === 31 ? 2 : Math.pow(2, 32-m)-2 });
+
+      const firstHost = (netNum + 1)>>>0;
+      const lastHost = (brNum - 1)>>>0;
+
+      setRes({
+          net: toIp(netNum),
+          br: toIp(brNum),
+          hosts: m === 32 ? 1 : m === 31 ? 2 : Math.pow(2, 32-m)-2,
+          range: m <= 30 ? `${toIp(firstHost)} - ${toIp(lastHost)}` : 'N/A'
+      });
     } catch(e) {
         alert(e.message);
     }
   };
-  const resultText = res ? `Network: ${res.net}\nBroadcast: ${res.br}\nUsable Hosts: ${res.hosts}` : '';
+  const resultText = res ? `Network: ${res.net}\nBroadcast: ${res.br}\nUsable Hosts: ${res.hosts}\nRange: ${res.range}` : '';
   return (
     <div className="grid gap-15">
       <div className="flex-gap card p-10 glass-card">
@@ -379,7 +409,14 @@ const SubnetCalculator = () => {
         <input value={mask} onChange={e=>setMask(e.target.value)} className="pill border" style={{width: '80px'}} placeholder="24" />
       </div>
       <button className="btn-primary" onClick={calc}>Calculate</button>
-      {res && <div className="tool-result font-mono">Net: {res.net}<br/>Broadcast: {res.br}<br/>Hosts: {res.hosts}</div>}
+      {res && (
+          <div className="tool-result font-mono">
+              <div>Net: <b>{res.net}</b></div>
+              <div>Broadcast: <b>{res.br}</b></div>
+              <div>Hosts: <b>{res.hosts}</b></div>
+              <div>Range: <b>{res.range}</b></div>
+          </div>
+      )}
       <ToolResult result={{ text: resultText, filename: 'subnet.txt' }} />
     </div>
   );

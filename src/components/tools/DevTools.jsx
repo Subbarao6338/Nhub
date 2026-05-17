@@ -8,18 +8,22 @@ const UnitConverterHub = ({ subtool }) => {
         { id: 'length-conv', label: 'Length' },
         { id: 'weight-conv', label: 'Weight' },
         { id: 'temp-conv', label: 'Temperature' },
-        { id: 'data-conv', label: 'Data' }
+        { id: 'data-conv', label: 'Data' },
+        { id: 'force-conv', label: 'Force' },
+        { id: 'pressure-conv', label: 'Pressure' }
     ];
     const [activeTab, setActiveTab] = useState(subtool || 'length-conv');
     const [value, setValue] = useState(1);
-    const [fromUnit, setFromUnit] = useState('km');
-    const [toUnit, setToUnit] = useState('m');
+    const [fromUnit, setFromUnit] = useState(subtool === 'temp-conv' ? 'c' : subtool === 'weight-conv' ? 'kg' : subtool === 'data-conv' ? 'gb' : 'km');
+    const [toUnit, setToUnit] = useState(subtool === 'temp-conv' ? 'f' : subtool === 'weight-conv' ? 'lb' : subtool === 'data-conv' ? 'mb' : 'm');
     const [result, setResult] = useState(0);
 
     const rates = {
         'km_m': 1000, 'm_km': 0.001, 'km_mi': 0.621371, 'mi_km': 1.60934,
         'kg_lb': 2.20462, 'lb_kg': 0.453592,
-        'gb_mb': 1024, 'mb_gb': 1 / 1024, 'mb_kb': 1024, 'kb_mb': 1 / 1024
+        'gb_mb': 1024, 'mb_gb': 1 / 1024, 'mb_kb': 1024, 'kb_mb': 1 / 1024,
+        'n_lbf': 0.224809, 'lbf_n': 4.44822,
+        'pa_psi': 0.000145038, 'psi_pa': 6894.76, 'pa_bar': 0.00001, 'bar_pa': 100000
     };
 
     useEffect(() => {
@@ -48,15 +52,21 @@ const UnitConverterHub = ({ subtool }) => {
                 <input type="number" className="pill mb-15 text-center h2" value={value} onChange={e => setValue(e.target.value)} />
                 <div className="flex-center gap-10">
                     <select className="pill flex-1" value={fromUnit} onChange={e=>setFromUnit(e.target.value)}>
-                        <option value="km">KM</option><option value="m">M</option><option value="mi">MI</option>
-                        <option value="kg">KG</option><option value="lb">LB</option>
-                        <option value="c">°C</option><option value="f">°F</option>
+                        {activeTab === 'length-conv' && <><option value="km">KM</option><option value="m">M</option><option value="mi">MI</option></>}
+                        {activeTab === 'weight-conv' && <><option value="kg">KG</option><option value="lb">LB</option></>}
+                        {activeTab === 'temp-conv' && <><option value="c">°C</option><option value="f">°F</option><option value="k">K</option></>}
+                        {activeTab === 'data-conv' && <><option value="gb">GB</option><option value="mb">MB</option><option value="kb">KB</option></>}
+                        {activeTab === 'force-conv' && <><option value="n">Newton</option><option value="lbf">Pound-force</option></>}
+                        {activeTab === 'pressure-conv' && <><option value="pa">Pascal</option><option value="psi">PSI</option><option value="bar">Bar</option></>}
                     </select>
                     <span className="material-icons">arrow_forward</span>
                     <select className="pill flex-1" value={toUnit} onChange={e=>setToUnit(e.target.value)}>
-                        <option value="m">M</option><option value="km">KM</option><option value="mi">MI</option>
-                        <option value="lb">LB</option><option value="kg">KG</option>
-                        <option value="f">°F</option><option value="c">°C</option>
+                        {activeTab === 'length-conv' && <><option value="m">M</option><option value="km">KM</option><option value="mi">MI</option></>}
+                        {activeTab === 'weight-conv' && <><option value="lb">LB</option><option value="kg">KG</option></>}
+                        {activeTab === 'temp-conv' && <><option value="f">°F</option><option value="c">°C</option><option value="k">K</option></>}
+                        {activeTab === 'data-conv' && <><option value="mb">MB</option><option value="gb">GB</option><option value="kb">KB</option></>}
+                        {activeTab === 'force-conv' && <><option value="lbf">Pound-force</option><option value="n">Newton</option></>}
+                        {activeTab === 'pressure-conv' && <><option value="psi">PSI</option><option value="pa">Pascal</option><option value="bar">Bar</option></>}
                     </select>
                 </div>
                 <div className="tool-result text-center mt-20">
@@ -97,9 +107,17 @@ const DiffViewer = () => {
 const SqlFormatter = () => {
     const [sql, setSql] = useState("SELECT * FROM users WHERE id = 1");
     const formatted = useMemo(() => sql.replace(/\s+/g, ' ').replace(/SELECT|FROM|WHERE|AND|OR|ORDER BY|GROUP BY/gi, m => `\n${m.toUpperCase()}`).trim(), [sql]);
+
+    const highlight = (text) => {
+        const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const keywords = /SELECT|FROM|WHERE|AND|OR|ORDER BY|GROUP BY|INSERT INTO|UPDATE|DELETE|SET|VALUES|JOIN|LEFT JOIN|RIGHT JOIN|INNER JOIN|ON/gi;
+        return escaped.replace(keywords, m => `<span style="color: var(--primary); font-weight: bold;">${m}</span>`);
+    };
+
     return (
         <div className="card p-20 glass-card">
             <textarea className="pill font-mono mb-15" rows="4" value={sql} onChange={e=>setSql(e.target.value)} />
+            <div className="tool-result font-mono" style={{whiteSpace: 'pre-wrap'}} dangerouslySetInnerHTML={{ __html: highlight(formatted) }} />
             <ToolResult result={{ text: formatted, filename: 'formatted.sql' }} />
         </div>
     );
@@ -119,9 +137,32 @@ const JsonFormatter = () => {
         }
     }, [val]);
 
+    const highlightJson = (json) => {
+        if (!json) return '';
+        const escaped = json.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return escaped.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+            let style = 'color: #3b82f6;'; // blue for numbers
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    style = 'color: var(--primary); font-weight: bold;'; // key
+                } else {
+                    style = 'color: #10b981;'; // string
+                }
+            } else if (/true|false/.test(match)) {
+                style = 'color: #f59e0b;'; // boolean
+            } else if (/null/.test(match)) {
+                style = 'color: #6b7280;'; // null
+            }
+            return '<span style="' + style + '">' + match + '</span>';
+        });
+    };
+
     return (
         <div className="card p-20 glass-card">
-            <textarea className="pill font-mono" rows="8" placeholder='{"key": "value"}' value={val} onChange={e => setVal(e.target.value)} />
+            <textarea className="pill font-mono mb-15" rows="8" placeholder='{"key": "value"}' value={val} onChange={e => setVal(e.target.value)} />
+            {result && (
+                <div className="tool-result font-mono" style={{whiteSpace: 'pre-wrap'}} dangerouslySetInnerHTML={{ __html: highlightJson(result.text) }} />
+            )}
             <ToolResult result={result} />
         </div>
     );
@@ -469,6 +510,17 @@ const SecurityHub = ({ subtool }) => {
     const [hashInput, setHashInput] = useState('');
     const [algo, setAlgo] = useState('SHA-256');
     const [result, setResult] = useState(null);
+    const [password, setPassword] = useState('');
+
+    const checkStrength = (p) => {
+        let score = 0;
+        if (p.length > 8) score++;
+        if (p.length > 12) score++;
+        if (/[A-Z]/.test(p)) score++;
+        if (/[0-9]/.test(p)) score++;
+        if (/[^A-Za-z0-9]/.test(p)) score++;
+        return score;
+    };
 
     const genHash = async () => {
         const msgUint8 = new TextEncoder().encode(hashInput);
@@ -482,9 +534,25 @@ const SecurityHub = ({ subtool }) => {
         <div className="grid gap-20">
             <div className="card p-25 glass-card text-center">
                 <h3 className="mb-15">Quick Actions</h3>
-                <div className="grid grid-2-cols gap-10">
+                <div className="grid grid-2-cols gap-10 mb-15">
                     <button className="btn-primary" onClick={() => setResult({text: crypto.randomUUID(), filename: 'uuid.txt'})}>Gen UUID</button>
-                    <button className="pill" onClick={() => setResult({text: Math.random().toString(36).substring(2, 15), filename: 'password.txt'})}>Gen Password</button>
+                    <button className="pill" onClick={() => {
+                        const p = Math.random().toString(36).substring(2, 15) + "@" + Math.random().toString(36).substring(2, 5).toUpperCase();
+                        setPassword(p);
+                        setResult({text: p, filename: 'password.txt'});
+                    }}>Gen Strong Password</button>
+                </div>
+                <div className="form-group">
+                    <label>Password Strength Meter</label>
+                    <input className="pill" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Type a password..." />
+                    <div className="progress-bar-container mt-10">
+                        <div style={{
+                            width: `${(checkStrength(password)/5)*100}%`,
+                            height: '100%',
+                            background: checkStrength(password) < 3 ? 'var(--danger)' : 'var(--primary)',
+                            transition: 'all 0.3s'
+                        }}></div>
+                    </div>
                 </div>
             </div>
             <div className="card p-25 glass-card">
@@ -506,7 +574,7 @@ const SecurityHub = ({ subtool }) => {
     );
 };
 
-const DevTools = ({ toolId, onSubtoolChange }) => {
+const DevTools = React.memo(({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'json-fmt', label: 'JSON Formatter' },
     { id: 'sql', label: 'SQL Formatter' },
@@ -589,6 +657,6 @@ const DevTools = ({ toolId, onSubtoolChange }) => {
       </div>
     </div>
   );
-};
+});
 
 export default DevTools;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import ToolResult from './ToolResult';
 
-const DateTimeTools = ({ toolId, onSubtoolChange }) => {
+const DateTimeTools = React.memo(({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'age', label: 'Age' },
     { id: 'timestamp', label: 'Timestamp' },
@@ -69,6 +69,7 @@ const DateTimeTools = ({ toolId, onSubtoolChange }) => {
 
 const TimestampConverter = () => {
     const [ts, setTs] = useState(Math.floor(Date.now() / 1000).toString());
+    const [ms, setMs] = useState(Date.now().toString());
     const [human, setHuman] = useState(new Date().toLocaleString());
 
     const updateFromTs = (val) => {
@@ -76,6 +77,18 @@ const TimestampConverter = () => {
         try {
             const d = new Date(parseInt(val) * 1000);
             if (!isNaN(d.getTime())) {
+                setMs(d.getTime().toString());
+                setHuman(d.toLocaleString());
+            }
+        } catch(e) {}
+    };
+
+    const updateFromMs = (val) => {
+        setMs(val);
+        try {
+            const d = new Date(parseInt(val));
+            if (!isNaN(d.getTime())) {
+                setTs(Math.floor(d.getTime() / 1000).toString());
                 setHuman(d.toLocaleString());
             }
         } catch(e) {}
@@ -87,6 +100,7 @@ const TimestampConverter = () => {
             const d = new Date(val);
             if (!isNaN(d.getTime())) {
                 setTs(Math.floor(d.getTime() / 1000).toString());
+                setMs(d.getTime().toString());
             }
         } catch(e) {}
     };
@@ -97,13 +111,17 @@ const TimestampConverter = () => {
                 <label>Unix Timestamp (Seconds)</label>
                 <input className="pill" value={ts} onChange={e=>updateFromTs(e.target.value)} />
             </div>
+            <div className="form-group">
+                <label>Milliseconds (Epoch)</label>
+                <input className="pill" value={ms} onChange={e=>updateFromMs(e.target.value)} />
+            </div>
             <div className="text-center opacity-4"><span className="material-icons">swap_vert</span></div>
             <div className="form-group">
                 <label>Human Readable Date</label>
                 <input className="pill" value={human} onChange={e=>updateFromHuman(e.target.value)} />
             </div>
             <button className="pill" onClick={() => updateFromTs(Math.floor(Date.now()/1000).toString())}>Set to Now</button>
-            <ToolResult result={`Timestamp: ${ts}\nLocal: ${human}`} />
+            <ToolResult result={`Timestamp: ${ts}\nMS: ${ms}\nLocal: ${human}`} />
         </div>
     );
 };
@@ -229,30 +247,44 @@ const PomodoroTool = () => {
 };
 
 const DateDiffTool = () => {
-    const [d1, setD1] = useState('');
-    const [d2, setD2] = useState('');
-    const diff = useMemo(() => {
-        if (!d1 || !d2) return null;
-        const start = new Date(d1), end = new Date(d2);
-        const ms = Math.abs(end - start);
-        const days = Math.floor(ms / (1000 * 60 * 60 * 24));
-        return { days, weeks: (days/7).toFixed(1), months: (days/30.44).toFixed(1) };
-    }, [d1, d2]);
+    const [d1, setD1] = useState(new Date().toISOString().split('T')[0]);
+    const [offset, setOffset] = useState(7);
+    const [unit, setUnit] = useState('days');
 
-    const resultText = diff ? `Difference between ${d1} and ${d2}:\n${diff.days} Days\n${diff.weeks} Weeks\n${diff.months} Months` : '';
+    const resultDate = useMemo(() => {
+        if (!d1) return null;
+        const d = new Date(d1);
+        const val = parseInt(offset) || 0;
+        if (unit === 'days') d.setDate(d.getDate() + val);
+        else if (unit === 'weeks') d.setDate(d.getDate() + val * 7);
+        else if (unit === 'months') d.setMonth(d.getMonth() + val);
+        else if (unit === 'years') d.setFullYear(d.getFullYear() + val);
+        return d;
+    }, [d1, offset, unit]);
 
     return (
         <div className="grid gap-15 card p-20 glass-card">
-            <input type="date" className="pill w-full" value={d1} onChange={e=>setD1(e.target.value)} />
-            <input type="date" className="pill w-full" value={d2} onChange={e=>setD2(e.target.value)} />
-            {diff && (
-                <div className="tool-result grid grid-3 gap-10 text-center p-10">
-                    <div><b>{diff.days}</b><br/>Days</div>
-                    <div><b>{diff.weeks}</b><br/>Weeks</div>
-                    <div><b>{diff.months}</b><br/>Months</div>
+            <div className="form-group">
+                <label>Base Date</label>
+                <input type="date" className="pill w-full" value={d1} onChange={e=>setD1(e.target.value)} />
+            </div>
+            <div className="flex-gap">
+                <input type="number" className="pill flex-1" value={offset} onChange={e=>setOffset(e.target.value)} />
+                <select className="pill flex-1" value={unit} onChange={e=>setUnit(e.target.value)}>
+                    <option value="days">Days</option>
+                    <option value="weeks">Weeks</option>
+                    <option value="months">Months</option>
+                    <option value="years">Years</option>
+                </select>
+            </div>
+            {resultDate && (
+                <div className="tool-result text-center">
+                    <div className="opacity-6 smallest uppercase font-bold">Relative Date</div>
+                    <div className="font-bold color-primary" style={{fontSize: '1.8rem'}}>{resultDate.toDateString()}</div>
+                    <div className="smallest opacity-6">Local: {resultDate.toLocaleDateString()}</div>
                 </div>
             )}
-            <ToolResult result={resultText} />
+            <ToolResult result={resultDate ? `Relative Date: ${resultDate.toDateString()}` : null} />
         </div>
     );
 };
@@ -413,6 +445,6 @@ const PanchangamTool = () => {
             <ToolResult result={resultText} filename="panchangam.txt" />
         </div>
     );
-};
+});
 
 export default DateTimeTools;

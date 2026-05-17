@@ -304,7 +304,7 @@ const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, 
     }, [openTool, tool.id]);
 
     return (
-        <div id={`card-${tool.id}`} className={`card ${noAnimation ? 'no-animation' : ''}`} style={{'--delay': idx}} onClick={() => openTool(tool.id)} tabIndex="0" onKeyDown={onKeyDown}>
+        <div id={`card-${tool.id}`} className={`card leaf-animation ${noAnimation ? 'no-animation' : ''}`} style={{animationDelay: `${idx * 0.05}s`}} onClick={() => openTool(tool.id)} tabIndex="0" onKeyDown={onKeyDown}>
             <div className="card-body">
                 {!hideIcons && (
                   <div className="card-icon flex-center"><span className="material-icons">{tool.icon}</span></div>

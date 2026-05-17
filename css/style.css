@@ -12,16 +12,21 @@
   --s-60: #6366f1;
   --s-90: #eef2ff;
 
-  --brand-primary: var(--p-60);
-  --brand-secondary: var(--s-60);
-  --brand-accent: #f59e0b;
-  --brand-dark: var(--p-10);
-  --brand-muted: #94a3b8;
-  --brand-bg-light: #f8fafc;
+  --brand-primary: #2d5a27; /* Forest Green */
+  --brand-secondary: #8b4513; /* Saddle Brown */
+  --brand-accent: #ffcc33; /* Sun Gold */
+  --brand-dark: #1b3022; /* Deep Woods */
+  --brand-muted: #78866b; /* Sage */
+  --brand-bg-light: #fdfaf5; /* Cream Shell */
   --brand-surface: #ffffff;
-  --brand-border: #e2e8f0;
+  --brand-border: #d2cebc; /* Stone */
 
-  --primary: var(--brand-primary);
+  --leaf-green: #4f7942;
+  --earth-brown: #5d4037;
+  --water-blue: #0077be;
+  --mist-gray: #b2beb5;
+
+  --primary: var(--leaf-green);
   --primary-rgb: 79, 70, 229;
   --primary-glow: rgba(var(--primary-rgb), 0.12);
   --primary-container: var(--p-90);
@@ -38,10 +43,10 @@
   --sidebar-bg: rgba(255, 255, 255, 0.5);
   --glass-blur: 24px;
 
-  /* Modern Design Language */
+  /* Nature Design Mandate v6 - Harmony & Flow */
   --radius-full: 9999px;
-  --radius-xl: 32px;
-  --radius-lg: 24px;
+  --radius-xl: 40px;
+  --radius-lg: 28px;
   --radius-md: 16px;
   --radius-sm: 8px;
 
@@ -130,19 +135,20 @@ body {
   background: var(--surface-solid);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 1rem;
-  transition: all 0.3s var(--transition-bounce);
-  box-shadow: var(--shadow-sm);
+  padding: 1.25rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 20px -10px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
   height: auto;
   cursor: pointer;
   position: relative;
+  overflow: hidden;
 }
 
 .card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--shadow-lg), var(--shadow-ambient);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px -15px rgba(0,0,0,0.15), var(--shadow-ambient);
   border-color: var(--primary);
   background: var(--surface-hover);
 }
@@ -469,6 +475,24 @@ body {
 /* Animation Utilities */
 .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+@keyframes leaf-entry {
+  0% { opacity: 0; transform: scale(0.95) rotate(-2deg) translateY(20px); }
+  100% { opacity: 1; transform: scale(1) rotate(0) translateY(0); }
+}
+
+@keyframes leaf-sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(1deg); }
+}
+
+.leaf-animation {
+  animation: leaf-entry 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.card:hover {
+  animation: leaf-sway 2s ease-in-out infinite;
+}
 
 /* Error Styling */
 .danger-box {

@@ -3,36 +3,63 @@ import Papa from 'papaparse';
 import ToolResult from './ToolResult';
 
 const FinanceHub = ({ subtool }) => {
-    const [amt, setAmt] = useState(1000);
-    const [rate, setRate] = useState(10);
-    const [years, setYears] = useState(5);
+    const [amt, setAmt] = useState(100000);
+    const [rate, setRate] = useState(8.5);
+    const [tenure, setTenure] = useState(20);
+    const [mode, setMode] = useState(subtool === 'emi-calc' || subtool === 'loan-calc' ? 'EMI' : 'Compound');
 
-    const compound = amt * Math.pow((1 + (rate/100)), years);
+    const calculate = () => {
+        if (mode === 'EMI') {
+            const r = rate / (12 * 100);
+            const n = tenure * 12;
+            const emi = (amt * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+            const totalPayable = emi * n;
+            const totalInterest = totalPayable - amt;
+            return { result: emi.toFixed(2), total: totalPayable.toFixed(2), interest: totalInterest.toFixed(2) };
+        } else if (mode === 'ROI') {
+             const gain = amt * (rate/100);
+             return { result: (amt + gain).toFixed(2), profit: gain.toFixed(2) };
+        } else {
+            const compound = amt * Math.pow((1 + (rate/100)), tenure);
+            return { result: compound.toFixed(2), interest: (compound - amt).toFixed(2) };
+        }
+    };
+
+    const res = calculate();
 
     return (
-        <div className="card p-20 glass-card grid gap-15">
-            <div className="form-group">
-                <label>Principal Amount</label>
-                <input type="number" className="pill" value={amt} onChange={e=>setAmt(e.target.value)} />
+        <div className="grid gap-15">
+            <div className="pill-group">
+                {['EMI', 'Compound', 'ROI'].map(m => (
+                    <button key={m} className={`pill ${mode === m ? 'active' : ''}`} onClick={() => setMode(m)}>{m}</button>
+                ))}
             </div>
-            <div className="form-group">
-                <label>Interest Rate (%)</label>
-                <input type="number" className="pill" value={rate} onChange={e=>setRate(e.target.value)} />
+            <div className="card p-20 glass-card grid gap-15">
+                <div className="form-group">
+                    <label>{mode === 'ROI' ? 'Investment' : 'Principal Amount'}</label>
+                    <input type="number" className="pill" value={amt} onChange={e=>setAmt(e.target.value)} />
+                </div>
+                <div className="form-group">
+                    <label>Rate (%)</label>
+                    <input type="number" className="pill" value={rate} onChange={e=>setRate(e.target.value)} />
+                </div>
+                <div className="form-group">
+                    <label>{mode === 'ROI' ? 'Mode (Info only)' : 'Time (Years)'}</label>
+                    <input type="number" className="pill" value={tenure} onChange={e=>setTenure(e.target.value)} />
+                </div>
+                <div className="tool-result text-center">
+                    <div className="opacity-6 smallest uppercase font-bold">{mode} Result</div>
+                    <div className="font-bold color-primary" style={{fontSize: '2.5rem'}}>{res.result}</div>
+                    {res.interest && <div className="smallest opacity-6">Total Interest: {res.interest}</div>}
+                    {res.total && <div className="smallest opacity-6">Total Payable: {res.total}</div>}
+                </div>
+                <ToolResult result={{ text: `${mode} Result: ${res.result}`, filename: 'finance.txt' }} />
             </div>
-            <div className="form-group">
-                <label>Time (Years)</label>
-                <input type="number" className="pill" value={years} onChange={e=>setYears(e.target.value)} />
-            </div>
-            <div className="tool-result text-center">
-                <div className="opacity-6 smallest uppercase font-bold">Maturity Value</div>
-                <div className="font-bold color-primary" style={{fontSize: '2.5rem'}}>{compound.toFixed(2)}</div>
-            </div>
-            <ToolResult result={{ text: `Compound Interest: ${compound.toFixed(2)}`, filename: 'finance.txt' }} />
         </div>
     );
 };
 
-const DataTools = ({ toolId, onSubtoolChange }) => {
+const DataTools = React.memo(({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'viewer', label: 'Data Viewer' },
     { id: 'finance', label: 'Finance Hub' },
@@ -147,10 +174,65 @@ const DataViewer = ({ setGlobalData }) => {
 
 const DataProfilingTool = ({ data }) => {
     if (!data) return <div className="text-center p-30 card glass-card opacity-6">Upload data in Viewer first.</div>;
+
+    const stats = useMemo(() => {
+        const results = {};
+        if (data.length === 0) return results;
+        const keys = Object.keys(data[0]);
+
+        keys.forEach(key => {
+            const values = data.map(d => parseFloat(d[key])).filter(v => !isNaN(v));
+            if (values.length > 0) {
+                values.sort((a, b) => a - b);
+                const sum = values.reduce((a, b) => a + b, 0);
+                const mean = sum / values.length;
+                const median = values[Math.floor(values.length / 2)];
+                const min = values[0];
+                const max = values[values.length - 1];
+
+                // Mode
+                const counts = {};
+                values.forEach(v => counts[v] = (counts[v] || 0) + 1);
+                let mode = values[0], maxCount = 0;
+                for (let v in counts) {
+                    if (counts[v] > maxCount) {
+                        maxCount = counts[v];
+                        mode = v;
+                    }
+                }
+
+                // Std Dev
+                const sqDiffs = values.map(v => Math.pow(v - mean, 2));
+                const stdDev = Math.sqrt(sqDiffs.reduce((a, b) => a + b, 0) / values.length);
+
+                results[key] = { mean: mean.toFixed(2), median, mode, min, max, stdDev: stdDev.toFixed(2), count: values.length };
+            }
+        });
+        return results;
+    }, [data]);
+
     return (
-        <div className="card p-20 glass-card">
-            Analysis of {data.length} rows complete.
-            <ToolResult result={`Rows: ${data.length}\nColumns: ${Object.keys(data[0] || {}).join(', ')}`} />
+        <div className="grid gap-15">
+            <div className="card p-20 glass-card">
+                <h3 className="mb-10">Data Summary ({data.length} rows)</h3>
+                <div className="grid gap-10">
+                    {Object.entries(stats).map(([col, s]) => (
+                        <div key={col} className="p-10 border rounded" style={{background: 'var(--primary-glow)'}}>
+                            <div className="font-bold color-primary uppercase smallest mb-5">{col}</div>
+                            <div className="grid grid-3 smallest">
+                                <div>Mean: <b>{s.mean}</b></div>
+                                <div>Median: <b>{s.median}</b></div>
+                                <div>Mode: <b>{s.mode}</b></div>
+                                <div>Min: <b>{s.min}</b></div>
+                                <div>Max: <b>{s.max}</b></div>
+                                <div>StdDev: <b>{s.stdDev}</b></div>
+                            </div>
+                        </div>
+                    ))}
+                    {Object.keys(stats).length === 0 && <div className="opacity-5">No numerical columns found to analyze.</div>}
+                </div>
+            </div>
+            <ToolResult result={JSON.stringify(stats, null, 2)} />
         </div>
     );
 };
@@ -209,6 +291,6 @@ const MockDataGenerator = () => {
             <ToolResult result={result} />
         </div>
     );
-};
+});
 
 export default DataTools;
