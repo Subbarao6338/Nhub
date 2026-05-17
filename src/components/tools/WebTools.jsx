@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import API_BASE from '../../api';
+import ToolResult from './ToolResult';
 
-const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+const WebTools = ({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'social', label: 'Social Tools' },
     { id: 'archive', label: 'Web Archiver' },
@@ -37,52 +38,62 @@ const WebTools = ({ toolId, onResultChange, onSubtoolChange }) => {
 
       <div className="hub-content animate-fadeIn">
         {activeTab === 'social' && <SocialTools />}
-        {activeTab === 'archive' && <WebArchiver onResultChange={onResultChange} />}
-        {activeTab === 'url2pdf' && <UrlToPdf onResultChange={onResultChange} />}
-        {activeTab === 'userscripts' && <UserscriptsTool onResultChange={onResultChange} />}
-        {activeTab === 'bookmarklets' && <BookmarkletsTool onResultChange={onResultChange} />}
+        {activeTab === 'archive' && <WebArchiver />}
+        {activeTab === 'url2pdf' && <UrlToPdf />}
+        {activeTab === 'userscripts' && <UserscriptsTool />}
+        {activeTab === 'bookmarklets' && <BookmarkletsTool />}
       </div>
     </div>
   );
 };
 
-const UrlToPdf = ({ onResultChange }) => {
+const UrlToPdf = () => {
     const [url, setUrl] = useState('');
     const [isConverting, setIsConverting] = useState(false);
-    const handleConvert = () => {
+    const [result, setResult] = useState(null);
+
+    const handleConvert = async () => {
         if (!url) return;
         setIsConverting(true);
-        setTimeout(() => {
+        try {
+            // Using html2pdf.app API (public endpoint example)
+            const response = await fetch(`https://api.html2pdf.app/v1/generate?url=${encodeURIComponent(url)}`);
+            if (!response.ok) throw new Error("Conversion failed");
+            const blob = await response.blob();
+            setResult({ text: `PDF generated for ${url}`, blob, filename: 'webpage.pdf' });
+        } catch (err) {
+            alert("Conversion failed. Please try a different URL or check your connection.");
+        } finally {
             setIsConverting(false);
-            alert("URL to PDF conversion requires a backend service. In this demo, we've simulated the request.");
-            onResultChange({ text: `Simulated PDF for ${url}`, filename: 'webpage.pdf' });
-        }, 2000);
+        }
     };
     return (
         <div className="card p-30 glass-card grid gap-15">
             <div className="form-group">
                 <label>Web URL</label>
-                <input type="text" className="pill w-full" value={url} onChange={e=>setUrl(e.target.value)} placeholder="Enter Web URL..." />
+                <input type="text" className="pill w-full" value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://example.com" />
             </div>
             <button className="btn-primary w-full" onClick={handleConvert} disabled={isConverting || !url}>
                 {isConverting ? 'Converting...' : 'Convert URL to PDF'}
             </button>
             <div className="opacity-6 smallest text-center">
-                Uses headless browser to capture a high-quality PDF of the webpage.
+                Captures a high-quality PDF of the webpage.
             </div>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const WebArchiver = ({ onResultChange }) => {
+const WebArchiver = () => {
     const [url, setUrl] = useState('');
+    const [result, setResult] = useState(null);
     const openArchive = (mode) => {
         if (!url) return;
         let target = '';
         if (mode === 'search') target = `https://web.archive.org/web/*/${url}`;
         else if (mode === 'save') target = `https://web.archive.org/save/${url}`;
         window.open(target, '_blank');
-        onResultChange({ text: `Opened Wayback Machine (${mode}) for ${url}` });
+        setResult({ text: `Opened Wayback Machine (${mode}) for ${url}` });
     };
     return (
         <div className="card p-30 glass-card grid gap-15">
@@ -101,6 +112,7 @@ const WebArchiver = ({ onResultChange }) => {
             <div className="opacity-6 smallest text-center">
                 Powered by the Wayback Machine.
             </div>
+            <ToolResult result={result} />
         </div>
     );
 };
@@ -108,16 +120,32 @@ const WebArchiver = ({ onResultChange }) => {
 const SocialTools = () => {
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState('idle');
+  const [result, setResult] = useState(null);
 
   const handleDownload = async () => {
     setStatus('downloading');
     try {
-      // Mock download logic for demo
-      setTimeout(() => {
-          setStatus('idle');
-          alert("Media download initiated (Sandbox Demo)");
-      }, 1500);
-    } catch (err) { setStatus('error'); }
+      const response = await fetch('https://cobalt.tools/api/json', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+          },
+          body: JSON.stringify({ url: url })
+      });
+      const data = await response.json();
+      if (data.status === 'stream' || data.status === 'redirect') {
+          setResult({ text: `Download link: ${data.url}`, url: data.url, filename: 'media' });
+      } else if (data.status === 'picker') {
+          setResult({ text: `Multiple options found. Please use the first one: ${data.picker[0].url}`, url: data.picker[0].url });
+      } else {
+          throw new Error(data.text || "Download failed");
+      }
+      setStatus('idle');
+    } catch (err) {
+        setStatus('error');
+        alert("Download failed: " + err.message);
+    }
   };
 
   return (
@@ -128,13 +156,14 @@ const SocialTools = () => {
       </div>
       <button className="btn-primary w-full" onClick={handleDownload} disabled={status === 'downloading' || !url}>
         <span className="material-icons mr-10">{status === 'downloading' ? 'sync' : 'download'}</span>
-        {status === 'downloading' ? 'Processing...' : 'Download Media'}
+        {status === 'downloading' ? 'Processing...' : 'Process Media'}
       </button>
+      <ToolResult result={result} />
     </div>
   );
 };
 
-const UserscriptsTool = ({ onResultChange }) => {
+const UserscriptsTool = () => {
     const scripts = [
         { name: 'Next Page / Auto Pager', desc: 'Automatically loads the next page when scrolling.', url: 'https://greasyfork.org/scripts/438684-pagetual/code/Pagetual.user.js' },
         { name: 'Web to Markdown', desc: 'Copy any webpage as Markdown text.', url: 'https://greasyfork.org/scripts/406852-web-to-markdown/code/Web%20to%20Markdown.user.js' },
@@ -162,15 +191,18 @@ const UserscriptsTool = ({ onResultChange }) => {
     );
 };
 
-const BookmarkletsTool = ({ onResultChange }) => {
+const BookmarkletsTool = () => {
     const bookmarklets = [
         { name: 'Print Friendly', desc: 'Optimize the current page for printing.', code: "javascript:(function(){var%20js=document.createElement('script');js.setAttribute('type','text/javascript');js.setAttribute('src','https://www.printfriendly.com/assets/printfriendly.js');document.getElementsByTagName('head')[0].appendChild(js);})();" },
         { name: 'Extract Images', desc: 'Open all images on the page in a new tab.', code: "javascript:(function(){var%20imgs=document.getElementsByTagName('img');var%20out='';for(var%20i=0;i<imgs.length;i++){out+='<img%20src=%22'+imgs[i].src+'%22%20style=%22max-width:300px;margin:10px%22>';}var%20w=window.open();w.document.write(out);})();" },
         { name: 'Editable Page', desc: 'Toggle designMode to edit any webpage text.', code: "javascript:document.body.contentEditable='true';%20document.designMode='on';%20void%200" }
     ];
 
-    const copyCode = (code) => {
-        navigator.clipboard.writeText(code);
+    const [result, setResult] = useState(null);
+
+    const copyCode = (b) => {
+        setResult({ text: b.code, filename: `${b.name.toLowerCase().replace(/\s+/g, '_')}.js` });
+        navigator.clipboard.writeText(b.code);
         alert("Bookmarklet code copied! Create a new bookmark and paste this into the URL field.");
     };
 
@@ -190,12 +222,13 @@ const BookmarkletsTool = ({ onResultChange }) => {
                         <a href={b.code} className="pill" onClick={(e) => e.preventDefault()} style={{cursor: 'grab'}} title="Drag this to your bookmarks bar">
                            <span className="material-icons">bookmark_add</span> Drag Me
                         </a>
-                        <button className="pill" onClick={() => copyCode(b.code)}>
+                        <button className="pill" onClick={() => copyCode(b)}>
                            <span className="material-icons">content_copy</span> Copy
                         </button>
                     </div>
                 </div>
             ))}
+            <ToolResult result={result} title="Last Copied Bookmarklet" />
         </div>
     );
 };

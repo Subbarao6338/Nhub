@@ -1,18 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Papa from 'papaparse';
-import * as XLSX from 'xlsx';
-import { parquetRead } from 'hyparquet';
+import ToolResult from './ToolResult';
 
-const FinanceHub = ({ onResultChange, subtool }) => {
+const FinanceHub = ({ subtool }) => {
     const [amt, setAmt] = useState(1000);
     const [rate, setRate] = useState(10);
     const [years, setYears] = useState(5);
 
     const compound = amt * Math.pow((1 + (rate/100)), years);
-
-    useEffect(() => {
-        onResultChange({ text: `Compound Interest: ${compound.toFixed(2)}`, filename: 'finance.txt' });
-    }, [amt, rate, years]);
 
     return (
         <div className="card p-20 glass-card grid gap-15">
@@ -32,11 +27,12 @@ const FinanceHub = ({ onResultChange, subtool }) => {
                 <div className="opacity-6 smallest uppercase font-bold">Maturity Value</div>
                 <div className="font-bold color-primary" style={{fontSize: '2.5rem'}}>{compound.toFixed(2)}</div>
             </div>
+            <ToolResult result={{ text: `Compound Interest: ${compound.toFixed(2)}`, filename: 'finance.txt' }} />
         </div>
     );
 };
 
-const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+const DataTools = ({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'viewer', label: 'Data Viewer' },
     { id: 'finance', label: 'Finance Hub' },
@@ -74,21 +70,22 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       </div>
 
       <div className="hub-content animate-fadeIn">
-        {activeTab === 'viewer' && <DataViewer onResultChange={onResultChange} setGlobalData={setUploadedData} />}
-        {activeTab === 'finance' && <FinanceHub onResultChange={onResultChange} subtool={toolId} />}
-        {activeTab === 'profiling' && <DataProfilingTool onResultChange={onResultChange} data={uploadedData} />}
-        {activeTab === 'mock' && <MockDataGenerator onResultChange={onResultChange} />}
-        {activeTab === 'json-csv' && <JsonCsvConverter onResultChange={onResultChange} />}
+        {activeTab === 'viewer' && <DataViewer setGlobalData={setUploadedData} />}
+        {activeTab === 'finance' && <FinanceHub subtool={toolId} />}
+        {activeTab === 'profiling' && <DataProfilingTool data={uploadedData} />}
+        {activeTab === 'mock' && <MockDataGenerator />}
+        {activeTab === 'json-csv' && <JsonCsvConverter />}
       </div>
     </div>
   );
 };
 
-const DataViewer = ({ onResultChange, setGlobalData }) => {
+const DataViewer = ({ setGlobalData }) => {
     const [data, setData] = useState([]);
     const [headers, setHeaders] = useState([]);
     const [loading, setLoading] = useState(false);
     const [fileName, setFileName] = useState('');
+    const [result, setResult] = useState(null);
 
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
@@ -106,7 +103,7 @@ const DataViewer = ({ onResultChange, setGlobalData }) => {
                         setHeaders(results.meta.fields || []);
                         setData(results.data);
                         setGlobalData(results.data);
-                        onResultChange({ text: `CSV: ${file.name}`, filename: file.name });
+                        setResult({ text: content, filename: file.name });
                         setLoading(false);
                     }
                 });
@@ -143,22 +140,29 @@ const DataViewer = ({ onResultChange, setGlobalData }) => {
                     </table>
                 </div>
             )}
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const DataProfilingTool = ({ onResultChange, data }) => {
+const DataProfilingTool = ({ data }) => {
     if (!data) return <div className="text-center p-30 card glass-card opacity-6">Upload data in Viewer first.</div>;
-    return <div className="card p-20 glass-card">Analysis of {data.length} rows complete.</div>;
+    return (
+        <div className="card p-20 glass-card">
+            Analysis of {data.length} rows complete.
+            <ToolResult result={`Rows: ${data.length}\nColumns: ${Object.keys(data[0] || {}).join(', ')}`} />
+        </div>
+    );
 };
 
-const JsonCsvConverter = ({ onResultChange }) => {
+const JsonCsvConverter = () => {
     const [input, setInput] = useState('');
+    const [result, setResult] = useState(null);
     const convertToCsv = () => {
         try {
             const json = JSON.parse(input);
             const csv = Papa.unparse(json);
-            onResultChange({ text: csv, filename: 'converted.csv' });
+            setResult({ text: csv, filename: 'converted.csv' });
         } catch (e) { alert("Invalid JSON input"); }
     };
     const convertToJson = () => {
@@ -166,7 +170,7 @@ const JsonCsvConverter = ({ onResultChange }) => {
             header: true,
             skipEmptyLines: true,
             complete: (results) => {
-                onResultChange({ text: JSON.stringify(results.data, null, 2), filename: 'converted.json' });
+                setResult({ text: JSON.stringify(results.data, null, 2), filename: 'converted.json' });
             },
             error: (e) => alert("Invalid CSV input: " + e.message)
         });
@@ -178,16 +182,31 @@ const JsonCsvConverter = ({ onResultChange }) => {
                 <button className="btn-primary flex-1" onClick={convertToCsv}>JSON to CSV</button>
                 <button className="pill flex-1" onClick={convertToJson}>CSV to JSON</button>
             </div>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const MockDataGenerator = ({ onResultChange }) => {
+const MockDataGenerator = () => {
     const [rows, setRows] = useState(10);
+    const [result, setResult] = useState(null);
+    const generate = () => {
+        const data = Array.from({ length: rows }, (_, i) => ({
+            id: i + 1,
+            name: `User ${i + 1}`,
+            email: `user${i + 1}@example.com`,
+            score: Math.floor(Math.random() * 100)
+        }));
+        setResult({ text: JSON.stringify(data, null, 2), filename: 'mock_data.json' });
+    };
     return (
         <div className="card p-20 text-center glass-card">
-            <input type="number" className="pill mb-15" value={rows} onChange={e=>setRows(e.target.value)} />
-            <button className="btn-primary w-full" onClick={() => onResultChange({text: 'Mock Data Generated', filename: 'mock.json'})}>Generate</button>
+            <div className="form-group">
+                <label>Number of Rows</label>
+                <input type="number" className="pill mb-15" value={rows} onChange={e=>setRows(e.target.value)} />
+            </div>
+            <button className="btn-primary w-full" onClick={generate}>Generate Mock Data</button>
+            <ToolResult result={result} />
         </div>
     );
 };

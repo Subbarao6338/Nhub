@@ -4,34 +4,34 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { PDFDocument, rgb } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
-import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 import mammoth from 'mammoth';
-import JSZip from 'jszip';
-import Tesseract from 'tesseract.js';
 import API_BASE from '../../api';
+import ToolResult from './ToolResult';
 
 // Setup PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 // --- TEXT TOOLS COMPONENTS ---
 
-const LoremGenerator = ({ onResultChange, setInput }) => {
+const LoremGenerator = ({ setInput }) => {
     const [count, setCount] = useState(3);
+    const [result, setResult] = useState(null);
     const gen = () => {
         const text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ".repeat(10 * count);
         setInput(text);
-        onResultChange({ text, filename: 'lorem.txt' });
+        setResult({ text, filename: 'lorem.txt' });
     };
     return (
         <div className="card p-20 flex-gap glass-card">
             <input type="number" className="pill flex-1" value={count} onChange={e=>setCount(e.target.value)} min="1" max="50" />
             <button className="btn-primary flex-1" onClick={gen}>Generate</button>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const WordRankCalculator = ({ onResultChange }) => {
+const WordRankCalculator = () => {
     const [word, setWord] = useState('NATURE');
     const [rank, setRank] = useState(null);
 
@@ -79,7 +79,6 @@ const WordRankCalculator = ({ onResultChange }) => {
         }
 
         setRank(currentRank.toString());
-        onResultChange({ text: `Rank of "${input}": ${currentRank}`, filename: 'word_rank.txt' });
     };
 
     return (
@@ -95,17 +94,19 @@ const WordRankCalculator = ({ onResultChange }) => {
                     <div className="font-bold" style={{fontSize: '1.8rem', wordBreak: 'break-all'}}>{rank}</div>
                 </div>
             )}
+            <ToolResult result={rank ? `Rank of "${word}": ${rank}` : null} />
         </div>
     );
 };
 
-const FindReplace = ({ onResultChange, input, setInput }) => {
+const FindReplace = ({ input, setInput }) => {
     const [find, setFind] = useState('');
     const [replace, setReplace] = useState('');
+    const [result, setResult] = useState(null);
     const handleAction = () => {
         const res = input.replaceAll(find, replace);
         setInput(res);
-        onResultChange({ text: res, filename: 'find_replace.txt' });
+        setResult({ text: res, filename: 'find_replace.txt' });
     };
     return (
         <div className="card p-15 grid gap-10 glass-card">
@@ -114,19 +115,21 @@ const FindReplace = ({ onResultChange, input, setInput }) => {
                 <input className="pill flex-1" placeholder="Replace..." value={replace} onChange={e=>setReplace(e.target.value)} />
             </div>
             <button className="btn-primary" onClick={handleAction}>Replace All</button>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const ExtractTool = ({ onResultChange, input }) => {
+const ExtractTool = ({ input }) => {
     const [results, setResults] = useState([]);
+    const [resultData, setResultData] = useState(null);
     const extract = (type) => {
         let regex;
         if (type === 'email') regex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
         else if (type === 'url') regex = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
         const found = input.match(regex) || [];
         setResults(found);
-        onResultChange({ text: found.join('\n'), filename: `extracted_${type}s.txt` });
+        setResultData({ text: found.join('\n'), filename: `extracted_${type}s.txt` });
     };
     return (
         <div className="card p-15 grid gap-10 glass-card">
@@ -139,36 +142,42 @@ const ExtractTool = ({ onResultChange, input }) => {
                     {results.map((r, i) => <div key={i}>{r}</div>)}
                 </div>
             )}
+            <ToolResult result={resultData} />
         </div>
     );
 };
 
-const HtmlEntities = ({ onResultChange, input, setInput }) => {
+const HtmlEntities = ({ input, setInput }) => {
+    const [result, setResult] = useState(null);
     const encode = () => {
         const el = document.createElement('div');
         el.textContent = input;
         const res = el.innerHTML;
         setInput(res);
-        onResultChange({ text: res });
+        setResult({ text: res });
     };
     const decode = () => {
         const el = document.createElement('div');
         el.innerHTML = input;
         const res = el.textContent;
         setInput(res);
-        onResultChange({ text: res });
+        setResult({ text: res });
     };
     return (
-        <div className="flex-gap">
-            <button className="btn-primary flex-1" onClick={encode}>Encode HTML</button>
-            <button className="pill flex-1" onClick={decode}>Decode HTML</button>
+        <div className="flex-column gap-15">
+            <div className="flex-gap">
+                <button className="btn-primary flex-1" onClick={encode}>Encode HTML</button>
+                <button className="pill flex-1" onClick={decode}>Decode HTML</button>
+            </div>
+            <ToolResult result={result} />
         </div>
     );
 };
 
-const TextHub = ({ onResultChange, subtool }) => {
+const TextHub = ({ subtool }) => {
     const [input, setInput] = useState('');
     const [activeSub, setActiveSub] = useState(subtool || 'modify');
+    const [result, setResult] = useState(null);
 
     const stats = useMemo(() => ({
         chars: input.length,
@@ -186,7 +195,7 @@ const TextHub = ({ onResultChange, subtool }) => {
         else if (type === 'dedupe') res = [...new Set(input.split('\n').filter(l => l.trim()))].join('\n');
         else if (type === 'sort') res = input.split('\n').filter(l => l.trim()).sort().join('\n');
         setInput(res);
-        onResultChange({ text: res, filename: 'text_processed.txt' });
+        setResult({ text: res, filename: 'text_processed.txt' });
     };
 
     return (
@@ -237,18 +246,20 @@ const TextHub = ({ onResultChange, subtool }) => {
                 </div>
             )}
 
-            {activeSub === 'lorem' && <LoremGenerator onResultChange={onResultChange} setInput={setInput} />}
-            {activeSub === 'rank' && <WordRankCalculator onResultChange={onResultChange} />}
-            {activeSub === 'find' && <FindReplace onResultChange={onResultChange} input={input} setInput={setInput} />}
-            {activeSub === 'extract' && <ExtractTool onResultChange={onResultChange} input={input} />}
-            {activeSub === 'entities' && <HtmlEntities onResultChange={onResultChange} input={input} setInput={setInput} />}
+            {activeSub === 'lorem' && <LoremGenerator setInput={setInput} />}
+            {activeSub === 'rank' && <WordRankCalculator />}
+            {activeSub === 'find' && <FindReplace input={input} setInput={setInput} />}
+            {activeSub === 'extract' && <ExtractTool input={input} />}
+            {activeSub === 'entities' && <HtmlEntities input={input} setInput={setInput} />}
+
+            {(activeSub === 'modify' || activeSub === 'stats') && <ToolResult result={result || `Stats: ${stats.words} words, ${stats.chars} characters`} />}
         </div>
     );
 };
 
 // --- IMAGE TOOLS COMPONENTS ---
 
-const FormatConverter = ({ imgRef, image, onResultChange }) => {
+const FormatConverter = ({ imgRef, image, setToolResult }) => {
     const [target, setTarget] = useState('image/png');
     const convert = () => {
         const canvas = document.createElement('canvas');
@@ -259,7 +270,7 @@ const FormatConverter = ({ imgRef, image, onResultChange }) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
         canvas.toBlob(blob => {
-            onResultChange({ text: `Converted to ${target}`, blob, filename: `converted.${target.split('/')[1]}` });
+            setToolResult({ text: `Converted to ${target}`, blob, filename: `converted.${target.split('/')[1]}` });
         }, target);
     };
     return (
@@ -277,7 +288,7 @@ const FormatConverter = ({ imgRef, image, onResultChange }) => {
     );
 };
 
-const ResizeImage = ({ imgRef, image, onResultChange }) => {
+const ResizeImage = ({ imgRef, image, setToolResult }) => {
     const [width, setWidth] = useState(0);
     const [height, setHeight] = useState(0);
     const [maintainAspect, setMaintainAspect] = useState(true);
@@ -316,7 +327,7 @@ const ResizeImage = ({ imgRef, image, onResultChange }) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
         canvas.toBlob(blob => {
-            onResultChange({ text: `Resized to ${width}x${height}`, blob, filename: 'resized.png' });
+            setToolResult({ text: `Resized to ${width}x${height}`, blob, filename: 'resized.png' });
         });
     };
 
@@ -341,7 +352,7 @@ const ResizeImage = ({ imgRef, image, onResultChange }) => {
     );
 };
 
-const PrivacyBlur = ({ imgRef, image, onResultChange }) => {
+const PrivacyBlur = ({ imgRef, image, setToolResult }) => {
     const [intensity, setIntensity] = useState(10);
     const blur = () => {
         const canvas = document.createElement('canvas');
@@ -353,7 +364,7 @@ const PrivacyBlur = ({ imgRef, image, onResultChange }) => {
         ctx.filter = `blur(${intensity}px)`;
         ctx.drawImage(img, 0, 0);
         canvas.toBlob(blob => {
-            onResultChange({ text: `Applied ${intensity}px Privacy Blur`, blob, filename: 'blurred.png' });
+            setToolResult({ text: `Applied ${intensity}px Privacy Blur`, blob, filename: 'blurred.png' });
         });
     };
     return (
@@ -367,7 +378,7 @@ const PrivacyBlur = ({ imgRef, image, onResultChange }) => {
     );
 };
 
-const MetadataCleaner = ({ imgRef, image, onResultChange }) => {
+const MetadataCleaner = ({ imgRef, image, setToolResult }) => {
     const clean = () => {
         const canvas = document.createElement('canvas');
         const img = imgRef.current;
@@ -377,7 +388,7 @@ const MetadataCleaner = ({ imgRef, image, onResultChange }) => {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0);
         canvas.toBlob(blob => {
-            onResultChange({ text: 'Stripped EXIF Metadata (Camera, Location, etc.)', blob, filename: 'clean.png' });
+            setToolResult({ text: 'Stripped EXIF Metadata (Camera, Location, etc.)', blob, filename: 'clean.png' });
         });
     };
     return (
@@ -388,10 +399,11 @@ const MetadataCleaner = ({ imgRef, image, onResultChange }) => {
     );
 };
 
-const ImageHub = ({ onResultChange, subtool }) => {
+const ImageHub = ({ subtool }) => {
     const [activeSub, setActiveSub] = useState(subtool || 'format');
     const [image, setImage] = useState(null);
     const [preview, setPreview] = useState(null);
+    const [result, setResult] = useState(null);
     const imgRef = useRef(null);
 
     const handleUpload = (e) => {
@@ -429,24 +441,25 @@ const ImageHub = ({ onResultChange, subtool }) => {
             )}
             {image && (
                 <div className="animate-fadeIn">
-                    {activeSub === 'format' && <FormatConverter imgRef={imgRef} image={image} onResultChange={onResultChange} />}
-                    {activeSub === 'resize' && <ResizeImage imgRef={imgRef} image={image} onResultChange={onResultChange} />}
-                    {activeSub === 'blur' && <PrivacyBlur imgRef={imgRef} image={image} onResultChange={onResultChange} />}
-                    {activeSub === 'metadata' && <MetadataCleaner imgRef={imgRef} image={image} onResultChange={onResultChange} />}
+                    {activeSub === 'format' && <FormatConverter imgRef={imgRef} image={image} setToolResult={setResult} />}
+                    {activeSub === 'resize' && <ResizeImage imgRef={imgRef} image={image} setToolResult={setResult} />}
+                    {activeSub === 'blur' && <PrivacyBlur imgRef={imgRef} image={image} setToolResult={setResult} />}
+                    {activeSub === 'metadata' && <MetadataCleaner imgRef={imgRef} image={image} setToolResult={setResult} />}
                     {activeSub === 'b64' && <button className="btn-primary w-full" onClick={() => {
                         const reader = new FileReader();
-                        reader.onload = (e) => onResultChange({ text: e.target.result, filename: 'image_b64.txt' });
+                        reader.onload = (e) => setResult({ text: e.target.result, filename: 'image_b64.txt' });
                         reader.readAsDataURL(image);
                     }}>Generate Base64</button>}
                 </div>
             )}
+            <ToolResult result={result} />
         </div>
     );
 };
 
 // --- PDF TOOLS COMPONENTS ---
 
-const ImageToPdf = ({ onResultChange }) => {
+const ImageToPdf = ({ setToolResult }) => {
     const [images, setImages] = useState([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const [fileName, setFileName] = useState('');
@@ -465,7 +478,7 @@ const ImageToPdf = ({ onResultChange }) => {
                 page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
             }
             const pdfBytes = await pdfDoc.save();
-            onResultChange({ text: 'Converted Images to PDF', blob: new Blob([pdfBytes], { type: 'application/pdf' }), filename: 'converted.pdf' });
+            setToolResult({ text: 'Converted Images to PDF', blob: new Blob([pdfBytes], { type: 'application/pdf' }), filename: 'converted.pdf' });
         } catch (e) {
             alert("Error: " + e.message);
         } finally {
@@ -492,14 +505,14 @@ const ImageToPdf = ({ onResultChange }) => {
     );
 };
 
-const PdfHub = ({ onResultChange, subtool }) => {
+const PdfHub = ({ subtool }) => {
     const [activeSub, setActiveSub] = useState(subtool || 'merge');
     const [files, setFiles] = useState([]);
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState(0);
     const [password, setPassword] = useState('');
-    const [watermark, setWatermark] = useState('Confidential');
     const [fileName, setFileName] = useState('');
+    const [result, setResult] = useState(null);
 
     const handleFileUpload = (e) => {
         const selectedFiles = Array.from(e.target.files);
@@ -519,7 +532,7 @@ const PdfHub = ({ onResultChange, subtool }) => {
                 copiedPages.forEach((page) => mergedPdf.addPage(page));
             }
             const mergedPdfBytes = await mergedPdf.save();
-            onResultChange({ text: 'Merged PDFs', blob: new Blob([mergedPdfBytes], { type: 'application/pdf' }), filename: 'merged.pdf' });
+            setResult({ text: 'Merged PDFs', blob: new Blob([mergedPdfBytes], { type: 'application/pdf' }), filename: 'merged.pdf' });
         } catch (e) { alert("Error: " + e.message); }
         finally { setIsProcessing(false); }
     };
@@ -531,7 +544,7 @@ const PdfHub = ({ onResultChange, subtool }) => {
             const pdfBytes = await files[0].arrayBuffer();
             const pdfDoc = await PDFDocument.load(pdfBytes);
             pdfDoc.getPages().forEach(p => p.setRotation({ angle: (p.getRotation().angle + 90) % 360 }));
-            onResultChange({ text: 'Rotated PDF', blob: new Blob([await pdfDoc.save()], { type: 'application/pdf' }), filename: 'rotated.pdf' });
+            setResult({ text: 'Rotated PDF', blob: new Blob([await pdfDoc.save()], { type: 'application/pdf' }), filename: 'rotated.pdf' });
         } catch (e) { alert("Error: " + e.message); }
         finally { setIsProcessing(false); }
     };
@@ -573,13 +586,13 @@ const PdfHub = ({ onResultChange, subtool }) => {
                             try {
                                 const pdf = await PDFDocument.load(await files[0].arrayBuffer());
                                 const bytes = await pdf.save({ userPassword: password, ownerPassword: password });
-                                onResultChange({ text: 'Locked PDF', blob: new Blob([bytes], { type: 'application/pdf' }), filename: 'locked.pdf' });
+                                setResult({ text: 'Locked PDF', blob: new Blob([bytes], { type: 'application/pdf' }), filename: 'locked.pdf' });
                             } catch(e) { alert(e.message); }
                             finally { setIsProcessing(false); }
                         }} disabled={!files.length || !password}>Lock PDF</button>
                     </div>
                 )}
-                {activeSub === 'img2pdf' && <ImageToPdf onResultChange={onResultChange} />}
+                {activeSub === 'img2pdf' && <ImageToPdf setToolResult={setResult} />}
                 {activeSub === 'word2pdf' && (
                     <div className="card p-20 text-center glass-card">
                         <div className="file-input-wrapper">
@@ -599,7 +612,7 @@ const PdfHub = ({ onResultChange, subtool }) => {
                                     document.body.removeChild(container);
                                     const pdf = new jsPDF('p', 'mm', 'a4');
                                     pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, (canvas.height*210)/canvas.width);
-                                    onResultChange({ text: 'Word to PDF', blob: pdf.output('blob'), filename: 'converted.pdf' });
+                                    setResult({ text: 'Word to PDF', blob: pdf.output('blob'), filename: 'converted.pdf' });
                                 } catch(e) { alert(e.message); }
                                 finally { setIsProcessing(false); }
                             }} />
@@ -611,70 +624,37 @@ const PdfHub = ({ onResultChange, subtool }) => {
                     </div>
                 )}
             </div>
+            <ToolResult result={result} />
         </div>
     );
 };
 
 // --- MAIN DOC TOOLS COMPONENT ---
 
-const DocTranslator = ({ onResultChange }) => {
+const DocTranslator = () => {
     const [file, setFile] = useState(null);
     const [targetLang, setTargetLang] = useState('te');
     const [isProcessing, setIsProcessing] = useState(false);
-    const [result, setResult] = useState('');
+    const [result, setResult] = useState(null);
     const [fileName, setFileName] = useState('');
 
     const handleTranslate = async () => {
         if (!file) return;
         setIsProcessing(true);
-        setResult('');
-
-        const isServerless = API_BASE === 'JSON-MODE';
-
-        if (isServerless) {
-            setTimeout(() => {
-                const mockResults = {
-                    'te': 'ఇది ప్రదర్శన ప్రయోజనాల కోసం ఒక నకిలీ అనువాదం.',
-                    'hi': 'यह प्रदर्शन उद्देश्यों के लिए एक नकली अनुवाद है।',
-                    'es': 'Esta es una traducción simulada para fines de demostración.',
-                    'fr': 'Ceci est une fausse traduction à des fins de démonstration.',
-                    'en': 'This is a mock translation for demonstration purposes.'
-                };
-                const translatedText = mockResults[targetLang] || 'Mock translation result.';
-                setResult(translatedText);
-                onResultChange({
-                    text: translatedText,
-                    blob: new Blob([translatedText], { type: 'text/plain' }),
-                    filename: `translated_${file.name}.txt`
-                });
-                setIsProcessing(false);
-            }, 1500);
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('target_lang', targetLang);
+        setResult(null);
 
         try {
-            const response = await fetch(`${API_BASE}/docs/translate`, {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.detail || 'Translation failed');
-            }
-
+            const text = await file.text();
+            // Using MyMemory API for translation
+            const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.substring(0, 1000))}&langpair=auto|${targetLang}`);
             const data = await response.json();
-            const translatedText = data.translated_text || '';
-            setResult(translatedText);
 
-            const blob = new Blob([translatedText], { type: 'text/plain' });
-            onResultChange({
-                text: 'Translation complete',
-                blob,
+            if (data.responseStatus !== 200) throw new Error(data.responseDetails);
+
+            const translatedText = data.responseData.translatedText;
+            setResult({
+                text: translatedText,
+                blob: new Blob([translatedText], { type: 'text/plain' }),
                 filename: `translated_${file.name}.txt`
             });
         } catch (e) {
@@ -684,24 +664,16 @@ const DocTranslator = ({ onResultChange }) => {
         }
     };
 
-    const isServerless = API_BASE === 'JSON-MODE';
-
     return (
         <div className="grid gap-15">
-            {isServerless && (
-                <div className="danger-box" style={{ padding: '10px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span className="material-icons" style={{ fontSize: '1.2rem' }}>cloud_off</span>
-                    <span><b>Backend Required:</b> Document translation requires server-side processing. Showing simulated results.</span>
-                </div>
-            )}
             <div className="card no-animation p-20 glass-card grid gap-15">
                 <div className="form-group">
-                    <label>Select Document (PDF, DOCX, EPUB, HTML, MD, TXT)</label>
+                    <label>Select Document (TXT, MD)</label>
                     <div className="file-input-wrapper">
                         <input
                             type="file"
                             onChange={e => { setFile(e.target.files[0]); setFileName(e.target.files[0]?.name || ''); }}
-                            accept=".pdf,.docx,.epub,.html,.htm,.mhtml,.md,.txt"
+                            accept=".md,.txt"
                         />
                         <div className="file-input-label">
                             <span className="material-icons">{fileName ? 'description' : 'cloud_upload'}</span>
@@ -732,25 +704,14 @@ const DocTranslator = ({ onResultChange }) => {
                 </button>
             </div>
 
-            {result && (
-                <div className="card no-animation p-20 glass-card">
-                    <div className="flex-between mb-10">
-                        <span className="font-bold uppercase smallest opacity-6">Translated Text</span>
-                    </div>
-                    <textarea
-                        className="pill w-full font-mono text-small"
-                        rows="10"
-                        readOnly
-                        value={result}
-                    />
-                </div>
-            )}
+            <ToolResult result={result} title="Translated Text" />
         </div>
     );
 };
 
-const MarkdownEditor = ({ onResultChange }) => {
+const MarkdownEditor = () => {
   const [md, setMd] = useState('# New Document\n\nStart typing...');
+  const [result, setResult] = useState(null);
   const html = useMemo(() => DOMPurify.sanitize(marked.parse(md)), [md]);
 
   const stats = useMemo(() => ({
@@ -763,12 +724,13 @@ const MarkdownEditor = ({ onResultChange }) => {
     const lines = doc.splitTextToSize(md, 180);
     doc.text(lines, 10, 10);
     const blob = doc.output('blob');
-    onResultChange({ text: 'Exported Markdown to PDF', blob, filename: 'document.pdf' });
+    setResult({ text: 'Exported Markdown to PDF', blob, filename: 'document.pdf' });
   };
 
   const exportHtml = () => {
-      const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Document</title><style>body{font-family:sans-serif;padding:40px;line-height:1.6;max-width:800px;margin:0 auto;}</style></head><body>${html}</body></html>`], { type: 'text/html' });
-      onResultChange({ text: 'Exported Markdown to HTML', blob, filename: 'document.html' });
+      const content = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Document</title><style>body{font-family:sans-serif;padding:40px;line-height:1.6;max-width:800px;margin:0 auto;}</style></head><body>${html}</body></html>`;
+      const blob = new Blob([content], { type: 'text/html' });
+      setResult({ text: 'Exported Markdown to HTML', blob, filename: 'document.html' });
   };
 
   return (
@@ -794,11 +756,12 @@ const MarkdownEditor = ({ onResultChange }) => {
           <button className="btn-primary flex-1" onClick={exportPdf}>Export to PDF</button>
           <button className="pill flex-1" onClick={exportHtml}>Export to HTML</button>
       </div>
+      <ToolResult result={result} />
     </div>
   );
 };
 
-const DocTools = ({ onResultChange, toolId, onSubtoolChange }) => {
+const DocTools = ({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'pdf', label: 'PDF Hub' },
     { id: 'image', label: 'Image Hub' },
@@ -835,11 +798,11 @@ const DocTools = ({ onResultChange, toolId, onSubtoolChange }) => {
       </div>
 
       <div className="hub-content">
-          {activeTab === 'pdf' && <PdfHub onResultChange={onResultChange} subtool={toolId} />}
-          {activeTab === 'image' && <ImageHub onResultChange={onResultChange} subtool={toolId} />}
-          {activeTab === 'text' && <TextHub onResultChange={onResultChange} subtool={toolId} />}
-          {activeTab === 'md-editor' && <MarkdownEditor onResultChange={onResultChange} />}
-          {activeTab === 'doc-translator' && <DocTranslator onResultChange={onResultChange} />}
+          {activeTab === 'pdf' && <PdfHub subtool={toolId} />}
+          {activeTab === 'image' && <ImageHub subtool={toolId} />}
+          {activeTab === 'text' && <TextHub subtool={toolId} />}
+          {activeTab === 'md-editor' && <MarkdownEditor />}
+          {activeTab === 'doc-translator' && <DocTranslator />}
       </div>
     </div>
   );

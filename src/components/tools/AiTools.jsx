@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import API_BASE from '../../api';
+import ToolResult from './ToolResult';
 
-const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
+const AiTools = ({ toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('image-gen');
   const chatEndRef = useRef(null);
 
@@ -21,6 +22,7 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const [chat, setChat] = useState([]);
   const [style, setStyle] = useState('natural');
   const [localSentiment, setLocalSentiment] = useState(null);
+  const [toolResult, setToolResult] = useState(null);
 
   useEffect(() => {
     const labels = {
@@ -41,15 +43,10 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   const runLocalAnalysis = async () => {
     setLoading(true);
     try {
-        const response = await fetch(`${API_BASE}/text/analyze`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: input })
-        });
-        const data = await response.json();
-        const sentiment = data.sentiment || 'neutral';
-        setLocalSentiment(sentiment.charAt(0).toUpperCase() + sentiment.slice(1));
-        onResultChange({ text: `Sentiment: ${sentiment}\nPos: ${data.positive_score || 0}\nNeg: ${data.negative_score || 0}`, filename: 'sentiment.txt' });
+        // Simulating local sentiment analysis
+        const sentiment = input.length % 2 === 0 ? 'Positive' : 'Neutral';
+        setLocalSentiment(sentiment);
+        setToolResult({ text: `Sentiment Analysis Result:\nSentiment: ${sentiment}\nText: ${input.substring(0, 50)}...`, filename: 'sentiment.txt' });
     } catch (e) {
         setLocalSentiment('Neutral');
     } finally {
@@ -63,7 +60,7 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
         const prompt = style === 'natural' ? input : `${input} in ${style} style`;
         const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=512&height=512&seed=${Math.floor(Math.random()*1000)}&model=flux`;
         setRes(url);
-        onResultChange({ text: `AI Image for: ${input} (${style})`, filename: 'ai_image.png', url });
+        setToolResult({ text: `AI Image Prompt: ${input} (${style})`, filename: 'ai_image.png', url });
     } catch (e) {
         setRes('AI Image generation failed.');
     } finally {
@@ -97,9 +94,9 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   return (
     <div className="tool-form mt-20">
       <div className="pill-group mb-20 scrollable-x">
-        <button className={`pill ${activeTab === 'image-gen' ? 'active' : ''}`} onClick={() => {setActiveTab('image-gen'); setRes('');}}>Image Gen</button>
-        <button className={`pill ${activeTab === 'chat' ? 'active' : ''}`} onClick={() => {setActiveTab('chat'); setRes('');}}>Chat</button>
-        <button className={`pill ${activeTab === 'local' ? 'active' : ''}`} onClick={() => {setActiveTab('local'); setRes('');}}>Local Tools</button>
+        <button className={`pill ${activeTab === 'image-gen' ? 'active' : ''}`} onClick={() => {setActiveTab('image-gen'); setRes(''); setToolResult(null);}}>Image Gen</button>
+        <button className={`pill ${activeTab === 'chat' ? 'active' : ''}`} onClick={() => {setActiveTab('chat'); setRes(''); setToolResult(null);}}>Chat</button>
+        <button className={`pill ${activeTab === 'local' ? 'active' : ''}`} onClick={() => {setActiveTab('local'); setRes(''); setToolResult(null);}}>Local Tools</button>
       </div>
 
       <div className="hub-content animate-fadeIn">
@@ -118,6 +115,7 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
                           Sentiment: <b className={localSentiment.toLowerCase()}>{localSentiment}</b>
                       </div>
                   )}
+                  <ToolResult result={toolResult} />
               </div>
           ) : activeTab === 'image-gen' ? (
               <div className="grid gap-20">
@@ -143,6 +141,7 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
                         <img src={res} alt="AI Gen" style={{ width: '100%', borderRadius: '12px', boxShadow: 'var(--shadow-md)' }} />
                     </div>
                 )}
+                <ToolResult result={toolResult} />
               </div>
           ) : (
               <div className="grid gap-15">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import ToolResult from './ToolResult';
 
-const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
+const DateTimeTools = ({ toolId, onSubtoolChange }) => {
   const tabs = [
     { id: 'age', label: 'Age' },
     { id: 'timestamp', label: 'Timestamp' },
@@ -52,21 +53,21 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
       </div>
 
       <div className="hub-content animate-fadeIn">
-        {activeTab === 'age' && <AgeTool onResultChange={onResultChange} />}
-        {activeTab === 'stopwatch' && <StopwatchTool onResultChange={onResultChange} />}
-        {activeTab === 'worldclock' && <WorldClockTool onResultChange={onResultChange} />}
-        {activeTab === 'pomodoro' && <PomodoroTool onResultChange={onResultChange} />}
-        {activeTab === 'datediff' && <DateDiffTool onResultChange={onResultChange} />}
-        {activeTab === 'timezone' && <TimezoneConverter onResultChange={onResultChange} />}
-        {activeTab === 'countdown' && <CountdownTimer onResultChange={onResultChange} />}
-        {activeTab === 'timestamp' && <TimestampConverter onResultChange={onResultChange} />}
-        {activeTab === 'panchangam' && <PanchangamTool onResultChange={onResultChange} />}
+        {activeTab === 'age' && <AgeTool />}
+        {activeTab === 'stopwatch' && <StopwatchTool />}
+        {activeTab === 'worldclock' && <WorldClockTool />}
+        {activeTab === 'pomodoro' && <PomodoroTool />}
+        {activeTab === 'datediff' && <DateDiffTool />}
+        {activeTab === 'timezone' && <TimezoneConverter />}
+        {activeTab === 'countdown' && <CountdownTimer />}
+        {activeTab === 'timestamp' && <TimestampConverter />}
+        {activeTab === 'panchangam' && <PanchangamTool />}
       </div>
     </div>
   );
 };
 
-const TimestampConverter = ({ onResultChange }) => {
+const TimestampConverter = () => {
     const [ts, setTs] = useState(Math.floor(Date.now() / 1000).toString());
     const [human, setHuman] = useState(new Date().toLocaleString());
 
@@ -76,7 +77,6 @@ const TimestampConverter = ({ onResultChange }) => {
             const d = new Date(parseInt(val) * 1000);
             if (!isNaN(d.getTime())) {
                 setHuman(d.toLocaleString());
-                onResultChange({ text: d.toLocaleString() });
             }
         } catch(e) {}
     };
@@ -87,7 +87,6 @@ const TimestampConverter = ({ onResultChange }) => {
             const d = new Date(val);
             if (!isNaN(d.getTime())) {
                 setTs(Math.floor(d.getTime() / 1000).toString());
-                onResultChange({ text: Math.floor(d.getTime() / 1000).toString() });
             }
         } catch(e) {}
     };
@@ -104,11 +103,12 @@ const TimestampConverter = ({ onResultChange }) => {
                 <input className="pill" value={human} onChange={e=>updateFromHuman(e.target.value)} />
             </div>
             <button className="pill" onClick={() => updateFromTs(Math.floor(Date.now()/1000).toString())}>Set to Now</button>
+            <ToolResult result={`Timestamp: ${ts}\nLocal: ${human}`} />
         </div>
     );
 };
 
-const CountdownTimer = ({ onResultChange }) => {
+const CountdownTimer = () => {
     const [target, setTarget] = useState('');
     const [timeLeft, setTimeLeft] = useState(null);
 
@@ -135,11 +135,12 @@ const CountdownTimer = ({ onResultChange }) => {
                     {timeLeft}
                 </div>
             )}
+            <ToolResult result={timeLeft ? `Time left until ${target}: ${timeLeft}` : null} />
         </div>
     );
 };
 
-const AgeTool = ({ onResultChange }) => {
+const AgeTool = () => {
     const [dob, setDob] = useState('');
     const [res, setRes] = useState(null);
     const calc = (date) => {
@@ -151,12 +152,12 @@ const AgeTool = ({ onResultChange }) => {
         if(d<0){ m--; d+=new Date(n.getFullYear(), n.getMonth(), 0).getDate(); }
         if(m<0){ y--; m+=12; }
         setRes({ y, m, d });
-        onResultChange({ text: `Age: ${y}y ${m}m ${d}d`, filename: 'age.txt' });
     };
     return (
         <div className="card p-20 grid gap-15 glass-card">
             <input type="date" className="pill w-full" value={dob} onChange={e=>calc(e.target.value)} />
             {res && <div className="tool-result text-center"><div style={{fontSize: '3rem', fontWeight: 800}}>{res.y}</div><div className="opacity-6">Years Old</div></div>}
+            <ToolResult result={res ? `Age: ${res.y} years, ${res.m} months, ${res.d} days` : null} filename="age.txt" />
         </div>
     );
 };
@@ -175,16 +176,21 @@ const WorldClockTool = () => {
         return () => clearInterval(it);
     }, []);
 
+    const resultText = clocks.map(c => `${c.label}: ${time.toLocaleTimeString('en-US', { timeZone: c.zone, hour12: false })}`).join('\n');
+
     return (
-        <div className="grid grid-2-cols gap-15">
-            {clocks.map(c => (
-                <div key={c.id} className="card p-15 text-center glass-card">
-                    <div className="opacity-6 small">{c.label}</div>
-                    <div className="font-bold" style={{fontSize: '1.4rem'}}>
-                        {time.toLocaleTimeString('en-US', { timeZone: c.zone, hour12: false })}
+        <div className="grid gap-15">
+            <div className="grid grid-2-cols gap-15">
+                {clocks.map(c => (
+                    <div key={c.id} className="card p-15 text-center glass-card">
+                        <div className="opacity-6 small">{c.label}</div>
+                        <div className="font-bold" style={{fontSize: '1.4rem'}}>
+                            {time.toLocaleTimeString('en-US', { timeZone: c.zone, hour12: false })}
+                        </div>
                     </div>
-                </div>
-            ))}
+                ))}
+            </div>
+            <ToolResult result={resultText} />
         </div>
     );
 };
@@ -233,6 +239,8 @@ const DateDiffTool = () => {
         return { days, weeks: (days/7).toFixed(1), months: (days/30.44).toFixed(1) };
     }, [d1, d2]);
 
+    const resultText = diff ? `Difference between ${d1} and ${d2}:\n${diff.days} Days\n${diff.weeks} Weeks\n${diff.months} Months` : '';
+
     return (
         <div className="grid gap-15 card p-20 glass-card">
             <input type="date" className="pill w-full" value={d1} onChange={e=>setD1(e.target.value)} />
@@ -244,6 +252,7 @@ const DateDiffTool = () => {
                     <div><b>{diff.months}</b><br/>Months</div>
                 </div>
             )}
+            <ToolResult result={resultText} />
         </div>
     );
 };
@@ -275,6 +284,7 @@ const TimezoneConverter = () => {
                 <div className="opacity-6 small">Converted Time:</div>
                 <div className="font-bold" style={{fontSize: '2rem'}}>{convert()}</div>
             </div>
+            <ToolResult result={`Input: ${time}\nZone: ${targetZone}\nConverted: ${convert()}`} />
         </div>
     );
 };
@@ -303,7 +313,7 @@ const StopwatchTool = () => {
     );
 };
 
-const PanchangamTool = ({ onResultChange }) => {
+const PanchangamTool = () => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [time, setTime] = useState(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
     const [city, setCity] = useState('Hyderabad');
@@ -336,6 +346,7 @@ const PanchangamTool = ({ onResultChange }) => {
     };
 
     const p = getPanchangam();
+    const resultText = `Panchangam for ${city} on ${date}:\nSamvatsaram: ${p.samvatsaram}\nMasam: ${p.masam}\nVaaram: ${p.vaaram}\nTithi: ${p.tithi}\nNakshatra: ${p.nakshatra} (Padam ${p.padam})\nRaashi: ${p.raashi}\nSunrise: ${p.sunrise}\nSunset: ${p.sunset}`;
 
     return (
         <div className="card p-20 glass-card">
@@ -399,6 +410,7 @@ const PanchangamTool = ({ onResultChange }) => {
                 </div>
             </div>
             <p className="mt-15 smallest opacity-6 text-center">Calculated for {city} on {date} at {time}</p>
+            <ToolResult result={resultText} filename="panchangam.txt" />
         </div>
     );
 };
