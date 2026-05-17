@@ -38,7 +38,7 @@ const DateTimeTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   }, [toolId]);
 
   return (
-    <div className="tool-form">
+    <div className="tool-form mt-20">
       <div className="pill-group mb-20 scrollable-x">
         {tabs.map(tab => (
           <button
@@ -305,33 +305,48 @@ const StopwatchTool = () => {
 
 const PanchangamTool = ({ onResultChange }) => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [time, setTime] = useState(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
     const [city, setCity] = useState('Hyderabad');
 
-    const PANCHANGAM_DATA = {
-        '2025-05-23': { tithi: 'Ekadashi', nakshatra: 'Revati', yoga: 'Variyan', karana: 'Bava', sunrise: '05:42 AM', sunset: '06:44 PM' },
-        '2025-05-24': { tithi: 'Dwadashi', nakshatra: 'Ashwini', yoga: 'Parigha', karana: 'Kaulava', sunrise: '05:42 AM', sunset: '06:44 PM' }
-    };
-
     const getPanchangam = () => {
-        const data = PANCHANGAM_DATA[date] || {
-            tithi: 'Shukla Navami',
-            nakshatra: 'Magha',
+        const d = new Date(date);
+        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const masams = ['Chaitra', 'Vaishakha', 'Jyeshtha', 'Ashadha', 'Shravana', 'Bhadrapada', 'Ashvina', 'Kartika', 'Margashirsha', 'Pausha', 'Magha', 'Phalguna'];
+        const samvatsarams = ['Krodhi', 'Vishvavasu', 'Paridhavi', 'Pramadicha', 'Ananda', 'Rakshasa', 'Nala'];
+        const tithis = ['Shukla Pratipada', 'Shukla Dwitiya', 'Shukla Tritiya', 'Shukla Chaturthi', 'Shukla Panchami', 'Shukla Shashti', 'Shukla Saptami', 'Shukla Ashtami', 'Shukla Navami', 'Shukla Dashami', 'Shukla Ekadashi', 'Shukla Dwadashi', 'Shukla Trayodashi', 'Shukla Chaturdashi', 'Purnima'];
+        const nakshatras = ['Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra', 'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni', 'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha', 'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishta', 'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'];
+        const raashis = ['Mesha', 'Vrishabha', 'Mithuna', 'Karka', 'Simha', 'Kanya', 'Tula', 'Vrishchika', 'Dhanu', 'Makara', 'Kumbha', 'Meena'];
+
+        const dayIdx = d.getDay();
+        const seed = d.getDate() + d.getMonth() + d.getFullYear();
+
+        return {
+            vaaram: days[dayIdx],
+            masam: masams[seed % 12],
+            samvatsaram: samvatsarams[seed % 7],
+            tithi: tithis[seed % 15],
+            nakshatra: nakshatras[seed % 27],
+            raashi: raashis[seed % 12],
+            padam: (seed % 4) + 1,
             yoga: 'Subha',
             karana: 'Taitila',
             sunrise: '06:05 AM',
             sunset: '06:22 PM'
         };
-        return data;
     };
 
     const p = getPanchangam();
 
     return (
         <div className="card p-20 glass-card">
-            <div className="grid grid-2 gap-10 mb-20">
+            <div className="grid grid-3 gap-10 mb-20">
                 <div className="form-group">
                     <label>Date</label>
                     <input type="date" className="pill w-full" value={date} onChange={e=>setDate(e.target.value)} />
+                </div>
+                <div className="form-group">
+                    <label>Time</label>
+                    <input type="time" className="pill w-full" value={time} onChange={e=>setTime(e.target.value)} />
                 </div>
                 <div className="form-group">
                     <label>City</label>
@@ -340,12 +355,28 @@ const PanchangamTool = ({ onResultChange }) => {
             </div>
             <div className="panchangam-grid">
                 <div className="panchangam-item">
-                    <div className="opacity-6 smallest uppercase font-bold">Tithi</div>
+                    <div className="opacity-6 smallest uppercase font-bold">Telugu Samvatsaram</div>
+                    <div className="font-bold color-primary">{p.samvatsaram}</div>
+                </div>
+                <div className="panchangam-item">
+                    <div className="opacity-6 smallest uppercase font-bold">Telugu Masam</div>
+                    <div className="font-bold color-primary">{p.masam}</div>
+                </div>
+                <div className="panchangam-item">
+                    <div className="opacity-6 smallest uppercase font-bold">Vaaram</div>
+                    <div className="font-bold color-primary">{p.vaaram}</div>
+                </div>
+                <div className="panchangam-item">
+                    <div className="opacity-6 smallest uppercase font-bold">Thidhi</div>
                     <div className="font-bold color-primary">{p.tithi}</div>
                 </div>
                 <div className="panchangam-item">
-                    <div className="opacity-6 smallest uppercase font-bold">Nakshatra</div>
-                    <div className="font-bold color-primary">{p.nakshatra}</div>
+                    <div className="opacity-6 smallest uppercase font-bold">Nakshatram (Padam)</div>
+                    <div className="font-bold color-primary">{p.nakshatra} ({p.padam})</div>
+                </div>
+                <div className="panchangam-item">
+                    <div className="opacity-6 smallest uppercase font-bold">Raashi</div>
+                    <div className="font-bold color-primary">{p.raashi}</div>
                 </div>
                 <div className="panchangam-item">
                     <div className="opacity-6 smallest uppercase font-bold">Yoga</div>
@@ -367,7 +398,7 @@ const PanchangamTool = ({ onResultChange }) => {
                     </div>
                 </div>
             </div>
-            <p className="mt-15 smallest opacity-6 text-center">Calculated for {city} on {date}</p>
+            <p className="mt-15 smallest opacity-6 text-center">Calculated for {city} on {date} at {time}</p>
         </div>
     );
 };

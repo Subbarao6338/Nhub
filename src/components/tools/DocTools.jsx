@@ -414,11 +414,13 @@ const ImageHub = ({ onResultChange, subtool }) => {
                 ))}
             </div>
             <div className="card p-20 text-center glass-card">
-                <input type="file" id="img-hub-upload" onChange={handleUpload} accept="image/*" style={{ display: 'none' }} />
-                <label htmlFor="img-hub-upload" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="material-icons">upload_file</span>
-                    {image ? 'Change Image' : 'Select Image'}
-                </label>
+                <div className="file-input-wrapper">
+                    <input type="file" onChange={handleUpload} accept="image/*" />
+                    <div className="file-input-label">
+                        <span className="material-icons">{image ? 'image' : 'cloud_upload'}</span>
+                        <span>{image ? image.name : 'Select image to process'}</span>
+                    </div>
+                </div>
             </div>
             {preview && (
                 <div className="card p-10 text-center glass-card" style={{ maxWidth: '400px', margin: '0 auto' }}>
@@ -447,6 +449,7 @@ const ImageHub = ({ onResultChange, subtool }) => {
 const ImageToPdf = ({ onResultChange }) => {
     const [images, setImages] = useState([]);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [fileName, setFileName] = useState('');
 
     const convert = async () => {
         if (images.length === 0) return;
@@ -471,7 +474,17 @@ const ImageToPdf = ({ onResultChange }) => {
     };
     return (
         <div className="card p-15 grid gap-10 glass-card">
-            <input type="file" multiple accept="image/*" className="pill w-full" onChange={e=>setImages(Array.from(e.target.files))} />
+            <div className="file-input-wrapper">
+                <input type="file" multiple accept="image/*" onChange={e=>{
+                    const files = Array.from(e.target.files);
+                    setImages(files);
+                    setFileName(files.length > 0 ? `${files.length} images selected` : '');
+                }} />
+                <div className="file-input-label">
+                    <span className="material-icons">{fileName ? 'collections' : 'cloud_upload'}</span>
+                    <span>{fileName || 'Select images for PDF'}</span>
+                </div>
+            </div>
             <button className="btn-primary" onClick={convert} disabled={images.length === 0 || isProcessing}>
                 {isProcessing ? 'Converting...' : `Convert ${images.length} Images`}
             </button>
@@ -486,8 +499,13 @@ const PdfHub = ({ onResultChange, subtool }) => {
     const [progress, setProgress] = useState(0);
     const [password, setPassword] = useState('');
     const [watermark, setWatermark] = useState('Confidential');
+    const [fileName, setFileName] = useState('');
 
-    const handleFileUpload = (e) => setFiles(Array.from(e.target.files));
+    const handleFileUpload = (e) => {
+        const selectedFiles = Array.from(e.target.files);
+        setFiles(selectedFiles);
+        setFileName(selectedFiles.length > 0 ? `${selectedFiles.length} files selected` : '');
+    };
 
     const mergePdfs = async () => {
         if (files.length < 2) return;
@@ -529,7 +547,13 @@ const PdfHub = ({ onResultChange, subtool }) => {
             </div>
             <div className="form-group">
                 <label>Upload PDF(s)</label>
-                <input type="file" multiple onChange={handleFileUpload} accept="application/pdf" className="pill w-full glass-card" />
+                <div className="file-input-wrapper">
+                    <input type="file" multiple onChange={handleFileUpload} accept="application/pdf" />
+                    <div className="file-input-label">
+                        <span className="material-icons">{fileName ? 'picture_as_pdf' : 'cloud_upload'}</span>
+                        <span>{fileName || 'Select PDF files'}</span>
+                    </div>
+                </div>
             </div>
 
             {isProcessing && (
@@ -558,25 +582,32 @@ const PdfHub = ({ onResultChange, subtool }) => {
                 {activeSub === 'img2pdf' && <ImageToPdf onResultChange={onResultChange} />}
                 {activeSub === 'word2pdf' && (
                     <div className="card p-20 text-center glass-card">
-                        <input type="file" accept=".docx" onChange={async (e) => {
-                            const file = e.target.files[0];
-                            if(!file) return;
-                            setIsProcessing(true);
-                            try {
-                                const result = await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() });
-                                const container = document.createElement('div');
-                                container.style.padding = '40px'; container.style.width = '800px'; container.style.background = 'white';
-                                container.style.position = 'absolute'; container.style.left = '-9999px';
-                                container.innerHTML = result.value;
-                                document.body.appendChild(container);
-                                const canvas = await html2canvas(container);
-                                document.body.removeChild(container);
-                                const pdf = new jsPDF('p', 'mm', 'a4');
-                                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, (canvas.height*210)/canvas.width);
-                                onResultChange({ text: 'Word to PDF', blob: pdf.output('blob'), filename: 'converted.pdf' });
-                            } catch(e) { alert(e.message); }
-                            finally { setIsProcessing(false); }
-                        }} className="pill w-full" />
+                        <div className="file-input-wrapper">
+                            <input type="file" accept=".docx" onChange={async (e) => {
+                                const file = e.target.files[0];
+                                if(!file) return;
+                                setFileName(file.name);
+                                setIsProcessing(true);
+                                try {
+                                    const result = await mammoth.convertToHtml({ arrayBuffer: await file.arrayBuffer() });
+                                    const container = document.createElement('div');
+                                    container.style.padding = '40px'; container.style.width = '800px'; container.style.background = 'white';
+                                    container.style.position = 'absolute'; container.style.left = '-9999px';
+                                    container.innerHTML = result.value;
+                                    document.body.appendChild(container);
+                                    const canvas = await html2canvas(container);
+                                    document.body.removeChild(container);
+                                    const pdf = new jsPDF('p', 'mm', 'a4');
+                                    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, 210, (canvas.height*210)/canvas.width);
+                                    onResultChange({ text: 'Word to PDF', blob: pdf.output('blob'), filename: 'converted.pdf' });
+                                } catch(e) { alert(e.message); }
+                                finally { setIsProcessing(false); }
+                            }} />
+                            <div className="file-input-label">
+                                <span className="material-icons">{fileName ? 'description' : 'cloud_upload'}</span>
+                                <span>{fileName || 'Select .docx file'}</span>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
@@ -591,6 +622,7 @@ const DocTranslator = ({ onResultChange }) => {
     const [targetLang, setTargetLang] = useState('te');
     const [isProcessing, setIsProcessing] = useState(false);
     const [result, setResult] = useState('');
+    const [fileName, setFileName] = useState('');
 
     const handleTranslate = async () => {
         if (!file) return;
@@ -665,12 +697,17 @@ const DocTranslator = ({ onResultChange }) => {
             <div className="card no-animation p-20 glass-card grid gap-15">
                 <div className="form-group">
                     <label>Select Document (PDF, DOCX, EPUB, HTML, MD, TXT)</label>
-                    <input
-                        type="file"
-                        className="pill w-full"
-                        onChange={e => setFile(e.target.files[0])}
-                        accept=".pdf,.docx,.epub,.html,.htm,.mhtml,.md,.txt"
-                    />
+                    <div className="file-input-wrapper">
+                        <input
+                            type="file"
+                            onChange={e => { setFile(e.target.files[0]); setFileName(e.target.files[0]?.name || ''); }}
+                            accept=".pdf,.docx,.epub,.html,.htm,.mhtml,.md,.txt"
+                        />
+                        <div className="file-input-label">
+                            <span className="material-icons">{fileName ? 'description' : 'cloud_upload'}</span>
+                            <span>{fileName || 'Select document to translate'}</span>
+                        </div>
+                    </div>
                 </div>
                 <div className="form-group">
                     <label>Target Language</label>
@@ -788,7 +825,7 @@ const DocTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   }, [toolId]);
 
   return (
-    <div className="tool-form">
+    <div className="tool-form mt-20">
       <div className="pill-group mb-20 scrollable-x">
         {tabs.map(tab => (
           <button key={tab.id} className={`pill ${activeTab === tab.id ? 'active' : ''}`} onClick={() => setActiveTab(tab.id)}>

@@ -545,7 +545,7 @@ const DevTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   }, [activeTab]);
 
   return (
-    <div className="tool-form">
+    <div className="tool-form mt-20">
       <div className="pill-group mb-20 scrollable-x">
         {tabs.map(tab => (
           <button key={tab.id} className={`pill ${activeTab === tab.id ? 'active' : ''}`} onClick={() => setActiveTab(tab.id)}>

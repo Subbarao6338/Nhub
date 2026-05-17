@@ -64,7 +64,7 @@ const DataTools = ({ toolId, onResultChange, onSubtoolChange }) => {
   }, [toolId]);
 
   return (
-    <div className="tool-form">
+    <div className="tool-form mt-20">
       <div className="pill-group mb-20 scrollable-x">
         {tabs.map(tab => (
           <button key={tab.id} className={`pill ${activeTab === tab.id ? 'active' : ''}`} onClick={() => setActiveTab(tab.id)}>
@@ -88,12 +88,14 @@ const DataViewer = ({ onResultChange, setGlobalData }) => {
     const [data, setData] = useState([]);
     const [headers, setHeaders] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [fileName, setFileName] = useState('');
 
     const handleFileUpload = (e) => {
         const file = e.target.files[0];
         if (!file) return;
         setLoading(true);
 
+        setFileName(file.name);
         const reader = new FileReader();
         reader.onload = (event) => {
             const content = event.target.result;
@@ -116,7 +118,13 @@ const DataViewer = ({ onResultChange, setGlobalData }) => {
     return (
         <div className="grid gap-15">
             <div className="card p-20 flex-column align-center text-center glass-card">
-                <input type="file" accept=".csv" onChange={handleFileUpload} className="pill w-full" />
+                <div className="file-input-wrapper">
+                    <input type="file" accept=".csv" onChange={handleFileUpload} />
+                    <div className="file-input-label">
+                        <span className="material-icons">{fileName ? 'description' : 'cloud_upload'}</span>
+                        <span>{fileName || 'Click or drag CSV file to browse'}</span>
+                    </div>
+                </div>
                 {loading && <div className="mt-10 rotating material-icons color-primary">refresh</div>}
             </div>
             {data.length > 0 && (

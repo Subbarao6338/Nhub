@@ -95,7 +95,7 @@ const AiTools = ({ onResultChange, toolId, onSubtoolChange }) => {
   };
 
   return (
-    <div className="tool-form">
+    <div className="tool-form mt-20">
       <div className="pill-group mb-20 scrollable-x">
         <button className={`pill ${activeTab === 'image-gen' ? 'active' : ''}`} onClick={() => {setActiveTab('image-gen'); setRes('');}}>Image Gen</button>
         <button className={`pill ${activeTab === 'chat' ? 'active' : ''}`} onClick={() => {setActiveTab('chat'); setRes('');}}>Chat</button>
