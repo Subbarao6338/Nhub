@@ -1370,9 +1370,8 @@ input:checked + .slider:before {
 .url-btn-content {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.85rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-all;
   font-weight: 600;
 }
 

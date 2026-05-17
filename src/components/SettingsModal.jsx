@@ -105,7 +105,6 @@ const SettingsModal = ({
             <label>Application Name</label>
             <input type="text" className="pill" value={appName} onChange={(e) => setAppName(e.target.value)} />
           </div>
-          <Toggle label="Enable Profiles" value={enableProfiles} onChange={setEnableProfiles} icon="account_circle" />
           <div className="form-group">
             <label>Startup Tab</label>
             <div className="pill-group">
@@ -131,6 +130,7 @@ const SettingsModal = ({
 
         <CollapsibleSection id="bookmarks" title="Bookmarks" icon="bookmarks" isOpen={openSections.includes('bookmarks')} onToggle={toggleSection}>
           <Toggle label="Show Bookmarks Tab" value={!hideBookmarks} onChange={(v) => setHideBookmarks(!v)} icon="visibility" />
+          <Toggle label="Enable Profiles" value={enableProfiles} onChange={setEnableProfiles} icon="account_circle" />
           <Toggle label="Hide Bookmark Icons" value={hideBookmarkIcons} onChange={setHideBookmarkIcons} icon="image_not_supported" />
           <Toggle label="Hide Bookmark URLs" value={hideBookmarkUrls} onChange={setHideBookmarkUrls} icon="link_off" />
         </CollapsibleSection>
