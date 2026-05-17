@@ -53,7 +53,7 @@ const SettingsModal = ({
   onClose,
   resetData
 }) => {
-  const [openSections, setOpenSections] = useState(['global', 'tabs', 'appearance', 'performance', 'data']);
+  const [openSections, setOpenSections] = useState([]);
 
   const toggleSection = (id) => {
     setOpenSections(prev =>
@@ -172,7 +172,7 @@ const SettingsModal = ({
           <div className="form-group">
             <label>Backup & Restore</label>
             <p className="smallest opacity-6 mb-10">Export your bookmarks and settings to a JSON file or import from a previous backup.</p>
-            <div className="grid grid-2 gap-10">
+            <div className="pill-group">
                 <button className="pill" onClick={handleExport} title="Download a JSON backup of your data">
                     <span className="material-icons mr-10">download</span> Export Data
                 </button>
@@ -199,7 +199,7 @@ const SettingsModal = ({
           <div className="form-group">
             <label>Data Management</label>
             <p className="smallest opacity-6 mb-10">Refresh local data or clear specific application states.</p>
-            <div className="grid gap-10">
+            <div className="pill-group">
                 <button className="pill" onClick={() => {
                     if(confirm("Refresh data from JSON files? This will reload the app.")) {
                         fetch(`${getApiBase()}/debug/reset-db`, { method: 'POST' })
