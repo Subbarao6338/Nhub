@@ -60,7 +60,6 @@ const UrlToPdf = () => {
         if (!url) return;
         setIsConverting(true);
         try {
-            // Using html2pdf.app API (public endpoint example)
             const response = await fetch(`https://api.html2pdf.app/v1/generate?url=${encodeURIComponent(url)}`);
             if (!response.ok) throw new Error("Conversion failed");
             const blob = await response.blob();
@@ -124,44 +123,74 @@ const WebArchiver = () => {
 const SocialTools = () => {
   const [url, setUrl] = useState('');
   const [status, setStatus] = useState('idle');
+  const [info, setInfo] = useState(null);
   const [result, setResult] = useState(null);
 
-  const handleDownload = async () => {
-    setStatus('downloading');
+  const getInfo = async () => {
+    if (!url) return;
+    setStatus('loading');
     try {
-      const response = await fetch('https://cobalt.tools/api/json', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-          },
-          body: JSON.stringify({ url: url })
-      });
+      const response = await fetch(`/api/social/info?url=${encodeURIComponent(url)}`);
+      if (!response.ok) throw new Error("Failed to get info");
       const data = await response.json();
-      if (data.status === 'stream' || data.status === 'redirect') {
-          setResult({ text: `Download link: ${data.url}`, url: data.url, filename: 'media' });
-      } else if (data.status === 'picker') {
-          setResult({ text: `Multiple options found. Please use the first one: ${data.picker[0].url}`, url: data.picker[0].url });
-      } else {
-          throw new Error(data.text || "Download failed");
-      }
+      setInfo(data);
       setStatus('idle');
     } catch (err) {
-        setStatus('error');
-        setResult({ error: "Download failed: " + err.message });
+      setStatus('error');
+      setResult({ error: err.message });
+    }
+  };
+
+  const handleDownload = async (formatId) => {
+    setStatus('downloading');
+    try {
+      const response = await fetch(`/api/social/download?url=${encodeURIComponent(url)}&format_id=${formatId || ''}`);
+      if (!response.ok) throw new Error("Download failed");
+      const data = await response.json();
+      setResult({ text: `Direct Link: ${data.filename}`, url: data.url });
+      setStatus('idle');
+    } catch (err) {
+      setStatus('error');
+      setResult({ error: "Download failed: " + err.message });
     }
   };
 
   return (
-    <div className="grid gap-12 card p-30 glass-card">
-      <div className="form-group">
-        <label>Media URL</label>
-        <input type="text" value={url} onChange={e => setUrl(e.target.value)} placeholder="YouTube, Twitter, Instagram URL..." className="pill w-full" />
+    <div className="grid gap-15">
+      <div className="grid gap-12 card p-30 glass-card">
+        <div className="form-group">
+          <label>Media URL</label>
+          <input type="text" value={url} onChange={e => setUrl(e.target.value)} placeholder="YouTube, Twitter, Instagram URL..." className="pill w-full" />
+        </div>
+        <button className="btn-primary w-full" onClick={getInfo} disabled={status === 'loading' || !url}>
+          <span className="material-icons mr-10">{status === 'loading' ? 'sync' : 'search'}</span>
+          {status === 'loading' ? 'Fetching...' : 'Fetch Media Info'}
+        </button>
       </div>
-      <button className="btn-primary w-full" onClick={handleDownload} disabled={status === 'downloading' || !url}>
-        <span className="material-icons mr-10">{status === 'downloading' ? 'sync' : 'download'}</span>
-        {status === 'downloading' ? 'Processing...' : 'Process Media'}
-      </button>
+
+      {info && (
+        <div className="card p-20 glass-card grid gap-15 animate-fadeIn">
+          <div className="flex gap-15">
+            <img src={info.thumbnail} alt="Thumbnail" style={{ width: '120px', borderRadius: '8px' }} />
+            <div>
+              <div className="font-bold">{info.title}</div>
+              <div className="smallest opacity-6">By {info.uploader} • {info.duration}s</div>
+            </div>
+          </div>
+          <div className="grid gap-10" style={{ maxHeight: '200px', overflow: 'auto' }}>
+            {info.formats.slice(0, 10).map(f => (
+              <div key={f.format_id} className="flex-between p-10 bg-surface rounded-lg">
+                <div className="smallest">
+                  <b>{f.ext.toUpperCase()}</b> • {f.resolution} • {(f.filesize / 1024 / 1024).toFixed(1)}MB
+                </div>
+                <button className="pill" style={{ padding: '4px 12px', fontSize: '0.7rem' }} onClick={() => handleDownload(f.format_id)}>
+                  Download
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <ToolResult result={result} />
     </div>
   );
