@@ -14,9 +14,7 @@ const Header = memo(({ appName, currentProfile, profiles, setView, hideBookmarks
         }}
       >
         <div className="logo-icon-wrapper">
-            <span className="material-icons-outlined app-logo">
-              {profile.icon || 'home'}
-            </span>
+            <img src="/assets/favicon.svg" className="app-logo-img" alt="Logo" style={{ width: '28px', height: '28px' }} />
         </div>
         <h1 className="page-title">
           {appName || 'Epic Toolbox'}
