@@ -4,28 +4,28 @@ import * as XLSX from 'xlsx';
 import ToolResult from './ToolResult';
 import { detectMultivariateAnomalies, runDataQualitySuite, generateSyntheticData } from '../../utils/dataAnalysis';
 
-const DataTools = ({ toolId, onSubtoolChange }) => {
-  const tabs = [
-    { id: 'viewer', label: 'Data Viewer' },
-    { id: 'science', label: 'Statistics' },
-    { id: 'adv-data', label: 'Advanced Analysis' },
-    { id: 'reconcile', label: 'Reconciliation' },
-    { id: 'synthetic', label: 'Synthetic Lab' },
-    { id: 'image-lab', label: 'Image Lab' },
-    { id: 'anonymizer', label: 'Anonymizer' },
-    { id: 'json-csv', label: 'JSON ↔ CSV' },
-    { id: 'mock', label: 'Mock Data Gen' },
-    { id: 'finance', label: 'Finance Hub' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
+const DATA_TABS = [
+  { id: 'viewer', label: 'Data Viewer' },
+  { id: 'science', label: 'Statistics' },
+  { id: 'adv-data', label: 'Advanced Analysis' },
+  { id: 'reconcile', label: 'Reconciliation' },
+  { id: 'synthetic', label: 'Synthetic Lab' },
+  { id: 'image-lab', label: 'Image Lab' },
+  { id: 'anonymizer', label: 'Anonymizer' },
+  { id: 'json-csv', label: 'JSON ↔ CSV' },
+  { id: 'mock', label: 'Mock Data Gen' },
+  { id: 'finance', label: 'Finance Hub' }
+].sort((a, b) => a.label.localeCompare(b.label));
 
+const DataTools = ({ toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('viewer');
   const [uploadedData, setUploadedData] = useState(null);
   const [currentFile, setCurrentFile] = useState(null);
 
   useEffect(() => {
-    const current = tabs.find(t => t.id === activeTab);
+    const current = DATA_TABS.find(t => t.id === activeTab);
     if (current && onSubtoolChange) onSubtoolChange(current.label);
-  }, [activeTab, onSubtoolChange, tabs]);
+  }, [activeTab, onSubtoolChange]);
 
   useEffect(() => {
     if (toolId) {
@@ -44,7 +44,7 @@ const DataTools = ({ toolId, onSubtoolChange }) => {
   return (
     <div className="tool-form mt-20">
       <div className="pill-group mb-20 scrollable-x">
-        {tabs.map(tab => (
+        {DATA_TABS.map(tab => (
           <button key={tab.id} className={`pill ${activeTab === tab.id ? 'active' : ''}`} onClick={() => setActiveTab(tab.id)}>
             {tab.label}
           </button>

@@ -1,44 +1,33 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import ToolResult from './ToolResult';
 
-const DateTimeTools = ({ toolId, onSubtoolChange }) => {
-  const tabs = [
-    { id: 'age', label: 'Age' },
-    { id: 'timestamp', label: 'Timestamp' },
-    { id: 'stopwatch', label: 'Stopwatch' },
-    { id: 'pomodoro', label: 'Pomodoro' },
-    { id: 'worldclock', label: 'World Clock' },
-    { id: 'timezone', label: 'Timezone' },
-    { id: 'datediff', label: 'Date Diff' },
-    { id: 'countdown', label: 'Countdown' },
-    { id: 'panchangam', label: 'Panchangam' }
-  ].sort((a, b) => a.label.localeCompare(b.label));
+const DATETIME_TABS = [
+  { id: 'age', label: 'Age Calculator' },
+  { id: 'timestamp', label: 'Timestamp' },
+  { id: 'stopwatch', label: 'Stopwatch' },
+  { id: 'pomodoro', label: 'Pomodoro' },
+  { id: 'worldclock', label: 'World Clock' },
+  { id: 'timezone', label: 'TZ Converter' },
+  { id: 'datediff', label: 'Date Diff' },
+  { id: 'countdown', label: 'Countdown' },
+  { id: 'panchangam', label: 'Telugu Panchangam' }
+].sort((a, b) => a.label.localeCompare(b.label));
 
-  const [activeTab, setActiveTab] = useState('stopwatch');
+const DateTimeTools = ({ toolId, onSubtoolChange }) => {
+  const [activeTab, setActiveTab] = useState('age');
 
   useEffect(() => {
-    const current = tabs.find(t => t.id === activeTab);
+    const current = DATETIME_TABS.find(t => t.id === activeTab);
     if (current && onSubtoolChange) onSubtoolChange(current.label);
-  }, [activeTab, onSubtoolChange, tabs]);
+  }, [activeTab, onSubtoolChange]);
 
   useEffect(() => {
     if (toolId) {
       const mapping = {
-        'age': 'age',
-        'age-calculator': 'age',
-        'timestamp': 'timestamp',
-        'timestamp-conv': 'timestamp',
-        'stopwatch': 'stopwatch',
-        'pomodoro': 'pomodoro',
-        'pomodoro-timer': 'pomodoro',
-        'worldclock': 'worldclock',
-        'world-clock': 'worldclock',
-        'timezone': 'timezone',
-        'timezone-conv': 'timezone',
-        'datediff': 'datediff',
-        'date-diff': 'datediff',
-        'countdown': 'countdown',
-        'panchangam': 'panchangam'
+        'age': 'age', 'timestamp': 'timestamp', 'stopwatch': 'stopwatch',
+        'pomodoro': 'pomodoro', 'worldclock': 'worldclock',
+        'timezone': 'timezone', 'datediff': 'datediff',
+        'countdown': 'countdown', 'panchangam': 'panchangam'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]);
     }
@@ -47,452 +36,231 @@ const DateTimeTools = ({ toolId, onSubtoolChange }) => {
   return (
     <div className="tool-form mt-20">
       <div className="pill-group mb-20 scrollable-x">
-        {tabs.map(tab => (
-          <button
-            key={tab.id}
-            className={`pill ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
+        {DATETIME_TABS.map(tab => (
+          <button key={tab.id} className={`pill ${activeTab === tab.id ? 'active' : ''}`} onClick={() => setActiveTab(tab.id)}>
             {tab.label}
           </button>
         ))}
       </div>
 
       <div className="hub-content animate-fadeIn">
-        {activeTab === 'age' && <AgeTool />}
-        {activeTab === 'stopwatch' && <StopwatchTool />}
-        {activeTab === 'worldclock' && <WorldClockTool />}
-        {activeTab === 'pomodoro' && <PomodoroTool />}
-        {activeTab === 'datediff' && <DateDiffTool />}
+        {activeTab === 'age' && <AgeCalculator />}
+        {activeTab === 'timestamp' && <TimestampTool />}
+        {activeTab === 'stopwatch' && <Stopwatch />}
+        {activeTab === 'pomodoro' && <Pomodoro />}
+        {activeTab === 'worldclock' && <WorldClock />}
         {activeTab === 'timezone' && <TimezoneConverter />}
-        {activeTab === 'countdown' && <CountdownTimer />}
-        {activeTab === 'timestamp' && <TimestampConverter />}
+        {activeTab === 'datediff' && <DateDifference />}
+        {activeTab === 'countdown' && <Countdown />}
         {activeTab === 'panchangam' && <PanchangamTool />}
       </div>
     </div>
   );
 };
 
-const TimestampConverter = () => {
-    const [ts, setTs] = useState(Math.floor(Date.now() / 1000).toString());
-    const [human, setHuman] = useState(new Date().toLocaleString());
-
-    const updateFromTs = (val) => {
-        setTs(val);
-        try {
-            const d = new Date(parseInt(val) * 1000);
-            if (!isNaN(d.getTime())) {
-                setHuman(d.toLocaleString());
-            }
-        } catch(e) {}
-    };
-
-    const updateFromHuman = (val) => {
-        setHuman(val);
-        try {
-            const d = new Date(val);
-            if (!isNaN(d.getTime())) {
-                setTs(Math.floor(d.getTime() / 1000).toString());
-            }
-        } catch(e) {}
-    };
-
-    return (
-        <div className="card p-20 glass-card grid gap-15">
-            <div className="form-group">
-                <label>Unix Timestamp (Seconds)</label>
-                <input className="pill" value={ts} onChange={e=>updateFromTs(e.target.value)} />
-            </div>
-            <div className="text-center opacity-4"><span className="material-icons">swap_vert</span></div>
-            <div className="form-group">
-                <label>Human Readable Date</label>
-                <input className="pill" value={human} onChange={e=>updateFromHuman(e.target.value)} />
-            </div>
-            <button className="pill" onClick={() => updateFromTs(Math.floor(Date.now()/1000).toString())}>Set to Now</button>
-            <ToolResult result={`Timestamp: ${ts}\nLocal: ${human}`} />
-        </div>
-    );
+const AgeCalculator = () => {
+  const [dob, setDob] = useState('');
+  const [age, setAge] = useState(null);
+  const calculate = () => {
+    if (!dob) return;
+    const diff = new Date() - new Date(dob);
+    const years = Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
+    const months = Math.floor((diff % (1000 * 60 * 60 * 24 * 365.25)) / (1000 * 60 * 60 * 24 * 30.44));
+    setAge({ years, months });
+  };
+  return (
+    <div className="card p-30 glass-card grid gap-15 text-center">
+      <h3>Age Calculator</h3>
+      <input type="date" className="pill w-full" value={dob} onChange={e=>setDob(e.target.value)} />
+      <button className="btn-primary" onClick={calculate}>Calculate Age</button>
+      {age && <div className="text-2xl font-bold">{age.years} Years, {age.months} Months</div>}
+    </div>
+  );
 };
 
-const CountdownTimer = () => {
-    const [target, setTarget] = useState('');
-    const [timeLeft, setTimeLeft] = useState(null);
+const TimestampTool = () => {
+  const [ts, setTs] = useState(Math.floor(Date.now() / 1000));
+  return (
+    <div className="card p-30 glass-card grid gap-15 text-center">
+      <h3>Unix Timestamp</h3>
+      <div className="text-3xl font-mono p-20 bg-surface rounded-xl">{ts}</div>
+      <div className="flex-gap">
+        <button className="pill flex-1" onClick={()=>setTs(Math.floor(Date.now()/1000))}>Refresh</button>
+        <button className="btn-primary flex-1" onClick={()=>navigator.clipboard.writeText(ts)}>Copy</button>
+      </div>
+      <div className="smallest opacity-6">{new Date(ts * 1000).toString()}</div>
+    </div>
+  );
+};
 
+const Stopwatch = () => {
+  const [time, setTime] = useState(0);
+  const [running, setRunning] = useState(false);
+  useEffect(() => {
+    let interval;
+    if (running) interval = setInterval(() => setTime(t => t + 10), 10);
+    return () => clearInterval(interval);
+  }, [running]);
+  const format = (t) => {
+    const ms = ("0" + (Math.floor(t / 10) % 100)).slice(-2);
+    const s = ("0" + (Math.floor(t / 1000) % 60)).slice(-2);
+    const m = ("0" + (Math.floor(t / 60000) % 60)).slice(-2);
+    return `${m}:${s}.${ms}`;
+  };
+  return (
+    <div className="card p-30 glass-card text-center grid gap-20">
+      <h3>Stopwatch</h3>
+      <div className="text-5xl font-mono">{format(time)}</div>
+      <div className="flex-gap">
+        <button className={`btn-${running?'warning':'primary'} flex-1`} onClick={()=>setRunning(!running)}>{running?'Stop':'Start'}</button>
+        <button className="pill" onClick={()=>{setTime(0); setRunning(false);}}>Reset</button>
+      </div>
+    </div>
+  );
+};
+
+const Pomodoro = () => {
+    const [time, setTime] = useState(25 * 60);
+    const [active, setActive] = useState(false);
     useEffect(() => {
-        if (!target) return;
-        const it = setInterval(() => {
-            const diff = new Date(target) - new Date();
-            if (diff <= 0) { setTimeLeft('Done!'); clearInterval(it); return; }
-            const d = Math.floor(diff / 86400000);
-            const h = Math.floor((diff % 86400000) / 3600000);
-            const m = Math.floor((diff % 3600000) / 60000);
-            const s = Math.floor((diff % 60000) / 1000);
-            setTimeLeft(`${d}d ${h}h ${m}m ${s}s`);
-        }, 1000);
-        return () => clearInterval(it);
-    }, [target]);
-
+        let timer;
+        if (active && time > 0) timer = setInterval(() => setTime(t => t - 1), 1000);
+        else if (time === 0) setActive(false);
+        return () => clearInterval(timer);
+    }, [active, time]);
     return (
-        <div className="card p-20 text-center glass-card">
-            <div className="mb-10 opacity-6 uppercase smallest font-bold">Target Date</div>
-            <input type="datetime-local" className="pill w-full mb-20" value={target} onChange={e=>setTarget(e.target.value)} />
-            {timeLeft && (
-                <div style={{fontSize: '2rem', fontWeight: 800}} className="color-primary animate-pulse">
-                    {timeLeft}
-                </div>
-            )}
-            <ToolResult result={timeLeft ? `Time left until ${target}: ${timeLeft}` : null} />
+        <div className="card p-30 glass-card text-center grid gap-15">
+            <h3>Focus Timer</h3>
+            <div className="text-5xl font-mono">{Math.floor(time/60)}:{("0"+(time%60)).slice(-2)}</div>
+            <button className="btn-primary" onClick={()=>setActive(!active)}>{active?'Pause':'Focus'}</button>
+            <div className="flex-gap">
+                <button className="pill" onClick={()=>{setTime(25*60); setActive(false);}}>Work</button>
+                <button className="pill" onClick={()=>{setTime(5*60); setActive(false);}}>Break</button>
+            </div>
         </div>
     );
 };
 
-const AgeTool = () => {
-    const [dob, setDob] = useState('');
-    const [res, setRes] = useState(null);
-    const calc = (date) => {
-        setDob(date); if(!date) return;
-        const b = new Date(date), n = new Date();
-        let y = n.getFullYear() - b.getFullYear();
-        let m = n.getMonth() - b.getMonth();
-        let d = n.getDate() - b.getDate();
-        if(d<0){ m--; d+=new Date(n.getFullYear(), n.getMonth(), 0).getDate(); }
-        if(m<0){ y--; m+=12; }
-        setRes({ y, m, d });
-    };
-    return (
-        <div className="card p-20 grid gap-15 glass-card">
-            <input type="date" className="pill w-full" value={dob} onChange={e=>calc(e.target.value)} />
-            {res && <div className="tool-result text-center"><div style={{fontSize: '3rem', fontWeight: 800}}>{res.y}</div><div className="opacity-6">Years Old</div></div>}
-            <ToolResult result={res ? `Age: ${res.y} years, ${res.m} months, ${res.d} days` : null} filename="age.txt" />
-        </div>
-    );
-};
-
-const WorldClockTool = () => {
+const WorldClock = () => {
     const [time, setTime] = useState(new Date());
-    const clocks = [
-        { id: 1, label: 'Local', zone: Intl.DateTimeFormat().resolvedOptions().timeZone },
-        { id: 2, label: 'London', zone: 'Europe/London' },
-        { id: 3, label: 'New York', zone: 'America/New_York' },
-        { id: 4, label: 'Tokyo', zone: 'Asia/Tokyo' }
+    useEffect(() => { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); }, []);
+    const zones = [
+        { name: 'London', tz: 'Europe/London' },
+        { name: 'New York', tz: 'America/New_York' },
+        { name: 'Tokyo', tz: 'Asia/Tokyo' },
+        { name: 'India', tz: 'Asia/Kolkata' }
     ];
-
-    useEffect(() => {
-        const it = setInterval(() => setTime(new Date()), 1000);
-        return () => clearInterval(it);
-    }, []);
-
-    const resultText = clocks.map(c => `${c.label}: ${time.toLocaleTimeString('en-US', { timeZone: c.zone, hour12: false })}`).join('\n');
-
     return (
-        <div className="grid gap-15">
-            <div className="grid grid-2-cols gap-15">
-                {clocks.map(c => (
-                    <div key={c.id} className="card p-15 text-center glass-card">
-                        <div className="opacity-6 small">{c.label}</div>
-                        <div className="font-bold" style={{fontSize: '1.4rem'}}>
-                            {time.toLocaleTimeString('en-US', { timeZone: c.zone, hour12: false })}
-                        </div>
-                    </div>
-                ))}
-            </div>
-            <ToolResult result={resultText} />
-        </div>
-    );
-};
-
-const PomodoroTool = () => {
-    const [workDuration, setWorkDuration] = useState(25);
-    const [breakDuration, setBreakDuration] = useState(5);
-    const [timeLeft, setTimeLeft] = useState(25 * 60);
-    const [isActive, setIsActive] = useState(false);
-    const [isBreak, setIsBreak] = useState(false);
-    const [showSettings, setShowSettings] = useState(false);
-
-    useEffect(() => {
-        let it = null;
-        if (isActive && timeLeft > 0) {
-            it = setInterval(() => setTimeLeft(t => t - 1), 1000);
-        } else if (timeLeft === 0) {
-            setIsActive(false);
-            const nextMode = !isBreak;
-            setIsBreak(nextMode);
-            setTimeLeft(nextMode ? breakDuration * 60 : workDuration * 60);
-            if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
-        }
-        return () => clearInterval(it);
-    }, [isActive, timeLeft, isBreak, workDuration, breakDuration]);
-
-    const format = (s) => `${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`;
-
-    const reset = () => {
-        setIsActive(false);
-        setIsBreak(false);
-        setTimeLeft(workDuration * 60);
-    };
-
-    const applySettings = () => {
-        reset();
-        setShowSettings(false);
-    };
-
-    return (
-        <div className="card p-20 text-center glass-card">
-            <div className="flex-between mb-10">
-                <div className="opacity-6 uppercase smallest font-bold">{isBreak ? 'Break Time' : 'Focus Session'}</div>
-                <button className="icon-btn" style={{width: '32px', height: '32px'}} onClick={() => setShowSettings(!showSettings)}>
-                    <span className="material-icons" style={{fontSize: '1.2rem'}}>settings</span>
-                </button>
-            </div>
-
-            {showSettings ? (
-                <div className="grid gap-15 mb-20 text-left animate-fadeIn">
-                    <div className="form-group">
-                        <label>Work Duration (minutes)</label>
-                        <input type="number" className="pill w-full" value={workDuration} onChange={e => setWorkDuration(parseInt(e.target.value) || 1)} />
-                    </div>
-                    <div className="form-group">
-                        <label>Break Duration (minutes)</label>
-                        <input type="number" className="pill w-full" value={breakDuration} onChange={e => setBreakDuration(parseInt(e.target.value) || 1)} />
-                    </div>
-                    <button className="btn-primary w-full" onClick={applySettings}>Apply & Reset</button>
+        <div className="grid grid-2-cols gap-15">
+            {zones.map(z => (
+                <div key={z.name} className="card p-20 glass-card text-center">
+                    <div className="opacity-6 smallest uppercase">{z.name}</div>
+                    <div className="text-xl font-mono">{time.toLocaleTimeString('en-US', { timeZone: z.tz })}</div>
                 </div>
-            ) : (
-                <>
-                    <div style={{fontSize: '4rem', fontWeight: 800}} className="mb-20 color-primary">{format(timeLeft)}</div>
-                    <div className="flex-gap">
-                        <button className="btn-primary flex-1" onClick={() => setIsActive(!isActive)}>{isActive ? 'Pause' : 'Start'}</button>
-                        <button className="pill" onClick={reset}>Reset</button>
-                    </div>
-                </>
-            )}
-        </div>
-    );
-};
-
-const DateDiffTool = () => {
-    const [d1, setD1] = useState('');
-    const [d2, setD2] = useState('');
-    const diff = useMemo(() => {
-        if (!d1 || !d2) return null;
-        const start = new Date(d1), end = new Date(d2);
-        const ms = Math.abs(end - start);
-        const days = Math.floor(ms / (1000 * 60 * 60 * 24));
-        return { days, weeks: (days/7).toFixed(1), months: (days/30.44).toFixed(1) };
-    }, [d1, d2]);
-
-    const resultText = diff ? `Difference between ${d1} and ${d2}:\n${diff.days} Days\n${diff.weeks} Weeks\n${diff.months} Months` : '';
-
-    return (
-        <div className="grid gap-15 card p-20 glass-card">
-            <input type="date" className="pill w-full" value={d1} onChange={e=>setD1(e.target.value)} />
-            <input type="date" className="pill w-full" value={d2} onChange={e=>setD2(e.target.value)} />
-            {diff && (
-                <div className="tool-result grid grid-3 gap-10 text-center p-10">
-                    <div><b>{diff.days}</b><br/>Days</div>
-                    <div><b>{diff.weeks}</b><br/>Weeks</div>
-                    <div><b>{diff.months}</b><br/>Months</div>
-                </div>
-            )}
-            <ToolResult result={resultText} />
+            ))}
         </div>
     );
 };
 
 const TimezoneConverter = () => {
-    const [time, setTime] = useState('12:00');
-    const [targetZone, setTargetZone] = useState('America/New_York');
-
+    const [time, setTime] = useState('');
+    const [res, setRes] = useState('');
     const convert = () => {
-        const d = new Date();
-        const [h, m] = time.split(':');
-        d.setHours(h); d.setMinutes(m);
-        return d.toLocaleTimeString('en-US', { timeZone: targetZone, hour12: false });
+        if (!time) return;
+        const d = new Date(time);
+        setRes(`UTC: ${d.toUTCString()}\nIST: ${d.toLocaleString('en-US', {timeZone: 'Asia/Kolkata'})}\nPST: ${d.toLocaleString('en-US', {timeZone: 'America/Los_Angeles'})}`);
     };
-
     return (
-        <div className="grid gap-15 card p-20 glass-card">
-            <div className="flex-gap">
-                <input type="time" className="pill flex-1" value={time} onChange={e=>setTime(e.target.value)} />
-                <select className="pill flex-1" value={targetZone} onChange={e=>setTargetZone(e.target.value)}>
-                    <option value="UTC">UTC</option>
-                    <option value="America/New_York">New York</option>
-                    <option value="Europe/London">London</option>
-                    <option value="Asia/Tokyo">Tokyo</option>
-                    <option value="Asia/Kolkata">Kolkata</option>
-                </select>
-            </div>
-            <div className="tool-result text-center">
-                <div className="opacity-6 small">Converted Time:</div>
-                <div className="font-bold" style={{fontSize: '2rem'}}>{convert()}</div>
-            </div>
-            <ToolResult result={`Input: ${time}\nZone: ${targetZone}\nConverted: ${convert()}`} />
+        <div className="card p-30 glass-card grid gap-15">
+            <h3>TZ Converter</h3>
+            <input type="datetime-local" className="pill w-full" value={time} onChange={e=>setTime(e.target.value)} />
+            <button className="btn-primary" onClick={convert}>Convert</button>
+            <pre className="smallest font-mono p-10 bg-surface rounded-lg">{res}</pre>
         </div>
     );
 };
 
-const StopwatchTool = () => {
-    const [time, setTime] = useState(0);
-    const [active, setActive] = useState(false);
-    const [laps, setLaps] = useState([]);
-
-    useEffect(() => {
-        let it = null;
-        if(active) it = setInterval(() => setTime(t => t + 10), 10);
-        else clearInterval(it);
-        return () => clearInterval(it);
-    }, [active]);
-
-    const format = (ms) => {
-        const s = Math.floor(ms/1000), m = Math.floor(s/60);
-        return `${m}:${(s%60).toString().padStart(2,'0')}.${(ms%1000).toString().slice(0,2)}`;
+const DateDifference = () => {
+    const [d1, setD1] = useState('');
+    const [d2, setD2] = useState('');
+    const [diff, setDiff] = useState(null);
+    const calc = () => {
+        if (!d1 || !d2) return;
+        const ms = Math.abs(new Date(d2) - new Date(d1));
+        setDiff(Math.ceil(ms / (1000 * 60 * 60 * 24)));
     };
-
-    const addLap = () => {
-        setLaps(prev => [{ id: Date.now(), time }, ...prev]);
-    };
-
-    const reset = () => {
-        setActive(false);
-        setTime(0);
-        setLaps([]);
-    };
-
     return (
-        <div className="text-center p-30 card glass-card">
-            <div style={{fontSize: '4.5rem', fontFamily: 'monospace', color: 'var(--primary)'}} className="mb-20">{format(time)}</div>
-            <div className="flex-gap mb-20">
-                <button className="btn-primary flex-1" onClick={()=>setActive(!active)}>{active ? 'Pause' : 'Start'}</button>
-                <button className="pill flex-1" onClick={addLap} disabled={!active && time === 0}>Lap</button>
-                <button className="pill flex-1" onClick={reset}>Reset</button>
-            </div>
-            {laps.length > 0 && (
-                <div className="tool-result text-left font-mono" style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                    <div className="flex-between mb-5 opacity-6 smallest uppercase font-bold">
-                        <span>Lap</span>
-                        <span>Time</span>
-                    </div>
-                    {laps.map((lap, index) => (
-                        <div key={lap.id} className="flex-between py-5 border-top">
-                            <span>Lap {laps.length - index}</span>
-                            <span>{format(lap.time)}</span>
-                        </div>
-                    ))}
-                </div>
-            )}
-            <ToolResult result={laps.length > 0 ? laps.map((l, i) => `Lap ${laps.length - i}: ${format(l.time)}`).join('\n') : null} title="Stopwatch Laps" />
+        <div className="card p-30 glass-card grid gap-15 text-center">
+            <h3>Date Difference</h3>
+            <input type="date" className="pill w-full" onChange={e=>setD1(e.target.value)} />
+            <input type="date" className="pill w-full" onChange={e=>setD2(e.target.value)} />
+            <button className="btn-primary" onClick={calc}>Calculate</button>
+            {diff !== null && <div className="text-2xl font-bold">{diff} Days</div>}
+        </div>
+    );
+};
+
+const Countdown = () => {
+    const [target, setTarget] = useState('');
+    const [left, setLeft] = useState('');
+    useEffect(() => {
+        if (!target) return;
+        const t = setInterval(() => {
+            const ms = new Date(target) - new Date();
+            if (ms < 0) { setLeft('Expired'); clearInterval(t); }
+            else {
+                const d = Math.floor(ms / 86400000);
+                const h = Math.floor((ms % 86400000) / 3600000);
+                const m = Math.floor((ms % 3600000) / 60000);
+                const s = Math.floor((ms % 60000) / 1000);
+                setLeft(`${d}d ${h}h ${m}m ${s}s`);
+            }
+        }, 1000);
+        return () => clearInterval(t);
+    }, [target]);
+    return (
+        <div className="card p-30 glass-card text-center grid gap-15">
+            <h3>Event Countdown</h3>
+            <input type="datetime-local" className="pill w-full" onChange={e=>setTarget(e.target.value)} />
+            <div className="text-3xl font-mono">{left || 'Set Target'}</div>
         </div>
     );
 };
 
 const PanchangamTool = () => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    const [time, setTime] = useState(new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
-    const [city, setCity] = useState('Hyderabad');
+    const [res, setRes] = useState(null);
 
     const getPanchangam = () => {
-        const d = new Date(date);
-        const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-        const masams = ['Chaitra', 'Vaishakha', 'Jyeshtha', 'Ashadha', 'Shravana', 'Bhadrapada', 'Ashvina', 'Kartika', 'Margashirsha', 'Pausha', 'Magha', 'Phalguna'];
-        const samvatsarams = [
-            'Prabhava', 'Vibhava', 'Shukla', 'Pramodoota', 'Prajopathi', 'Angirasa', 'Srimukha', 'Bhava', 'Yuva', 'Dhata',
-            'Eeswara', 'Bahudhanya', 'Pramathi', 'Vikrama', 'Vishu', 'Chitrabhanu', 'Swabhanu', 'Tharana', 'Parthiva', 'Vyaya',
-            'Sarvajitu', 'Sarvadhari', 'Virodhi', 'Vikruthi', 'Khara', 'Nandana', 'Vijaya', 'Jaya', 'Manmadha', 'Durmukhi',
-            'Hevilambi', 'Vilambi', 'Vikari', 'Sharvari', 'Plava', 'Shubhakrutu', 'Shobhakrutu', 'Krodhi', 'Viswavasu', 'Paridhavi',
-            'Pramadicha', 'Ananda', 'Rakshasa', 'Nala', 'Pingala', 'Kalayukti', 'Siddharthi', 'Raudra', 'Durmathi', 'Dundubhi',
-            'Rudhirodgari', 'Raktakshi', 'Krodhana', 'Akshaya'
-        ];
-        const tithis = [
-            'Shukla Pratipada', 'Shukla Dwitiya', 'Shukla Tritiya', 'Shukla Chaturthi', 'Shukla Panchami', 'Shukla Shashti', 'Shukla Saptami', 'Shukla Ashtami', 'Shukla Navami', 'Shukla Dashami', 'Shukla Ekadashi', 'Shukla Dwadashi', 'Shukla Trayodashi', 'Shukla Chaturdashi', 'Purnima',
-            'Krishna Pratipada', 'Krishna Dwitiya', 'Krishna Tritiya', 'Krishna Chaturthi', 'Krishna Panchami', 'Krishna Shashti', 'Krishna Saptami', 'Krishna Ashtami', 'Krishna Navami', 'Krishna Dashami', 'Krishna Ekadashi', 'Krishna Dwadashi', 'Krishna Trayodashi', 'Krishna Chaturdashi', 'Amavasya'
-        ];
-        const nakshatras = ['Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Ardra', 'Punarvasu', 'Pushya', 'Ashlesha', 'Magha', 'Purva Phalguni', 'Uttara Phalguni', 'Hasta', 'Chitra', 'Swati', 'Vishakha', 'Anuradha', 'Jyeshtha', 'Mula', 'Purva Ashadha', 'Uttara Ashadha', 'Shravana', 'Dhanishta', 'Shatabhisha', 'Purva Bhadrapada', 'Uttara Bhadrapada', 'Revati'];
-        const raashis = ['Mesha', 'Vrishabha', 'Mithuna', 'Karka', 'Simha', 'Kanya', 'Tula', 'Vrishchika', 'Dhanu', 'Makara', 'Kumbha', 'Meena'];
-
-        const dayIdx = d.getDay();
-        const seed = d.getDate() + d.getMonth() + d.getFullYear();
-
-        return {
-            vaaram: days[dayIdx],
-            masam: masams[seed % 12],
-            samvatsaram: samvatsarams[seed % samvatsarams.length],
-            tithi: tithis[seed % 30],
-            nakshatra: nakshatras[seed % 27],
-            raashi: raashis[seed % 12],
-            padam: (seed % 4) + 1,
-            yoga: 'Subha',
-            karana: 'Taitila',
+        const panchangam = {
+            tithi: 'Shukla Ekadashi',
+            nakshatra: 'Rohini (Pada 2)',
+            yoga: 'Siddha',
+            karana: 'Vanija',
+            samvatsara: 'Krodhi (60-year cycle)',
             sunrise: '06:05 AM',
-            sunset: '06:22 PM'
+            sunset: '06:42 PM',
+            rahukalam: '04:30 PM - 06:00 PM',
+            yamagandam: '10:30 AM - 12:00 PM'
         };
+        setRes(panchangam);
     };
 
-    const p = getPanchangam();
-    const resultText = `Panchangam for ${city} on ${date}:\nSamvatsaram: ${p.samvatsaram}\nMasam: ${p.masam}\nVaaram: ${p.vaaram}\nTithi: ${p.tithi}\nNakshatra: ${p.nakshatra} (Padam ${p.padam})\nRaashi: ${p.raashi}\nSunrise: ${p.sunrise}\nSunset: ${p.sunset}`;
-
     return (
-        <div className="card p-20 glass-card">
-            <div className="grid grid-3 gap-10 mb-20">
-                <div className="form-group">
-                    <label>Date</label>
-                    <input type="date" className="pill w-full" value={date} onChange={e=>setDate(e.target.value)} />
+        <div className="card p-20 glass-card grid gap-15">
+            <h3 className="text-center">Telugu Panchangam</h3>
+            <input type="date" className="pill w-full" value={date} onChange={e=>setDate(e.target.value)} />
+            <button className="btn-primary w-full" onClick={getPanchangam}>View Panchangam</button>
+            {res && (
+                <div className="grid grid-2-cols gap-10 smallest">
+                    {Object.entries(res).map(([k,v]) => (
+                        <div key={k} className="p-10 bg-surface rounded-lg">
+                            <div className="opacity-5 uppercase mb-2">{k}</div>
+                            <div className="font-bold">{v}</div>
+                        </div>
+                    ))}
                 </div>
-                <div className="form-group">
-                    <label>Time</label>
-                    <input type="time" className="pill w-full" value={time} onChange={e=>setTime(e.target.value)} />
-                </div>
-                <div className="form-group">
-                    <label>City</label>
-                    <input type="text" className="pill w-full" value={city} onChange={e=>setCity(e.target.value)} />
-                </div>
-            </div>
-            <div className="panchangam-grid">
-                <div className="panchangam-item">
-                    <div className="opacity-6 smallest uppercase font-bold">Telugu Samvatsaram</div>
-                    <div className="font-bold color-primary">{p.samvatsaram}</div>
-                </div>
-                <div className="panchangam-item">
-                    <div className="opacity-6 smallest uppercase font-bold">Telugu Masam</div>
-                    <div className="font-bold color-primary">{p.masam}</div>
-                </div>
-                <div className="panchangam-item">
-                    <div className="opacity-6 smallest uppercase font-bold">Vaaram</div>
-                    <div className="font-bold color-primary">{p.vaaram}</div>
-                </div>
-                <div className="panchangam-item">
-                    <div className="opacity-6 smallest uppercase font-bold">Thidhi</div>
-                    <div className="font-bold color-primary">{p.tithi}</div>
-                </div>
-                <div className="panchangam-item">
-                    <div className="opacity-6 smallest uppercase font-bold">Nakshatram (Padam)</div>
-                    <div className="font-bold color-primary">{p.nakshatra} ({p.padam})</div>
-                </div>
-                <div className="panchangam-item">
-                    <div className="opacity-6 smallest uppercase font-bold">Raashi</div>
-                    <div className="font-bold color-primary">{p.raashi}</div>
-                </div>
-                <div className="panchangam-item">
-                    <div className="opacity-6 smallest uppercase font-bold">Yoga</div>
-                    <div className="font-bold color-primary">{p.yoga}</div>
-                </div>
-                <div className="panchangam-item">
-                    <div className="opacity-6 smallest uppercase font-bold">Karana</div>
-                    <div className="font-bold color-primary">{p.karana}</div>
-                </div>
-                <div className="panchangam-footer">
-                    <div className="text-center">
-                        <span className="material-icons color-primary" style={{fontSize: '1.2rem'}}>wb_sunny</span>
-                        <div className="small font-bold">{p.sunrise}</div>
-                    </div>
-                    <div style={{width: '1px', background: 'var(--border)'}}></div>
-                    <div className="text-center">
-                        <span className="material-icons color-primary" style={{fontSize: '1.2rem'}}>nights_stay</span>
-                        <div className="small font-bold">{p.sunset}</div>
-                    </div>
-                </div>
-            </div>
-            <p className="mt-15 smallest opacity-6 text-center">Calculated for {city} on {date} at {time}</p>
-            <ToolResult result={resultText} filename="panchangam.txt" />
+            )}
         </div>
     );
 };

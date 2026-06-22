@@ -13,23 +13,21 @@ const DateTimeTools = lazy(() => import('./tools/DateTimeTools'));
 const DevTools = lazy(() => import('./tools/DevTools'));
 const WebTools = lazy(() => import('./tools/WebTools'));
 const AiTools = lazy(() => import('./tools/AiTools'));
-const ConvertTools = lazy(() => import('./tools/ConvertTools'));
 const AgentTools = lazy(() => import('./tools/AgentTools'));
 const NotionTools = lazy(() => import('./tools/NotionTools'));
 const OpsTools = lazy(() => import('./tools/OpsTools'));
 
 const TOOLS = [
-    { id: 'agent-main', title: 'Agent Lab', icon: 'psychology', category: 'Developer', component: AgentTools, subTools: ['ingest', 'generate', 'results', 'setup'] },
+    { id: 'ai-main', title: 'AI Hub', icon: 'auto_awesome', category: 'AI & Agents', component: AiTools, subTools: ['image-gen', 'chat', 'local'] },
+    { id: 'agent-main', title: 'Agent Lab', icon: 'psychology', category: 'AI & Agents', component: AgentTools, subTools: ['ingest', 'generate', 'results', 'setup'] },
+    { id: 'doc-main', title: 'Media & Docs', icon: 'description', category: 'Media & Documents', component: DocTools, subTools: ['pdf', 'image', 'text', 'md-editor', 'doc-translator', 'batch'] },
+    { id: 'web-main', title: 'Web Tools', icon: 'public', category: 'Web Tools', component: WebTools, subTools: ['social', 'archive', 'url2pdf', 'userscripts', 'bookmarklets'] },
+    { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data & Analytics', component: DataTools, subTools: ['viewer', 'science', 'adv-data', 'reconcile', 'synthetic', 'anonymizer', 'json-csv', 'mock', 'finance'] },
+    { id: 'dev-main', title: 'Dev Hub', icon: 'terminal', category: 'Developer Tools', component: DevTools, subTools: ['json-fmt', 'sql', 'diff', 'converter', 'security', 'regex', 'otp', 'kusto', 'base64', 'jwt', 'cron', 'url', 'yaml', 'minifier', 'xml-json', 'xml-fmt', 'json-ts', 'color', 'qr-barcode'] },
+    { id: 'network-main', title: 'Network Hub', icon: 'router', category: 'Networking & Ops', component: NetworkTools, subTools: ['ip-info', 'ping', 'dns', 'whois', 'speed', 'geo', 'ssl', 'subnet', 'bluetooth'] },
+    { id: 'ops-main', title: 'Ops Center', icon: 'settings_input_component', category: 'Networking & Ops', component: OpsTools, subTools: ['status', 'telemetry', 'lineage'] },
     { id: 'notion-main', title: 'Notion Hub', icon: 'auto_stories', category: 'Productivity', component: NotionTools, subTools: ['ingest', 'folder', 'scraper', 'history', 'setup'] },
-    { id: 'ops-main', title: 'Ops Center', icon: 'settings_input_component', category: 'Developer', component: OpsTools, subTools: ['status', 'telemetry', 'lineage'] },
-    { id: 'convert-main', title: 'Batch Converter', icon: 'auto_fix_high', category: 'Productivity', component: ConvertTools, subTools: ['batch', 'mdx'] },
-    { id: 'web-main', title: 'Web & Social Tools', icon: 'public', category: 'Web', component: WebTools, subTools: ['social', 'archive', 'url2pdf', 'userscripts', 'bookmarklets'] },
-    { id: 'network-main', title: 'Network Hub', icon: 'router', category: 'Web', component: NetworkTools, subTools: ['ip-info', 'ping', 'dns', 'whois', 'speed', 'geo', 'ssl', 'subnet', 'bluetooth'] },
-    { id: 'ai-main', title: 'AI Hub', icon: 'auto_awesome', category: 'Web', component: AiTools, subTools: ['image-gen', 'chat', 'local'] },
-    { id: 'dev-main', title: 'Dev Hub', icon: 'terminal', category: 'Developer', component: DevTools, subTools: ['json-fmt', 'sql', 'diff', 'converter', 'security', 'regex', 'otp', 'kusto', 'base64', 'jwt', 'cron', 'url', 'yaml', 'minifier', 'xml-json', 'xml-fmt', 'json-ts', 'color', 'qr-barcode'] },
-    { id: 'doc-main', title: 'Document Tools', icon: 'description', category: 'Developer', component: DocTools, subTools: ['pdf', 'image', 'text', 'md-editor', 'doc-translator'] },
-    { id: 'data-main', title: 'Data Science', icon: 'insights', category: 'Data', component: DataTools, subTools: ['viewer', 'science', 'adv-data', 'reconcile', 'synthetic', 'image-lab', 'anonymizer', 'json-csv', 'mock', 'finance'] },
-    { id: 'time-main', title: 'Date & Time Tools', icon: 'schedule', category: 'Productivity', component: DateTimeTools, subTools: ['age', 'timestamp', 'stopwatch', 'pomodoro', 'worldclock', 'timezone', 'datediff', 'countdown', 'panchangam'] },
+    { id: 'time-main', title: 'Date & Time', icon: 'schedule', category: 'Productivity', component: DateTimeTools, subTools: ['age', 'timestamp', 'stopwatch', 'pomodoro', 'worldclock', 'timezone', 'datediff', 'countdown', 'panchangam'] },
 ];
 
 const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRecentTools, hideRecentTools, hideIcons }) => {
@@ -382,10 +380,13 @@ const ToolCard = memo(({ tool, idx, isPinned, togglePin, handleShare, openTool, 
 
 const getCategoryIcon = (cat) => {
     const icons = {
+        'AI & Agents': 'psychology',
+        'Media & Documents': 'description',
+        'Web Tools': 'public',
+        'Developer Tools': 'terminal',
+        'Networking & Ops': 'router',
         'Productivity': 'assignment',
-        'Web': 'public',
-        'Developer': 'terminal',
-        'Data': 'insights'
+        'Data & Analytics': 'insights'
     };
     return icons[cat] || 'folder';
 };
