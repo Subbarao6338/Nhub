@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ToolResult from './ToolResult';
 
+const AI_TABS = [
+  { id: 'image-gen', label: 'AI Image Gen' },
+  { id: 'chat', label: 'AI Chat Assistant' },
+  { id: 'local', label: 'Local AI Utilities' }
+].sort((a, b) => a.label.localeCompare(b.label));
+
 const AiTools = ({ toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState('image-gen');
   const chatEndRef = useRef(null);
@@ -9,13 +15,16 @@ const AiTools = ({ toolId, onSubtoolChange }) => {
     if (toolId) {
       const mapping = {
         'ai-chat': 'chat',
+        'chat': 'chat',
         'ai-image': 'image-gen',
-        'ai-text': 'text-gen',
-        'ai-sentiment': 'local'
+        'image-gen': 'image-gen',
+        'ai-sentiment': 'local',
+        'local': 'local'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]);
     }
   }, [toolId]);
+
   const [input, setInput] = useState('');
   const [res, setRes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,14 +34,9 @@ const AiTools = ({ toolId, onSubtoolChange }) => {
   const [toolResult, setToolResult] = useState(null);
 
   useEffect(() => {
-    const labels = {
-      'image-gen': 'AI Image Gen',
-      'text-gen': 'AI Story Gen',
-      'chat': 'AI Chat Assistant',
-      'local': 'Local AI Utilities'
-    };
-    if (onSubtoolChange) onSubtoolChange(labels[activeTab]);
-  }, [activeTab]);
+    const current = AI_TABS.find(t => t.id === activeTab);
+    if (current && onSubtoolChange) onSubtoolChange(current.label);
+  }, [activeTab, onSubtoolChange]);
 
   useEffect(() => {
     if (activeTab === 'chat' && chatEndRef.current) {
@@ -43,7 +47,6 @@ const AiTools = ({ toolId, onSubtoolChange }) => {
   const runLocalAnalysis = async () => {
     setLoading(true);
     try {
-        // Simulating local sentiment analysis
         const sentiment = input.length % 2 === 0 ? 'Positive' : 'Neutral';
         setLocalSentiment(sentiment);
         setToolResult({ text: `Sentiment Analysis Result:\nSentiment: ${sentiment}\nText: ${input.substring(0, 50)}...`, filename: 'sentiment.txt' });
@@ -95,9 +98,11 @@ const AiTools = ({ toolId, onSubtoolChange }) => {
   return (
     <div className="tool-form mt-20">
       <div className="pill-group mb-20 scrollable-x">
-        <button className={`pill ${activeTab === 'image-gen' ? 'active' : ''}`} onClick={() => {setActiveTab('image-gen'); setRes(''); setToolResult(null);}}>Image Gen</button>
-        <button className={`pill ${activeTab === 'chat' ? 'active' : ''}`} onClick={() => {setActiveTab('chat'); setRes(''); setToolResult(null);}}>Chat</button>
-        <button className={`pill ${activeTab === 'local' ? 'active' : ''}`} onClick={() => {setActiveTab('local'); setRes(''); setToolResult(null);}}>Local Tools</button>
+        {AI_TABS.map(tab => (
+          <button key={tab.id} className={`pill ${activeTab === tab.id ? 'active' : ''}`} onClick={() => {setActiveTab(tab.id); setRes(''); setToolResult(null);}}>
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       <div className="hub-content animate-fadeIn">

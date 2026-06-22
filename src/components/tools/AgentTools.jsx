@@ -1,23 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ToolResult from './ToolResult';
 
-const AgentTools = ({ toolId, onSubtoolChange }) => {
-    const tabs = [
-        { id: 'ingest', label: 'Code Ingestion' },
-        { id: 'generate', label: 'Test Generation' },
-        { id: 'results', label: 'View Results' },
-        { id: 'setup', label: 'API Setup' }
-    ];
+const AGENT_TABS = [
+    { id: 'ingest', label: 'Code Ingestion' },
+    { id: 'generate', label: 'Test Generation' },
+    { id: 'results', label: 'View Results' },
+    { id: 'setup', label: 'API Setup' }
+];
 
+const AgentTools = ({ toolId, onSubtoolChange }) => {
     const [activeTab, setActiveTab] = useState('ingest');
     const [apiKey, setApiKey] = useState(localStorage.getItem('agent_openai_key') || '');
     const [knowledgeBase, setKnowledgeBase] = useState(JSON.parse(localStorage.getItem('agent_knowledge_base') || '[]'));
-    const [status, setStatus] = useState({ status: 'idle', message: '' });
 
     useEffect(() => {
-        const current = tabs.find(t => t.id === activeTab);
+        const current = AGENT_TABS.find(t => t.id === activeTab);
         if (current && onSubtoolChange) onSubtoolChange(current.label);
-    }, [activeTab, onSubtoolChange, tabs]);
+    }, [activeTab, onSubtoolChange]);
 
     useEffect(() => {
         if (toolId) {
@@ -34,7 +33,7 @@ const AgentTools = ({ toolId, onSubtoolChange }) => {
     return (
         <div className="tool-form mt-20">
             <div className="pill-group mb-20 scrollable-x">
-                {tabs.map(tab => (
+                {AGENT_TABS.map(tab => (
                     <button key={tab.id} className={`pill ${activeTab === tab.id ? 'active' : ''}`} onClick={() => setActiveTab(tab.id)}>
                         {tab.label}
                     </button>
