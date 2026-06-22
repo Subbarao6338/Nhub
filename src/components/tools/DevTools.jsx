@@ -14,6 +14,7 @@ const DEV_TABS = [
   { id: 'jwt', label: 'JWT Debugger' },
   { id: 'cron', label: 'Cron Parser' },
   { id: 'url', label: 'URL Encoder' },
+  { id: 'word-rank', label: 'Word Rank' },
   { id: 'yaml', label: 'YAML ↔ JSON' },
   { id: 'minifier', label: 'Code Minifier' },
   { id: 'xml-json', label: 'XML ↔ JSON' },
@@ -38,7 +39,7 @@ const DevTools = ({ toolId, onSubtoolChange }) => {
         'converter': 'converter', 'security': 'security',
         'regex': 'regex', 'otp': 'otp', 'kusto': 'kusto',
         'base64': 'base64', 'jwt': 'jwt', 'cron': 'cron',
-        'url': 'url', 'yaml': 'yaml', 'minifier': 'minifier',
+        'url': 'url', 'word-rank': 'word-rank', 'yaml': 'yaml', 'minifier': 'minifier',
         'xml-json': 'xml-json', 'xml-fmt': 'xml-fmt',
         'json-ts': 'json-ts', 'color': 'color', 'qr-barcode': 'qr-barcode'
       };
@@ -77,6 +78,37 @@ const DevSubtool = ({ activeTab }) => {
                 setResult({ text: btoa(input), filename: 'encoded.txt' });
             } else if (activeTab === 'url') {
                 setResult({ text: encodeURIComponent(input), filename: 'encoded_url.txt' });
+            } else if (activeTab === 'word-rank') {
+                const word = input.toUpperCase().replace(/[^A-Z]/g, '');
+                if (!word) throw new Error("Please enter a valid word.");
+                const factorial = (n) => {
+                    let res = BigInt(1);
+                    for (let i = 2n; i <= BigInt(n); i++) res *= i;
+                    return res;
+                };
+                const len = word.length;
+                let rank = BigInt(1);
+                let charCount = {};
+                for (const ch of word) charCount[ch] = (charCount[ch] || 0n) + 1n;
+                const getFactorialDivisor = (counts) => {
+                    let divisor = BigInt(1);
+                    for (const key in counts) divisor *= factorial(Number(counts[key]));
+                    return divisor;
+                };
+                for (let i = 0; i < len; i++) {
+                    let countSmaller = 0n;
+                    for (const key in charCount) {
+                        if (key < word[i]) countSmaller += charCount[key];
+                    }
+                    if (countSmaller > 0n) {
+                        const mul = factorial(len - 1 - i);
+                        const divisor = getFactorialDivisor(charCount);
+                        rank += (countSmaller * mul) / divisor;
+                    }
+                    charCount[word[i]]--;
+                    if (charCount[word[i]] === 0n) delete charCount[word[i]];
+                }
+                setResult({ text: `Rank of the word: ${rank.toString()}` });
             } else {
                 setResult({ text: `Simulated result for ${activeTab}:\n${input.split('').reverse().join('')}` });
             }
