@@ -440,7 +440,7 @@ body {
 }
 
 .tools-container {
-  padding: 1.25rem;
+  padding: 1.25rem 2rem 1.25rem 1.25rem;
   overflow-y: auto;
   background: var(--surface);
   backdrop-filter: blur(var(--glass-blur));
@@ -455,7 +455,7 @@ body {
 /* Mobile */
 @media (max-width: 768px) {
   body { padding: 0; }
-  .tools-container { padding: 1rem; margin: 0; border-radius: 0; border-left: none; border-right: none; }
+  .tools-container { padding: 1rem 1.5rem 1rem 1rem; margin: 0; border-radius: 0; border-left: none; border-right: none; }
   .category-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; gap: 0.75rem; }
   .pill { padding: 8px 14px; font-size: 0.85rem; }
   .toolbox-page-header h2 { font-size: 1.75rem; }
@@ -920,6 +920,11 @@ input.pill:focus {
   flex: 1;
   max-width: 500px;
   position: relative;
+  display: none;
+}
+
+.search-container.active {
+  display: flex;
 }
 
 .search-container input {

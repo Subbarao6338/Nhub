@@ -260,7 +260,10 @@ const ToolboxView = ({ searchQuery, groupToolbox, showStats, recentTools, setRec
             )}
            </>
         ) : (
-           <p>Your essential tools, simplified and unified.</p>
+           <div className="toolbox-page-header-content">
+            <h2>Toolbox</h2>
+            <p>Your essential tools, simplified and unified.</p>
+           </div>
         )}
 
         {activeCategory === 'All' && !searchQuery && !hideRecentTools && recentTools.length > 0 && (
