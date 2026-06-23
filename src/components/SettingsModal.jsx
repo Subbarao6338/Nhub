@@ -29,7 +29,6 @@ const THEME_COLORS = [
 const SettingsModal = ({
   deferredPrompt, setDeferredPrompt,
   appName, setAppName,
-  enableProfiles, setEnableProfiles,
   showProjectsTab, setShowProjectsTab,
   startupTab, setStartupTab,
   enableHoverEffects, setEnableHoverEffects,
@@ -130,7 +129,6 @@ const SettingsModal = ({
 
         <CollapsibleSection id="bookmarks" title="Bookmarks" icon="bookmarks" isOpen={openSections.includes('bookmarks')} onToggle={toggleSection}>
           <Toggle label="Show Bookmarks Tab" value={!hideBookmarks} onChange={(v) => setHideBookmarks(!v)} icon="visibility" />
-          <Toggle label="Enable Profiles" value={enableProfiles} onChange={setEnableProfiles} icon="account_circle" />
           <Toggle label="Hide Bookmark Icons" value={hideBookmarkIcons} onChange={setHideBookmarkIcons} icon="image_not_supported" />
           <Toggle label="Hide Bookmark URLs" value={hideBookmarkUrls} onChange={setHideBookmarkUrls} icon="link_off" />
         </CollapsibleSection>

@@ -15,7 +15,7 @@ import { useLocalStorageState } from './utils/hooks';
 
 function App() {
   const [appName, setAppName] = useLocalStorageState('hub_app_name', 'Epic Toolbox');
-  const [enableProfiles, setEnableProfiles] = useLocalStorageState('hub_enable_profiles', false, 'boolean');
+  const enableProfiles = false;
   const [currentProfileName, setCurrentProfileName] = useLocalStorageState('hub_current_profile', storage.get('hub_startup_profile', 'Default'));
   const [profiles, setProfiles] = useState([
     { id: 1, name: 'Default', icon: 'home' },
@@ -416,8 +416,6 @@ function App() {
           setDeferredPrompt={setDeferredPrompt}
           appName={appName}
           setAppName={setAppName}
-          enableProfiles={enableProfiles}
-          setEnableProfiles={setEnableProfiles}
           hideBookmarks={hideBookmarks}
           setHideBookmarks={setHideBookmarks}
           hideToolbox={hideToolbox}
