@@ -1,3 +1,0 @@
-type=command
-command=echo flamingo
-dependencies=camel,elephant

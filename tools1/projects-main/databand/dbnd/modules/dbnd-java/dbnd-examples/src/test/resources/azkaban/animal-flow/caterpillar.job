@@ -1,3 +1,0 @@
-type=command
-command=echo caterpillar
-dependencies=baboon

@@ -1,3 +1,0 @@
-type=command
-command=echo clownfish
-dependencies=baboon

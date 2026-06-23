@@ -1,3 +1,0 @@
-type=command
-command=echo dolphin
-dependencies=caterpillar,chameleon,cougar,camel,cuttlefish,centipede,cheetah

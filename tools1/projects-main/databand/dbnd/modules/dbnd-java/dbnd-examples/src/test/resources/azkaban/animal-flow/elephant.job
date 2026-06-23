@@ -1,3 +1,0 @@
-type=command
-command=echo elephant
-dependencies=camel,caiman,capybara,cat,catfish,chicken,chihuahua,clown-fish,cockroach,dolphin

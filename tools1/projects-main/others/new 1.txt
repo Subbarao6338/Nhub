@@ -1,1 +1,0 @@
-select ord-no, punch-amt, ord-date,customer-id,salaman-id, cust-name from orders

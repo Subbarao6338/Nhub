@@ -1,6 +1,0 @@
-data/
-logs/
-dbnd*.db
-dump_csv
-*unittests.db
-airflow-webserver.pid

@@ -1,5 +1,0 @@
-__pycache__/
-*.pyc
-app_output.log
-temp_cache/
-.env

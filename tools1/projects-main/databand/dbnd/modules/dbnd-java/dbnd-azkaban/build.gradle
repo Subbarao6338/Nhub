@@ -1,8 +1,0 @@
-/**
- * ****************************************************************************
- * Deequ should be excluded from all configurations because it's provided.
- * ****************************************************************************
- */
-configurations.all {
-    exclude group: "com.amazon.deequ", module: "deequ"
-}

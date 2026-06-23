@@ -1,1 +1,0 @@
-It contains the codebase to capture the log received from dbnd library installed on any airflow cluster.
