@@ -1,8 +1,6 @@
 // ============= CONFIG & STATE =============
 const PROFILES = {
-  'Default': { links: 'url_links.json', cat: 'url_cat.json', icon: 'home' },
-  'Private': { links: 'necs_links.json', cat: 'necs_cat.json', icon: 'lock' },
-  'Personal': { links: 'combined', icon: 'person' }
+  'Default': { links: 'url_links.json', cat: 'url_cat.json', icon: 'home' }
 };
 
 const getProfileKey = (key) => {
@@ -178,20 +176,12 @@ const Core = {
 
   async loadCategories() {
     try {
-      const profileCfg = PROFILES[STATE.currentProfile];
+      const profileCfg = PROFILES[STATE.currentProfile] || PROFILES['Default'];
       let categories = {};
 
-      if (STATE.currentProfile === 'Personal') {
-        const [cat1, cat2] = await Promise.all([
-          fetch('data/' + PROFILES['Default'].cat).then(r => r.ok ? r.json() : {}).catch(() => ({})),
-          fetch('data/' + PROFILES['Private'].cat).then(r => r.ok ? r.json() : {}).catch(() => ({}))
-        ]);
-        categories = { ...cat1, ...cat2 };
-      } else {
-        const res = await fetch('data/' + profileCfg.cat);
-        if (res.ok) {
-          categories = await res.json();
-        }
+      const res = await fetch('data/' + profileCfg.cat);
+      if (res.ok) {
+        categories = await res.json();
       }
       CAT_ICONS = categories;
     } catch (e) {
@@ -244,57 +234,13 @@ const Core = {
   async migrateFromJSON() {
     try {
       let raw = [];
-      const profileCfg = PROFILES[STATE.currentProfile];
+      const profileCfg = PROFILES[STATE.currentProfile] || PROFILES['Default'];
 
-      if (STATE.currentProfile === 'Personal') {
-        const [data1, data2] = await Promise.all([
-          fetch(`data/${PROFILES['Default'].links}`).then(r => r.ok ? r.json() : []).catch(() => []),
-          fetch(`data/${PROFILES['Private'].links}`).then(r => r.ok ? r.json() : []).catch(() => [])
-        ]);
-        const combined = [...data1, ...data2];
-        const seen = new Map();
-        const deduplicated = [];
-
-        combined.forEach(item => {
-          const url = item.url || (item.urls && item.urls[0]);
-          if (!url) return;
-
-          const normalized = url.toLowerCase().replace(/\/+$/, '');
-          if (seen.has(normalized)) {
-            const existing = seen.get(normalized);
-            const existingUrls = existing.urls || (existing.url ? [existing.url] : []);
-            const newItemUrls = item.urls || (item.url ? [item.url] : []);
-
-            const combinedUrls = [...existingUrls, ...newItemUrls];
-            const uniqueUrls = [];
-            const seenUrls = new Set();
-            combinedUrls.forEach(u => {
-              if (!u) return;
-              const n = u.toLowerCase().replace(/\/+$/, '');
-              if (!seenUrls.has(n)) {
-                seenUrls.add(n);
-                uniqueUrls.push(u);
-              }
-            });
-            existing.urls = uniqueUrls;
-            if (!existing.url && uniqueUrls.length > 0) existing.url = uniqueUrls[0];
-
-            if (!existing.icon && item.icon) existing.icon = item.icon;
-            if (!existing.optional_icon && item.optional_icon) existing.optional_icon = item.optional_icon;
-          } else {
-            const newItem = { ...item };
-            seen.set(normalized, newItem);
-            deduplicated.push(newItem);
-          }
-        });
-        raw = deduplicated;
-      } else {
-        try {
-          const res = await fetch(`data/${profileCfg.links}`);
-          if (res.ok) raw = await res.json();
-        } catch (fetchErr) {
-          console.warn(`Could not fetch data/${profileCfg.links}`, fetchErr);
-        }
+      try {
+        const res = await fetch(`data/${profileCfg.links}`);
+        if (res.ok) raw = await res.json();
+      } catch (fetchErr) {
+        console.warn(`Could not fetch data/${profileCfg.links}`, fetchErr);
       }
 
       if (!Array.isArray(raw) || raw.length === 0) {

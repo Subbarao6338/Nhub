@@ -18,9 +18,7 @@ function App() {
   const enableProfiles = false;
   const [currentProfileName, setCurrentProfileName] = useLocalStorageState('hub_current_profile', storage.get('hub_startup_profile', 'Default'));
   const [profiles, setProfiles] = useState([
-    { id: 1, name: 'Default', icon: 'home' },
-    { id: 2, name: 'Private', icon: 'security' },
-    { id: 3, name: 'Personal', icon: 'person' }
+    { id: 1, name: 'Default', icon: 'home' }
   ]);
   const [currentTab, setCurrentTab] = useState(storage.get('hub_startup_tab', 'toolbox'));
   const [searchQuery, setSearchQuery] = useState('');

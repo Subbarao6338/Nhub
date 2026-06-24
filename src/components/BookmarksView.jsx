@@ -8,8 +8,6 @@ import { storage } from '../utils/storage';
 // Import initial data (Vite will bundle these)
 import defaultCats from '../../data/url_cat.json';
 import defaultLinks from '../../data/url_links.json';
-import privateCats from '../../data/necs_cat.json';
-import privateLinks from '../../data/necs_links.json';
 
 const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refreshTrigger, hideUrls, hideIcons, showStats, openInNewTab }) => {
   const [links, setLinks] = useState([]);
@@ -58,10 +56,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
     let storedCats = storage.getJSON(`hub_cats_p${profileId}`);
 
     if (!storedLinks) {
-        if (profileId === 1) storedLinks = defaultLinks;
-        else if (profileId === 2) storedLinks = privateLinks;
-        else if (profileId === 3) storedLinks = [...defaultLinks, ...privateLinks];
-        else storedLinks = [];
+        storedLinks = defaultLinks;
 
         // Add unique IDs if missing
         storedLinks = storedLinks.map((l, index) => ({
@@ -74,10 +69,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
     }
 
     if (!storedCats) {
-        if (profileId === 1) storedCats = defaultCats;
-        else if (profileId === 2) storedCats = privateCats;
-        else if (profileId === 3) storedCats = { ...defaultCats, ...privateCats };
-        else storedCats = {};
+        storedCats = defaultCats;
         storage.setJSON(`hub_cats_p${profileId}`, storedCats);
     }
 

@@ -113,8 +113,6 @@ def migrate(db_path=None):
 
     migrate_links('url_links.json', 'Default')
     migrate_categories('url_cat.json', 'Default')
-    migrate_links('necs_links.json', 'Private')
-    migrate_categories('necs_cat.json', 'Private')
     migrate_projects('projects.json')
 
     conn.commit()
