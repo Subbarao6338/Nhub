@@ -41,7 +41,7 @@ const DEV_TABS = [
   { id: 'minifier', label: 'Code Minifier', icon: 'compress' },
   { id: 'xml-json', label: 'XML ↔ JSON', icon: 'transform' },
   { id: 'xml-fmt', label: 'XML Formatter', icon: 'format_align_left' },
-  { id: 'json-ts', label: 'JSON to TS', icon: 'typescript' },
+  { id: 'json-ts', label: 'JSON to TS', icon: 'code' },
   { id: 'color', label: 'Color Picker', icon: 'palette' },
   { id: 'qr-barcode', label: 'QR & Barcode', icon: 'qr_code' }
 ].sort((a, b) => a.label.localeCompare(b.label));
@@ -104,7 +104,7 @@ const DevTools = ({ toolId, onSubtoolChange }) => {
       <div className="flex-between mb-20">
         <button className="pill" onClick={goBack}>
           <span className="material-icons" style={{fontSize: '1.1rem'}}>arrow_back</span>
-          Back to Category
+          Back to Hub
         </button>
         <button className="pill" onClick={closeHub}>
           <span className="material-icons" style={{fontSize: '1.1rem'}}>close</span>

@@ -42,7 +42,7 @@ const AiTools = ({ toolId, onSubtoolChange }) => {
   const closeHub = () => {
     const url = new URL(window.location);
     url.searchParams.delete('tool');
-    window.history.pushState({}, '', url.toString());
+    window.history.pushState({ tab: 'toolbox' }, '', url.toString());
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 

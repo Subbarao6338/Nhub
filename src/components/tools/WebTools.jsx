@@ -3,6 +3,7 @@ import ToolResult from './ToolResult';
 
 // Import subtools
 import SocialAudit from './subtools/SocialAudit';
+import SocialDownloader from './subtools/SocialDownloader';
 import WebArchive from './subtools/WebArchive';
 import UrlToPdf from './subtools/UrlToPdf';
 import UserScripts from './subtools/UserScripts';
@@ -10,9 +11,10 @@ import Bookmarklets from './subtools/Bookmarklets';
 
 const WEB_TABS = [
   { id: 'social', label: 'Social Audit', icon: 'share' },
+  { id: 'social-downloader', label: 'Social Downloader', icon: 'download' },
   { id: 'archive', label: 'Web Archive', icon: 'history' },
   { id: 'url2pdf', label: 'URL to PDF', icon: 'picture_as_pdf' },
-  { id: 'userscripts', label: 'User Scripts', icon: 'javascript' },
+  { id: 'userscripts', label: 'User Scripts', icon: 'code' },
   { id: 'bookmarklets', label: 'Bookmarklets', icon: 'bookmarks' }
 ].sort((a, b) => a.label.localeCompare(b.label));
 
@@ -38,7 +40,7 @@ const WebTools = ({ toolId, onSubtoolChange }) => {
   const closeHub = () => {
     const url = new URL(window.location);
     url.searchParams.delete('tool');
-    window.history.pushState({}, '', url.toString());
+    window.history.pushState({ tab: 'toolbox' }, '', url.toString());
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
@@ -86,6 +88,7 @@ const WebTools = ({ toolId, onSubtoolChange }) => {
 
       <div className="hub-content animate-fadeIn">
         {activeTab === 'social' && <SocialAudit />}
+        {activeTab === 'social-downloader' && <SocialDownloader />}
         {activeTab === 'archive' && <WebArchive />}
         {activeTab === 'url2pdf' && <UrlToPdf />}
         {activeTab === 'userscripts' && <UserScripts />}

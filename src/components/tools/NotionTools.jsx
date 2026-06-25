@@ -11,7 +11,7 @@ import NotionFolderSync from './subtools/NotionFolderSync';
 const NOTION_TABS = [
     { id: 'ingest', label: 'Notion Ingest', icon: 'sync' },
     { id: 'folder', label: 'Folder Sync', icon: 'folder' },
-    { id: 'scraper', label: 'Web Scraper', icon: 'html' },
+    { id: 'scraper', label: 'Web Scraper', icon: 'web' },
     { id: 'history', label: 'Sync History', icon: 'history' },
     { id: 'setup', label: 'Integration', icon: 'settings' }
 ];
@@ -38,7 +38,7 @@ const NotionTools = ({ toolId, onSubtoolChange }) => {
     const closeHub = () => {
         const url = new URL(window.location);
         url.searchParams.delete('tool');
-        window.history.pushState({}, '', url.toString());
+        window.history.pushState({ tab: 'toolbox' }, '', url.toString());
         window.dispatchEvent(new PopStateEvent('popstate'));
     };
 

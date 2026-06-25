@@ -84,7 +84,7 @@ const DateTimeTools = ({ toolId, onSubtoolChange }) => {
       <div className="flex-between mb-20">
         <button className="pill" onClick={goBack}>
           <span className="material-icons" style={{fontSize: '1.1rem'}}>arrow_back</span>
-          Back to Category
+          Back to Hub
         </button>
         <button className="pill" onClick={closeHub}>
           <span className="material-icons" style={{fontSize: '1.1rem'}}>close</span>
