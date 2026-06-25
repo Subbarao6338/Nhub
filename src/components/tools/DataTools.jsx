@@ -18,7 +18,7 @@ const DATA_TABS = [
   { id: 'science', label: 'Data Science', icon: 'science' },
   { id: 'adv-data', label: 'Advanced Hub', icon: 'analytics' },
   { id: 'reconcile', label: 'Reconciliation', icon: 'rule' },
-  { id: 'synthetic', label: 'Synthetic Gen', icon: 'Dns' },
+  { id: 'synthetic', label: 'Synthetic Gen', icon: 'dns' },
   { id: 'image-lab', label: 'Image Lab', icon: 'biotech' },
   { id: 'anonymizer', label: 'Anonymizer', icon: 'fingerprint' },
   { id: 'json-csv', label: 'JSON ↔ CSV', icon: 'swap_calls' },
@@ -84,7 +84,7 @@ const DataTools = ({ toolId, onSubtoolChange }) => {
       <div className="flex-between mb-20">
         <button className="pill" onClick={goBack}>
           <span className="material-icons" style={{fontSize: '1.1rem'}}>arrow_back</span>
-          Back to Category
+          Back to Hub
         </button>
         <button className="pill" onClick={closeHub}>
           <span className="material-icons" style={{fontSize: '1.1rem'}}>close</span>
