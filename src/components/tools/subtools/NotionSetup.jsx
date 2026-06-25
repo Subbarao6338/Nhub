@@ -8,7 +8,10 @@ const NotionSetup = () => {
     const handleSave = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`/api/notion/validate?token=${token}`);
+            const res = await fetch(`/api/notion/validate?token=${token}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
             const data = await res.json();
             if (data.valid) {
                 localStorage.setItem('hub_notion_token', token);

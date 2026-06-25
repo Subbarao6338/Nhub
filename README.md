@@ -13,12 +13,12 @@ Organize your favorite links and resources efficiently.
 - **Privacy Profiles**: Manage different sets of bookmarks for different needs.
 
 ### 🛠️ Specialized Toolsets
-- **Document Tools**: Edit, convert, and translate documents (PDF, Image, Text) directly in your browser.
-- **Web & Social**: Download media from social platforms and archive web content easily.
+- **Document Tools**: Edit, convert, and translate documents (PDF, Image, Text) directly in your browser. Features an improved offline translator with an expanded dictionary.
+- **Web & Social**: Download media from social platforms and archive web content easily. Includes optimized URL to PDF and web archiving tools.
 - **Productivity**: Use built-in world clocks, Pomodoro timers, and stopwatches to manage your time.
-- **Data & Math**: Perform statistical analysis, generate mock data, and use various calculators.
-- **Developer Utilities**: Format data, convert units, and generate secure passwords.
-- **AI Assistants**: Access chat assistants and image generation tools to boost your creativity.
+- **Data & Math**: Perform statistical analysis, generate mock data, and use various calculators. Enhanced multivariate anomaly detection and data quality audits.
+- **Developer Utilities**: Advanced SQL and KQL formatters, JSON to TypeScript interface generator (now supporting nested objects), and a comprehensive Code Inspiration hub.
+- **AI Assistants**: Access chat assistants, image generation tools, and local sentiment analysis.
 
 ### 🎨 Personalization & Experience
 - **Modern Interface**: Enjoy a clean, intuitive design inspired by Material Design.
@@ -44,6 +44,24 @@ Use the navigation bar at the bottom (or side on desktop) to switch between the 
 - **Adding**: Click the "Add" button in settings or the bookmark view to save a new link.
 - **Editing**: Long-press (on mobile) or click the menu icon on a bookmark card to edit its details.
 - **Opening**: Simply click a card to open the link. If it has multiple URLs, a menu will appear.
+
+## 🚀 Recent Improvements & Bug Fixes
+
+- **Developer Hub**:
+    - Re-implemented **SQL Formatter** and **KQL Formatter** with standard indentation and keyword highlighting.
+    - Upgraded **JSON to TypeScript** converter to support complex nested objects and custom interface names.
+    - Introduced **Code Inspiration** hub with modern snippets for React, CSS, and Utility functions.
+- **Productivity & Docs**:
+    - Expanded the offline **Doc Translator** dictionary and improved case-insensitive matching.
+    - Optimized **Code Minifier** with new support for HTML minification.
+    - Significantly expanded **Unit Converter** with Area, Volume, and Time categories.
+- **Data Science**:
+    - Enhanced Multivariate Anomaly Detection using Mahalanobis Distance for high-dimensional data.
+- **Infrastructure**:
+    - Fixed Notion Integration validation bug (moved to POST requests).
+    - Improved sub-tool mapping and deep linking for AI tools.
+- **Projects**:
+    - Updated project showcase with real-world repositories: Epic Bookmarx, Omni Toolbox, and Omni Web.
 
 ---
 *Epic Toolbox is built to simplify your digital life. Start exploring and boost your productivity today!*

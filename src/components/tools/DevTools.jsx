@@ -43,7 +43,8 @@ const DEV_TABS = [
   { id: 'xml-fmt', label: 'XML Formatter', icon: 'format_align_left' },
   { id: 'json-ts', label: 'JSON to TS', icon: 'code' },
   { id: 'color', label: 'Color Picker', icon: 'palette' },
-  { id: 'qr-barcode', label: 'QR & Barcode', icon: 'qr_code' }
+  { id: 'qr-barcode', label: 'QR & Barcode', icon: 'qr_code' },
+  { id: 'inspiration', label: 'Code Inspiration', icon: 'lightbulb' }
 ].sort((a, b) => a.label.localeCompare(b.label));
 
 const DevTools = ({ toolId, onSubtoolChange }) => {
@@ -132,6 +133,7 @@ const DevTools = ({ toolId, onSubtoolChange }) => {
         {activeTab === 'yaml' && <YamlJsonConverter />}
         {activeTab === 'otp' && <OtpGenerator />}
         {activeTab === 'word-rank' && <WordRankCalculator />}
+        {activeTab === 'inspiration' && <CodeInspiration />}
       </div>
     </div>
   );

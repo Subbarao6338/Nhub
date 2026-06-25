@@ -32,9 +32,11 @@ const AiTools = ({ toolId, onSubtoolChange }) => {
         'ai-image': 'image-gen',
         'image-gen': 'image-gen',
         'ai-sentiment': 'local',
-        'local': 'local'
+        'local': 'local',
+        'sentiment': 'local'
       };
       if (mapping[toolId]) setActiveTab(mapping[toolId]);
+      else if (AI_TABS.some(t => t.id === toolId)) setActiveTab(toolId);
     }
   }, [toolId]);
 
