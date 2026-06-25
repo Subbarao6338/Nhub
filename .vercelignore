@@ -3,3 +3,5 @@ legacy/
 .git/
 tests/
 test-results/
+screenshots/
+verification/
