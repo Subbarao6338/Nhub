@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import CategoryNav from './CategoryNav';
 import EmptyState from './EmptyState';
@@ -16,13 +16,13 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
   const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
   const [copiedId, setCopiedId] = useState(null);
 
-  const handleLongPress = (link, coords) => {
+  const handleLongPress = useCallback((link, coords) => {
     setSelectedLinkForUrls(link);
     setModalPosition(coords || { x: window.innerWidth / 2, y: window.innerHeight / 2 });
     setIsUrlModalOpen(true);
-  };
+  }, []);
 
-  const handleShare = async (link) => {
+  const handleShare = useCallback(async (link) => {
     if (navigator.share) {
       try {
         await navigator.share({ title: link.title, url: link.url });
@@ -31,13 +31,13 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
       navigator.clipboard.writeText(`${link.title}: ${link.url}`);
       alert("Link copied to clipboard!");
     }
-  };
+  }, []);
 
-  const handleCopy = (id, text) => {
+  const handleCopy = useCallback((id, text) => {
     navigator.clipboard.writeText(text);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
-  };
+  }, []);
   const [categories, setCategories] = useState({});
   const [activeCategory, setActiveCategory] = useState('All');
   const [loading, setLoading] = useState(true);
@@ -82,76 +82,88 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
     }
   }, [profileId, refreshTrigger]);
 
-  const currentLinks = Array.isArray(links) ? links : [];
-  const filteredLinks = currentLinks.filter(l => {
-    if (l.is_internal || l.isInternal) return false;
+  const currentLinks = useMemo(() => Array.isArray(links) ? links : [], [links]);
 
-    let matchesSearch = true;
-    let matchesCat = true;
+  const { filteredLinks, grouped, cats } = useMemo(() => {
+    const filtered = currentLinks.filter(l => {
+      if (l.is_internal || l.isInternal) return false;
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      if (query.startsWith('cat:')) {
-        const catQuery = query.replace('cat:', '').trim();
-        matchesCat = (l.category || '').toLowerCase().includes(catQuery);
-        matchesSearch = true;
-      } else {
-        matchesSearch = (l.title || '').toLowerCase().includes(query) ||
-          (l.category || '').toLowerCase().includes(query) ||
-          (l.url || '').toLowerCase().includes(query) ||
-          (l.urls && l.urls.some(u => u.toLowerCase().includes(query)));
+      let matchesSearch = true;
+      let matchesCat = true;
+
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        if (query.startsWith('cat:')) {
+          const catQuery = query.replace('cat:', '').trim();
+          matchesCat = (l.category || '').toLowerCase().includes(catQuery);
+          matchesSearch = true;
+        } else {
+          matchesSearch = (l.title || '').toLowerCase().includes(query) ||
+            (l.category || '').toLowerCase().includes(query) ||
+            (l.url || '').toLowerCase().includes(query) ||
+            (l.urls && l.urls.some(u => u.toLowerCase().includes(query)));
+        }
       }
-    }
 
-    if (!searchQuery || !searchQuery.toLowerCase().startsWith('cat:')) {
-      if (activeCategory === 'Pinned') matchesCat = l.is_pinned;
-      else if (activeCategory !== 'All') matchesCat = l.category === activeCategory;
-    }
+      if (!searchQuery || !searchQuery.toLowerCase().startsWith('cat:')) {
+        if (activeCategory === 'Pinned') matchesCat = l.is_pinned;
+        else if (activeCategory !== 'All') matchesCat = l.category === activeCategory;
+      }
 
-    return matchesSearch && matchesCat;
-  });
-
-  const grouped = {};
-  filteredLinks.forEach(l => {
-    const cat = l.category || 'Uncategorized';
-    (grouped[cat] || (grouped[cat] = [])).push(l);
-  });
-
-  // Sort bookmarks within each category: Pinned first
-  Object.keys(grouped).forEach(cat => {
-    grouped[cat].sort((a, b) => {
-      if (a.is_pinned && !b.is_pinned) return -1;
-      if (!a.is_pinned && b.is_pinned) return 1;
-      return (a.title || '').localeCompare(b.title || '');
+      return matchesSearch && matchesCat;
     });
-  });
 
-  const cats = Object.keys(grouped).sort();
+    const groups = {};
+    filtered.forEach(l => {
+      const cat = l.category || 'Uncategorized';
+      (groups[cat] || (groups[cat] = [])).push(l);
+    });
 
-  const toggleCategoryCollapse = (cat) => {
+    Object.keys(groups).forEach(cat => {
+      groups[cat].sort((a, b) => {
+        if (a.is_pinned && !b.is_pinned) return -1;
+        if (!a.is_pinned && b.is_pinned) return 1;
+        return (a.title || '').localeCompare(b.title || '');
+      });
+    });
+
+    return {
+      filteredLinks: filtered,
+      grouped: groups,
+      cats: Object.keys(groups).sort()
+    };
+  }, [currentLinks, searchQuery, activeCategory]);
+
+  const toggleCategoryCollapse = useCallback((cat) => {
     setCollapsedCategories(prev => ({ ...prev, [cat]: !prev[cat] }));
-  };
+  }, []);
 
-  const collapseAll = () => {
+  const collapseAll = useCallback(() => {
     const newCollapsed = {};
     cats.forEach(cat => newCollapsed[cat] = true);
     setCollapsedCategories(newCollapsed);
-  };
+  }, [cats]);
 
-  const expandAll = () => {
+  const expandAll = useCallback(() => {
     setCollapsedCategories({});
-  };
+  }, []);
 
-  const stats = {};
-  const visibleCategories = {};
-  currentLinks.forEach(l => {
-    if (l.is_internal || l.isInternal) return;
-    const cat = l.category || 'Uncategorized';
-    stats[cat] = (stats[cat] || 0) + 1;
-    visibleCategories[cat] = categories[cat] || 'folder';
-  });
-  const totalCount = Object.values(stats).reduce((a, b) => a + b, 0);
-  const pinnedCount = currentLinks.filter(l => l.is_pinned).length;
+  const { stats, visibleCategories, totalCount, pinnedCount } = useMemo(() => {
+    const s = {};
+    const v = {};
+    currentLinks.forEach(l => {
+      if (l.is_internal || l.isInternal) return;
+      const cat = l.category || 'Uncategorized';
+      s[cat] = (s[cat] || 0) + 1;
+      v[cat] = categories[cat] || 'folder';
+    });
+    return {
+      stats: s,
+      visibleCategories: v,
+      totalCount: Object.values(s).reduce((a, b) => a + b, 0),
+      pinnedCount: currentLinks.filter(l => l.is_pinned).length
+    };
+  }, [currentLinks, categories]);
 
   if (loading) return (
     <div style={{ padding: '2rem' }}>
@@ -166,14 +178,14 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
     </div>
   );
 
-  const copyAllUrls = () => {
+  const copyAllUrls = useCallback(() => {
     if (!selectedLinkForUrls) return;
     const allUrls = selectedLinkForUrls.urls || [selectedLinkForUrls.url];
     navigator.clipboard.writeText(allUrls.join('\n'));
     alert("All URLs copied to clipboard!");
   };
 
-  const getModalStyle = () => {
+  const getModalStyle = useCallback(() => {
     if (window.innerWidth <= 768) return { display: 'block' };
 
     const modalWidth = 500;
@@ -364,7 +376,7 @@ const BookmarksView = ({ profileId, searchQuery, onEdit, onDelete, onPin, refres
   );
 };
 
-const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handleShare, handleCopy, isCopied, onLongPress, categoryIcon, hideIcons, hideUrls, searchQuery, noAnimation }) => {
+const BookmarkCard = React.memo(({ link, idx, openInNewTab, onPin, onEdit, onDelete, handleShare, handleCopy, isCopied, onLongPress, categoryIcon, hideIcons, hideUrls, searchQuery, noAnimation }) => {
   const pressTimer = React.useRef(null);
   const [isPressing, setIsPressing] = useState(false);
   const isLongPressActive = React.useRef(false);
@@ -460,9 +472,9 @@ const BookmarkCard = ({ link, idx, openInNewTab, onPin, onEdit, onDelete, handle
       </div>
     </div>
   );
-};
+});
 
-const BookmarkIcon = ({ link, categoryIcon }) => {
+const BookmarkIcon = React.memo(({ link, categoryIcon }) => {
   const getHostname = (url) => {
     try {
       return new URL(url.startsWith('http') ? url : 'http://' + url).hostname;
@@ -499,6 +511,6 @@ const BookmarkIcon = ({ link, categoryIcon }) => {
   }
 
   return <img src={src} className="card-icon" loading="lazy" onError={handleError} alt="" />;
-};
+});
 
 export default BookmarksView;
