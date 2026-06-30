@@ -28,6 +28,7 @@ const DATA_TABS = [
 
 const DataTools = ({ toolId, onSubtoolChange }) => {
   const [activeTab, setActiveTab] = useState(null);
+  const [globalData, setGlobalData] = useState(null);
 
   useEffect(() => {
     if (activeTab) {
@@ -93,13 +94,13 @@ const DataTools = ({ toolId, onSubtoolChange }) => {
       </div>
 
       <div className="hub-content animate-fadeIn">
-        {activeTab === 'viewer' && <DataViewer />}
-        {activeTab === 'science' && <DataScienceHub />}
-        {activeTab === 'adv-data' && <AdvancedDataHub />}
+        {activeTab === 'viewer' && <DataViewer setGlobalData={setGlobalData} setRawFile={() => {}} />}
+        {activeTab === 'science' && <DataScienceHub data={globalData} />}
+        {activeTab === 'adv-data' && <AdvancedDataHub data={globalData} />}
         {activeTab === 'reconcile' && <ReconciliationTool />}
-        {activeTab === 'synthetic' && <SyntheticDataTool />}
+        {activeTab === 'synthetic' && <SyntheticDataTool data={globalData} />}
         {activeTab === 'image-lab' && <ImageLab />}
-        {activeTab === 'anonymizer' && <DataAnonymizer />}
+        {activeTab === 'anonymizer' && <DataAnonymizer data={globalData} />}
         {activeTab === 'json-csv' && <JsonCsvConverter />}
         {activeTab === 'mock' && <MockDataGenerator />}
         {activeTab === 'finance' && <FinanceHub />}
