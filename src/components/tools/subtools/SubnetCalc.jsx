@@ -20,10 +20,29 @@ const SubnetCalc = () => {
             ];
 
             const network = netParts.join('.');
-            const broadcast = netParts.map((p, i) => p | (~(fullMask >>> (24 - i * 8)) & 0xFF)).join('.');
+            const broadcastParts = netParts.map((p, i) => p | (~(fullMask >>> (24 - i * 8)) & 0xFF));
+            const broadcast = broadcastParts.join('.');
             const hosts = Math.pow(2, 32 - mask) - 2;
 
-            setResult({ text: `Network: ${network}\nBroadcast: ${broadcast}\nUsable Hosts: ${hosts > 0 ? hosts : 0}` });
+            const firstHost = [...netParts];
+            firstHost[3] += 1;
+            const lastHost = [...broadcastParts];
+            lastHost[3] -= 1;
+
+            const dottedMask = [
+                (fullMask >>> 24) & 0xFF,
+                (fullMask >>> 16) & 0xFF,
+                (fullMask >>> 8) & 0xFF,
+                fullMask & 0xFF
+            ].join('.');
+
+            setResult({
+                text: `Network: ${network}\n` +
+                      `Broadcast: ${broadcast}\n` +
+                      `Subnet Mask: ${dottedMask}\n` +
+                      `Usable Range: ${hosts > 0 ? `${firstHost.join('.')} - ${lastHost.join('.')}` : 'N/A'}\n` +
+                      `Usable Hosts: ${hosts > 0 ? hosts : 0}`
+            });
         } catch (e) {
             setResult({ error: e.message });
         }

@@ -34,7 +34,20 @@ const DICTIONARY = {
     "school": "badu (బడి)",
     "knowledge": "jnanam (జ్ఞానం)",
     "money": "dabbu (డబ్బు)",
-    "health": "arogyam (ఆరోగ్యం)"
+    "health": "arogyam (ఆరోగ్యం)",
+    "family": "kutumbam (కుటుంబం)",
+    "friendship": "sneham (స్నేహం)",
+    "education": "vidya (విద్య)",
+    "medicine": "mandhu (మందు)",
+    "nature": "prakruti (ప్రకృతి)",
+    "earth": "bhoomi (భూమి)",
+    "sky": "akasham (ఆకాశం)",
+    "sun": "suryudu (సూర్యుడు)",
+    "moon": "chandrudu (చంద్రుడు)",
+    "fire": "aggu (అగ్ని)",
+    "air": "gali (గాలి)",
+    "tree": "chettu (చెట్టు)",
+    "flower": "puvvu (పువ్వు)"
 };
 
 const DocTranslator = () => {

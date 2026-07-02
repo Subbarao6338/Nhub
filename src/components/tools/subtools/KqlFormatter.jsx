@@ -24,11 +24,14 @@ const KqlFormatter = () => {
             });
 
             // Special handling for commas inside clauses (like project or summarize)
-            const lines = kql.split('\n').map(line => {
-                if (line.includes('project') || line.includes('summarize') || line.includes('extend')) {
-                    return line.replace(/,\s*/g, ',\n    ');
+            const lines = kql.split('\n').flatMap(line => {
+                if (line.match(/\|\s*(project|summarize|extend|where|order by|sort by)\b/i)) {
+                    const parts = line.split(/,\s*/);
+                    if (parts.length > 1) {
+                        return [parts[0], ...parts.slice(1).map(p => `    ${p}`)];
+                    }
                 }
-                return line;
+                return [line];
             });
 
             setResult({ text: lines.join('\n'), filename: 'formatted.kql' });

@@ -20,20 +20,24 @@ const SqlFormatter = () => {
             const reservedWords = [
                 'SELECT', 'FROM', 'WHERE', 'AND', 'OR', 'GROUP BY', 'ORDER BY',
                 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM',
-                'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'ON', 'LIMIT', 'OFFSET',
-                'HAVING', 'JOIN', 'UNION', 'DISTINCT', 'AS', 'CASE', 'WHEN', 'THEN',
-                'ELSE', 'END', 'IN', 'NOT IN', 'BETWEEN', 'LIKE', 'IS NULL', 'IS NOT NULL'
+                'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'CROSS JOIN', 'OUTER JOIN',
+                'ON', 'LIMIT', 'OFFSET', 'HAVING', 'JOIN', 'UNION', 'UNION ALL',
+                'DISTINCT', 'AS', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'IN', 'NOT IN',
+                'BETWEEN', 'LIKE', 'IS NULL', 'IS NOT NULL', 'INTERSECT', 'EXCEPT', 'WITH'
             ];
 
+            // Sort reserved words by length descending to match multi-word keywords first
+            const sortedReservedWords = [...reservedWords].sort((a, b) => b.length - a.length);
+
             // Normalize keywords to uppercase
-            reservedWords.forEach(word => {
+            sortedReservedWords.forEach(word => {
                 const regex = new RegExp(`\\b${word}\\b`, 'gi');
                 sql = sql.replace(regex, word.toUpperCase());
             });
 
             // Advanced formatting logic
-            const blockKeywords = ['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY', 'SET', 'VALUES', 'INSERT INTO', 'UPDATE', 'HAVING', 'UNION'];
-            const inlineKeywords = ['AND', 'OR', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN'];
+            const blockKeywords = ['SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY', 'SET', 'VALUES', 'INSERT INTO', 'UPDATE', 'HAVING', 'UNION', 'UNION ALL', 'INTERSECT', 'EXCEPT', 'WITH'];
+            const inlineKeywords = ['AND', 'OR', 'JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'CROSS JOIN', 'OUTER JOIN'];
 
             blockKeywords.forEach(word => {
                 const regex = new RegExp(`\\b${word}\\b`, 'g');

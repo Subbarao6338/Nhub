@@ -16,15 +16,17 @@ const AiLocal = () => {
                 'good', 'great', 'awesome', 'happy', 'excellent', 'love', 'amazing', 'best',
                 'wonderful', 'fantastic', 'perfect', 'brilliant', 'glad', 'joy', 'excited',
                 'pleased', 'satisfied', 'thanks', 'thank', 'beautiful', 'nice', 'cool',
-                'superb', 'outstanding', 'impressive', 'lovely', 'fabulous', 'terrific'
+                'superb', 'outstanding', 'impressive', 'lovely', 'fabulous', 'terrific',
+                'recommend', 'worthy', 'solid', 'reliable', 'helpful', 'fast', 'smooth'
             ];
             const negativeWords = [
                 'bad', 'awful', 'sad', 'hate', 'terrible', 'worst', 'poor', 'stupid',
                 'disappointed', 'angry', 'annoyed', 'horrible', 'miserable', 'nasty',
                 'useless', 'broken', 'failure', 'sucks', 'boring', 'weird', 'wrong',
-                'difficult', 'hard', 'painful', 'scary', 'ugly', 'unhappy', 'rubbish'
+                'difficult', 'hard', 'painful', 'scary', 'ugly', 'unhappy', 'rubbish',
+                'slow', 'laggy', 'buggy', 'expensive', 'useless', 'mess', 'avoid'
             ];
-            const negations = ['not', 'no', 'never', 'neither', 'none', "can't", "don't", "won't", "isn't", "wasn't", "couldn't"];
+            const negations = ['not', 'no', 'never', 'neither', 'none', "can't", "don't", "won't", "isn't", "wasn't", "couldn't", 'hardly', 'barely'];
 
             const tokens = input.toLowerCase().split(/\s+/).map(t => t.replace(/[^a-z']/g, ''));
             let score = 0;
@@ -32,7 +34,7 @@ const AiLocal = () => {
 
             tokens.forEach((token, index) => {
                 if (negations.includes(token)) {
-                    isNegated = true;
+                    isNegated = 3; // Negation effect lasts for 3 following tokens
                     return;
                 }
 
@@ -41,12 +43,14 @@ const AiLocal = () => {
                 else if (negativeWords.includes(token)) currentScore = -1;
 
                 if (currentScore !== 0) {
-                    if (isNegated) {
+                    if (isNegated > 0) {
                         score -= currentScore;
-                        isNegated = false; // Reset negation after applying to one word
+                        isNegated = 0; // Reset after use
                     } else {
                         score += currentScore;
                     }
+                } else if (isNegated > 0) {
+                    isNegated--;
                 }
 
                 // Reset negation if it was set but didn't apply to a sentiment word (very basic logic)
